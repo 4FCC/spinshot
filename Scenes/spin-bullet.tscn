@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://cypb1hwhhix31"]
+
+[ext_resource type="Script" uid="uid://b2u4d1us7us3a" path="res://Scripts/spin_bullet.gd" id="1_dymbd"]
+[ext_resource type="Texture2D" uid="uid://dkmmtgkaycuqp" path="res://icon.svg" id="1_va2hr"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_dymbd"]
+
+[node name="spin-bullet" type="Node2D" unique_id=1539554318]
+script = ExtResource("1_dymbd")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=896456284]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=176561428]
+shape = SubResource("CircleShape2D_dymbd")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=510818077]
+texture = ExtResource("1_va2hr")
+
+[node name="Label" type="Label" parent="." unique_id=895674530]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=499785517]
+
+[node name="Timer" type="Timer" parent="." unique_id=149559134]
