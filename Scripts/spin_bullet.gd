@@ -3,52 +3,61 @@ extends Node2D
 # =============================================================================
 # SPIN-BULLET — Mecánica principal (tema: GIRAR)
 # =============================================================================
-# Bala que el jugador dispara y que orbita a su alrededor describiendo una
+# Bala que el jugador dispara y que orbita un punto FIJO en el mundo
+# (la posición del jugador en el momento del disparo), describiendo una
 # espiral hacia afuera hasta agotar su vida o alcanzar el radio máximo.
+# Si toca al jugador, le inflige daño y desaparece.
 #
-# Se puede inicializar de dos formas:
+# Inicialización:
 #   1) Desde el editor: asignando "player_path" en el inspector.
-#   2) Desde código: llamando a setup(jugador, direccion) tras instanciarla.
+#   2) Desde código:    llamando a setup(jugador, direccion) tras add_child.
 
-# --- Configuración exportada ---
-@export var player_path: NodePath           # (Opcional) jugador asignado desde el editor
-@export var angular_speed: float = 360.0    # Grados por segundo que gira la bala
-@export var clockwise: bool = true          # true = horario, false = antihorario
+@export var player_path: NodePath
+@export var angular_speed: float = 360.0
+@export var clockwise: bool = true
 
-@export var start_radius: float = 30.0      # Radio inicial (distancia al jugador al nacer)
-@export var radius_growth_speed: float = 60.0 # Crecimiento del radio por segundo (espiral)
-@export var max_radius: float = 400.0       # Radio máximo antes de destruirse
+@export var start_radius: float = 30.0
+@export var radius_growth_speed: float = 60.0
+@export var max_radius: float = 400.0
 
-@export var lifetime: float = 4.0           # Tiempo de vida en segundos (0 = infinito)
+@export var lifetime: float = 4.0
+@export var damage: int = 3
 
-# --- Estado interno ---
 var player: Node2D = null
+var _center: Vector2 = Vector2.ZERO  # Punto fijo de órbita (no sigue al jugador)
 var _angle: float = 0.0
 var _radius: float = 0.0
 var _time_alive: float = 0.0
+var _can_damage: bool = false         # Gracia inicial para no dañar al instante
 
 
 func _ready() -> void:
-	# Si no se inicializó por código, intentar resolver el jugador del editor
 	if player == null and player_path != NodePath(""):
 		player = get_node_or_null(player_path) as Node2D
+		if player != null:
+			_center = player.global_position
 
 	_radius = start_radius
-	_angle = (global_position - _get_center()).angle()
+	_angle = (global_position - _center).angle()
+
+	$Area2D.body_entered.connect(_on_body_entered)
+	# Pequeña gracia para evitar daño inmediato al disparar
+	get_tree().create_timer(0.4).timeout.connect(func(): _can_damage = true)
 
 
 func setup(target: Node2D, direction: Vector2) -> void:
-	"""Inicializa la bala desde código: define el centro de giro (el jugador) y
-	la posición inicial en la dirección de disparo. Llamar DESPUÉS de añadirla
-	al árbol para que la posición global sea coherente con la escena."""
+	"""Fija el centro de órbita en la posición actual del jugador y coloca
+	la bala en la dirección de disparo. Llamar DESPUÉS de add_child."""
 	player = target
+	_center = target.global_position   # Centro fijo: no se mueve con el jugador
+
 	_radius = start_radius
 	_time_alive = 0.0
 
 	var dir := direction.normalized()
 	if dir == Vector2.ZERO:
 		dir = Vector2.RIGHT
-	global_position = _get_center() + dir * start_radius
+	global_position = _center + dir * start_radius
 	_angle = dir.angle()
 
 
@@ -63,11 +72,12 @@ func _process(delta: float) -> void:
 	_angle += deg_to_rad(angular_speed) * dir * delta
 	_radius += radius_growth_speed * delta
 
-	var offset := Vector2(cos(_angle), sin(_angle)) * _radius
-	global_position = _get_center() + offset
+	global_position = _center + Vector2(cos(_angle), sin(_angle)) * _radius
 
 
-func _get_center() -> Vector2:
-	if player != null:
-		return player.global_position
-	return global_position
+func _on_body_entered(body: Node2D) -> void:
+	if not _can_damage:
+		return
+	if body.is_in_group("player") and body.has_method("take_damage"):
+		body.take_damage(damage)
+		queue_free()

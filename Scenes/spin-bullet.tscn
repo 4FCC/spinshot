@@ -1,19 +1,20 @@
-[gd_scene load_steps=3 format=3 uid="uid://cypb1hwhhix31"]
+[gd_scene format=3 uid="uid://cypb1hwhhix31"]
 
 [ext_resource type="Script" uid="uid://b2u4d1us7us3a" path="res://Scripts/spin_bullet.gd" id="1_dymbd"]
-[ext_resource type="Texture2D" uid="uid://dkmmtgkaycuqp" path="res://icon.svg" id="1_va2hr"]
+[ext_resource type="Texture2D" uid="uid://dkmmtgkaycuqp" path="res://icon.svg" id="2_dymbd"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_dymbd"]
-radius = 64.0
+radius = 28.0
 
-[node name="spin-bullet" type="Node2D"]
-scale = Vector2(0.35, 0.35)
+[node name="spin-bullet" type="Node2D" unique_id=672872989]
+scale = Vector2(0.5, 0.5)
 script = ExtResource("1_dymbd")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("1_va2hr")
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=950207450]
+scale = Vector2(0.34375, 0.34375)
+texture = ExtResource("2_dymbd")
 
-[node name="Area2D" type="Area2D" parent="."]
+[node name="Area2D" type="Area2D" parent="." unique_id=598469913]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=423876741]
 shape = SubResource("CircleShape2D_dymbd")
