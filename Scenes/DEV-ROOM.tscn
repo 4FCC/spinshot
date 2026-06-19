@@ -1,0 +1,67 @@
+[gd_scene load_steps=9 format=3 uid="uid://cdevroomscene1"]
+
+[ext_resource type="Script" uid="uid://cdevroomscript1" path="res://Scripts/dev_room.gd" id="1_dev"]
+[ext_resource type="TileSet" uid="uid://dgrasstileset1" path="res://Scenes/grass_tileset.tres" id="2_tiles"]
+[ext_resource type="PackedScene" uid="uid://dplayerbilly01" path="res://Scenes/Player.tscn" id="3_player"]
+[ext_resource type="Texture2D" uid="uid://cikn8oirta2on" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Tree1.png" id="4_tree"]
+[ext_resource type="Texture2D" uid="uid://lavmjk3u5jl" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Decorations/Rocks/Rock1.png" id="5_rock1"]
+[ext_resource type="Texture2D" uid="uid://d2ayd2fhcxm3g" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Decorations/Rocks/Rock2.png" id="6_rock2"]
+[ext_resource type="Texture2D" uid="uid://qgxqg03sl70c" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Decorations/Bushes/Bushe1.png" id="7_bush"]
+[ext_resource type="Texture2D" uid="uid://c16e210mehrka" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Stump 1.png" id="8_stump"]
+
+[node name="DevRoom" type="Node2D"]
+script = ExtResource("1_dev")
+
+[node name="Ground" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_tiles")
+
+[node name="Decorations" type="Node2D" parent="."]
+
+[node name="Tree1" type="Sprite2D" parent="Decorations"]
+position = Vector2(220, 200)
+texture = ExtResource("4_tree")
+region_enabled = true
+region_rect = Rect2(0, 0, 192, 256)
+
+[node name="Tree2" type="Sprite2D" parent="Decorations"]
+position = Vector2(1340, 210)
+texture = ExtResource("4_tree")
+region_enabled = true
+region_rect = Rect2(0, 0, 192, 256)
+
+[node name="Tree3" type="Sprite2D" parent="Decorations"]
+position = Vector2(260, 850)
+texture = ExtResource("4_tree")
+region_enabled = true
+region_rect = Rect2(0, 0, 192, 256)
+
+[node name="Tree4" type="Sprite2D" parent="Decorations"]
+position = Vector2(1300, 830)
+texture = ExtResource("4_tree")
+region_enabled = true
+region_rect = Rect2(0, 0, 192, 256)
+
+[node name="Stump" type="Sprite2D" parent="Decorations"]
+position = Vector2(930, 240)
+texture = ExtResource("8_stump")
+
+[node name="Bush" type="Sprite2D" parent="Decorations"]
+position = Vector2(1080, 560)
+texture = ExtResource("7_bush")
+region_enabled = true
+region_rect = Rect2(0, 0, 128, 128)
+
+[node name="Rock1" type="Sprite2D" parent="Decorations"]
+position = Vector2(520, 360)
+texture = ExtResource("5_rock1")
+
+[node name="Rock2" type="Sprite2D" parent="Decorations"]
+position = Vector2(980, 760)
+texture = ExtResource("6_rock2")
+
+[node name="Rock3" type="Sprite2D" parent="Decorations"]
+position = Vector2(640, 620)
+texture = ExtResource("5_rock1")
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+position = Vector2(768, 512)

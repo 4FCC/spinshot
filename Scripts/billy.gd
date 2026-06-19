@@ -4,8 +4,7 @@ extends CharacterBody2D
 # =============================================================================
 # MÁQUINA DE ESTADOS DEL PERSONAJE
 # =============================================================================
-# Versión simplificada para la JAM (tema: GIRAR).
-# Solo conserva los estados esenciales: movimiento, esquive y recibir daño.
+# Estados esenciales: movimiento, esquive y recibir daño.
 enum State {
 	MOVE,            # Movimiento normal
 	DODGE,           # Esquive (gira sobre sí mismo e invulnerable)
@@ -17,7 +16,7 @@ var current_state: State = State.MOVE
 # =============================================================================
 # NODOS DE LA ESCENA
 # =============================================================================
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 
 # UI (HUD): barra de vida y barra/etiqueta del esquive
 @onready var health_bar: ProgressBar = $HUD/Root/HealthBar
@@ -40,6 +39,9 @@ var current_state: State = State.MOVE
 
 @export_group("Daño")
 @export var invulnerability_duration: float = 0.9
+
+@export_group("Spin-Bullet")
+@export var spin_bullet_scene: PackedScene   # Escena de la bala que orbita
 
 # =============================================================================
 # VARIABLES INTERNAS
@@ -67,6 +69,7 @@ func _ready():
 	health_bar.max_value = vida_max
 	_update_health_ui()
 	_update_dodge_ui()
+	sprite.play("idle")
 
 func _setup_timers():
 	# Timer que controla la duración del esquive
@@ -90,6 +93,16 @@ func _setup_timers():
 	add_child(damage_timer)
 
 # =============================================================================
+# ENTRADA NO PROCESADA (disparo de la Spin-Bullet)
+# =============================================================================
+func _unhandled_input(event):
+	if current_state == State.DEAD:
+		return
+	# Clic derecho: dispara la Spin-Bullet
+	if event.is_action_pressed("shoot"):
+		_shoot_spin_bullet()
+
+# =============================================================================
 # MÁQUINA DE ESTADOS PRINCIPAL
 # =============================================================================
 func _physics_process(delta):
@@ -110,12 +123,8 @@ func _physics_process(delta):
 # ESTADO: MOVIMIENTO
 # =============================================================================
 func move_state(_delta):
-	input_direction = Input.get_vector("Izquierda", "Derecha", "Arriba", "Abajo")
-	velocity = input_direction.normalized() * speed
-	move_and_slide()
-
-	if input_direction != Vector2.ZERO:
-		last_direction = input_direction.normalized()
+	_read_movement_input()
+	_update_walk_animation()
 
 	# Iniciar esquive: requiere dirección y que el cooldown haya terminado
 	if Input.is_action_just_pressed("dodge") and dodge_cooldown.is_stopped():
@@ -124,6 +133,14 @@ func move_state(_delta):
 	# Prueba rápida del estado de daño (tecla K)
 	if Input.is_action_just_pressed("test_damage"):
 		take_damage(3)
+
+func _read_movement_input():
+	"""Lee el input direccional, mueve al personaje y guarda la última dirección."""
+	input_direction = Input.get_vector("Izquierda", "Derecha", "Arriba", "Abajo")
+	velocity = input_direction.normalized() * speed
+	move_and_slide()
+	if input_direction != Vector2.ZERO:
+		last_direction = input_direction.normalized()
 
 # =============================================================================
 # ESTADO: ESQUIVE (GIRAR)
@@ -184,12 +201,8 @@ func take_damage(amount: int):
 
 func taking_damage_state(_delta):
 	# Se puede seguir moviendo mientras dura la invulnerabilidad
-	input_direction = Input.get_vector("Izquierda", "Derecha", "Arriba", "Abajo")
-	velocity = input_direction.normalized() * speed
-	move_and_slide()
-
-	if input_direction != Vector2.ZERO:
-		last_direction = input_direction.normalized()
+	_read_movement_input()
+	_update_walk_animation()
 
 	# También se puede esquivar para escapar
 	if Input.is_action_just_pressed("dodge") and dodge_cooldown.is_stopped():
@@ -208,10 +221,48 @@ func _die():
 	current_state = State.DEAD
 	velocity = Vector2.ZERO
 	sprite.modulate = Color(0.5, 0.5, 0.5)
+	sprite.play("idle")
 
 func dead_state(_delta):
 	velocity = Vector2.ZERO
 	move_and_slide()
+
+# =============================================================================
+# SPIN-BULLET
+# =============================================================================
+func _shoot_spin_bullet():
+	"""Instancia la Spin-Bullet y la pone a orbitar alrededor del jugador en la
+	dirección del mouse."""
+	if spin_bullet_scene == null:
+		return
+
+	var dir = get_global_mouse_position() - global_position
+	if dir.length() < 1.0:
+		dir = last_direction
+
+	var bullet = spin_bullet_scene.instantiate()
+	# Añadir a la raíz de la escena para que orbite en espacio de mundo
+	var host = get_tree().current_scene
+	if host == null:
+		host = get_parent()
+	host.add_child(bullet)
+
+	# setup() coloca la bala y fija el centro de giro (este jugador)
+	if bullet.has_method("setup"):
+		bullet.setup(self, dir)
+
+# =============================================================================
+# ANIMACIONES DEL PERSONAJE
+# =============================================================================
+func _update_walk_animation():
+	"""Alterna entre correr/idle y voltea el sprite según la dirección horizontal."""
+	if input_direction.x != 0.0:
+		sprite.flip_h = input_direction.x < 0.0
+
+	if velocity.length() > 1.0:
+		sprite.play("run")
+	else:
+		sprite.play("idle")
 
 # =============================================================================
 # ACTUALIZACIÓN DEL HUD
