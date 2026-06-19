@@ -14,6 +14,7 @@ script = ExtResource("1_dymbd")
 shape = SubResource("CircleShape2D_dymbd")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=510818077]
+rotation = -0.0056362557
 texture = ExtResource("1_va2hr")
 
 [node name="Label" type="Label" parent="." unique_id=895674530]
