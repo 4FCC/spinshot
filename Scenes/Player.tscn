@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://dplayerbilly01"]
+[gd_scene format=3 uid="uid://bm1uo2pxnjqa3"]
 
 [ext_resource type="Script" uid="uid://cg80n10n5s5jj" path="res://Scripts/billy.gd" id="1_billy"]
 [ext_resource type="SpriteFrames" uid="uid://dpawnframes001" path="res://Scenes/player_frames.tres" id="2_frames"]

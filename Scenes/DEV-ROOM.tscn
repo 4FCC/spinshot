@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://cdevroomscene1"]
+[gd_scene format=3 uid="uid://btj32n285qvra"]
 
 [ext_resource type="Script" uid="uid://cdevroomscript1" path="res://Scripts/dev_room.gd" id="1_dev"]
 [ext_resource type="TileSet" uid="uid://dgrasstileset1" path="res://Scenes/grass_tileset.tres" id="2_tiles"]
