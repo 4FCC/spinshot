@@ -1,30 +1,55 @@
 extends Node2D
 
-# --- Configuración exportada ---
-@export var player_path: NodePath          # Arrastra aquí el nodo del jugador
-@export var angular_speed: float = 360.0    # Grados por segundo que gira la bala
-@export var clockwise: bool = true          # true = sentido horario, false = antihorario
+# =============================================================================
+# SPIN-BULLET — Mecánica principal (tema: GIRAR)
+# =============================================================================
+# Bala que el jugador dispara y que orbita a su alrededor describiendo una
+# espiral hacia afuera hasta agotar su vida o alcanzar el radio máximo.
+#
+# Se puede inicializar de dos formas:
+#   1) Desde el editor: asignando "player_path" en el inspector.
+#   2) Desde código: llamando a setup(jugador, direccion) tras instanciarla.
 
-@export var start_radius: float = 30.0      # Radio inicial (qué tan lejos del jugador empieza)
-@export var radius_growth_speed: float = 60.0 # Cuánto crece el radio por segundo (espiral hacia afuera)
+# --- Configuración exportada ---
+@export var player_path: NodePath           # (Opcional) jugador asignado desde el editor
+@export var angular_speed: float = 360.0    # Grados por segundo que gira la bala
+@export var clockwise: bool = true          # true = horario, false = antihorario
+
+@export var start_radius: float = 30.0      # Radio inicial (distancia al jugador al nacer)
+@export var radius_growth_speed: float = 60.0 # Crecimiento del radio por segundo (espiral)
 @export var max_radius: float = 400.0       # Radio máximo antes de destruirse
 
 @export var lifetime: float = 4.0           # Tiempo de vida en segundos (0 = infinito)
 
-var _player: Node2D = null
+# --- Estado interno ---
+var player: Node2D = null
 var _angle: float = 0.0
 var _radius: float = 0.0
 var _time_alive: float = 0.0
 
 
 func _ready() -> void:
-	if player_path != NodePath(""):
-		_player = get_node(player_path) as Node2D
+	# Si no se inicializó por código, intentar resolver el jugador del editor
+	if player == null and player_path != NodePath(""):
+		player = get_node_or_null(player_path) as Node2D
 
 	_radius = start_radius
+	_angle = (global_position - _get_center()).angle()
 
-	var center := _get_center()
-	_angle = (global_position - center).angle()
+
+func setup(target: Node2D, direction: Vector2) -> void:
+	"""Inicializa la bala desde código: define el centro de giro (el jugador) y
+	la posición inicial en la dirección de disparo. Llamar DESPUÉS de añadirla
+	al árbol para que la posición global sea coherente con la escena."""
+	player = target
+	_radius = start_radius
+	_time_alive = 0.0
+
+	var dir := direction.normalized()
+	if dir == Vector2.ZERO:
+		dir = Vector2.RIGHT
+	global_position = _get_center() + dir * start_radius
+	_angle = dir.angle()
 
 
 func _process(delta: float) -> void:
@@ -43,6 +68,6 @@ func _process(delta: float) -> void:
 
 
 func _get_center() -> Vector2:
-	if _player != null:
-		return _player.global_position
-	return Vector2.ZERO
+	if player != null:
+		return player.global_position
+	return global_position
