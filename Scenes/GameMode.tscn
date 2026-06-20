@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://cgamemode00001"]
+[gd_scene format=3 uid="uid://tuuflvma6emi"]
 
 [ext_resource type="Script" uid="uid://bgamemode00001" path="res://Scripts/game_mode.gd" id="1_gm"]
 [ext_resource type="PackedScene" uid="uid://cminion000001" path="res://Scenes/Minion.tscn" id="2_minion"]
