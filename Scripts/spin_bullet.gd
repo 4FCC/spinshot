@@ -29,6 +29,7 @@ var _angle: float = 0.0
 var _radius: float = 0.0
 var _time_alive: float = 0.0
 var _can_damage: bool = false         # Gracia inicial para no dañar al instante
+var _hit_enemies: Array = []          # Enemigos ya golpeados (la bala los atraviesa)
 
 
 func _ready() -> void:
@@ -78,6 +79,14 @@ func _process(delta: float) -> void:
 func _on_body_entered(body: Node2D) -> void:
 	if not _can_damage:
 		return
+	# A los enemigos los atraviesa (los daña una vez y sigue orbitando)
+	if body.is_in_group("enemy") and body.has_method("take_damage"):
+		if body in _hit_enemies:
+			return
+		_hit_enemies.append(body)
+		body.take_damage(damage)
+		return
+	# Al jugador le hace daño y desaparece
 	if body.is_in_group("player") and body.has_method("take_damage"):
 		body.take_damage(damage)
 		queue_free()

@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://ccoin00000001"]
+
+[ext_resource type="Script" uid="uid://bcoin0000001" path="res://Scripts/coin.gd" id="1_coin"]
+[ext_resource type="Texture2D" uid="uid://cu3nxkgj343a2" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Resources/Gold/Gold Resource/Gold_Resource.png" id="2_gold"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_coin"]
+radius = 44.0
+
+[node name="Coin" type="Area2D"]
+collision_layer = 0
+collision_mask = 1
+script = ExtResource("1_coin")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.32, 0.32)
+texture = ExtResource("2_gold")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_coin")
