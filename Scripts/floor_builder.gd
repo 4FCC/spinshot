@@ -1,17 +1,17 @@
 extends Node2D
 
 # =============================================================================
-# DEV-ROOM — Sala de pruebas de mecánicas
+# FLOOR BUILDER — Genera un suelo de césped en el TileMapLayer hijo "Ground"
 # =============================================================================
-# Genera por código un suelo de césped en el TileMapLayer usando el autotile
-# del pack Tiny Swords. Pensada para probar el movimiento, el esquive y la
-# Spin-Bullet en un entorno con tiles y decoraciones.
+# Reutilizable por cualquier escena (Main, DEV-ROOM, etc.). Solo construye el
+# suelo; la lógica de juego vive en GameMode.
+
+@export var width: int = 40    # Ancho del suelo en tiles
+@export var height: int = 24   # Alto del suelo en tiles
 
 @onready var ground: TileMapLayer = $Ground
 
 const SOURCE_ID := 0
-
-# Coordenadas del atlas (rejilla 3x3 de césped del tileset)
 const TILE_TL := Vector2i(0, 0)
 const TILE_TOP := Vector2i(1, 0)
 const TILE_TR := Vector2i(2, 0)
@@ -22,15 +22,10 @@ const TILE_BL := Vector2i(0, 2)
 const TILE_BOTTOM := Vector2i(1, 2)
 const TILE_BR := Vector2i(2, 2)
 
-@export var width: int = 24    # Ancho del suelo en tiles
-@export var height: int = 16   # Alto del suelo en tiles
-
-func _ready():
+func _ready() -> void:
 	_build_floor()
 
-func _build_floor():
-	"""Rellena un rectángulo de césped: centro liso y bordes/esquinas con el
-	autotile para que parezca una isla."""
+func _build_floor() -> void:
 	for y in range(height):
 		for x in range(width):
 			ground.set_cell(Vector2i(x, y), SOURCE_ID, _tile_for(x, y))
@@ -40,7 +35,6 @@ func _tile_for(x: int, y: int) -> Vector2i:
 	var right := x == width - 1
 	var top := y == 0
 	var bottom := y == height - 1
-
 	if top and left:
 		return TILE_TL
 	if top and right:
