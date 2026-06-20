@@ -16,10 +16,14 @@ enum State {
 }
 var current_state: State = State.MOVE
 
+# Cuántos píxeles de mundo se ven verticalmente independientemente del tamaño de ventana
+const _CAMERA_TARGET_HEIGHT := 768.0
+
 # =============================================================================
 # NODOS DE LA ESCENA
 # =============================================================================
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var camera: Camera2D = $Camera2D
 
 # UI (HUD): barra de vida y barra/etiqueta del esquive
 @onready var health_bar: ProgressBar = $HUD/Root/HealthBar
@@ -31,6 +35,8 @@ var current_state: State = State.MOVE
 # PROPIEDADES CONFIGURABLES
 # =============================================================================
 @export var speed: float = 350.0
+@export var acceleration: float = 1500.0
+@export var friction: float = 1800.0
 @export var vida: int = 20
 @export var vida_max: int = 20
 
@@ -46,7 +52,7 @@ var current_state: State = State.MOVE
 @export_group("Spin-Bullet")
 @export var spin_bullet_scene: PackedScene   # Escena de la bala que orbita
 @export var bullet_damage: int = 3           # Daño de cada Spin-Bullet (mejorable)
-@export var shoot_cooldown_time: float = 0.35 # Cadencia de disparo (mejorable)
+@export var shoot_cooldown_time: float = 0.5  # Cadencia de disparo (mejorable)
 
 # =============================================================================
 # VARIABLES INTERNAS
@@ -76,6 +82,19 @@ func _ready():
 	_update_health_ui()
 	_update_dodge_ui()
 	sprite.play("idle")
+	camera.position_smoothing_enabled = true
+	camera.position_smoothing_speed = 6.0
+	_update_camera_zoom()
+	get_viewport().size_changed.connect(_update_camera_zoom)
+
+func _update_camera_zoom() -> void:
+	var vp_h := get_viewport().get_visible_rect().size.y
+	var z := vp_h / _CAMERA_TARGET_HEIGHT
+	camera.zoom = Vector2(z, z)
+
+func _process(_delta: float) -> void:
+	var mouse_offset = get_local_mouse_position() * 0.1
+	camera.offset = mouse_offset.limit_length(70.0)
 
 func _setup_timers():
 	# Timer que controla la duración del esquive
@@ -138,7 +157,7 @@ func _physics_process(delta):
 # ESTADO: MOVIMIENTO
 # =============================================================================
 func move_state(_delta):
-	_read_movement_input()
+	_read_movement_input(_delta)
 	_update_walk_animation()
 
 	# Iniciar esquive: requiere dirección y que el cooldown haya terminado
@@ -149,13 +168,15 @@ func move_state(_delta):
 	if Input.is_action_just_pressed("test_damage"):
 		take_damage(3)
 
-func _read_movement_input():
-	"""Lee el input direccional, mueve al personaje y guarda la última dirección."""
+func _read_movement_input(delta: float) -> void:
 	input_direction = Input.get_vector("Izquierda", "Derecha", "Arriba", "Abajo")
-	velocity = input_direction.normalized() * speed
-	move_and_slide()
+	var target := input_direction.normalized() * speed
 	if input_direction != Vector2.ZERO:
+		velocity = velocity.move_toward(target, acceleration * delta)
 		last_direction = input_direction.normalized()
+	else:
+		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
+	move_and_slide()
 
 # =============================================================================
 # ESTADO: ESQUIVE (GIRAR)
@@ -216,7 +237,7 @@ func take_damage(amount: int):
 
 func taking_damage_state(_delta):
 	# Se puede seguir moviendo mientras dura la invulnerabilidad
-	_read_movement_input()
+	_read_movement_input(_delta)
 	_update_walk_animation()
 
 	# También se puede esquivar para escapar

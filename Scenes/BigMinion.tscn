@@ -7,14 +7,15 @@
 [ext_resource type="SpriteFrames" uid="uid://cbigminframes1" path="res://Scenes/bigminion_frames.tres" id="5_frames"]
 
 [sub_resource type="CircleShape2D" id="body_shape"]
-radius = 36.0
+radius = 26.0
 
 [sub_resource type="CircleShape2D" id="hit_shape"]
 radius = 50.0
 
 [node name="BigMinion" type="CharacterBody2D"]
 collision_layer = 2
-collision_mask = 0
+collision_mask = 2
+stop_distance = 60.0
 script = ExtResource("1_enemy")
 max_health = 12
 contact_damage = 4

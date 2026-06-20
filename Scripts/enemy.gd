@@ -16,6 +16,7 @@ extends CharacterBody2D
 @export var move_speed: float = 120.0
 @export var attack_cooldown: float = 0.8
 @export var melee_enabled: bool = true
+@export var stop_distance: float = 50.0
 
 @export_group("Recompensa")
 @export var coin_scene: PackedScene
@@ -94,12 +95,14 @@ func _physics_process(delta: float) -> void:
 		_try_melee()
 
 func _update_ai(_delta: float) -> void:
-	"""IA por defecto: perseguir al jugador (cuerpo a cuerpo)."""
 	if player == null:
 		velocity = Vector2.ZERO
 		return
 	var to_player := player.global_position - global_position
-	velocity = to_player.normalized() * move_speed
+	if to_player.length() < stop_distance:
+		velocity = Vector2.ZERO
+	else:
+		velocity = to_player.normalized() * move_speed
 
 func _try_melee() -> void:
 	if player == null or _attack_timer > 0.0:
