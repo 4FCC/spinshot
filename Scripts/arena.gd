@@ -18,6 +18,7 @@ extends Node2D
 
 @export_group("Oleadas")
 @export var spawn_radius: float = 650.0   # Distancia a la que aparecen del jugador
+@export var wave_duration: float = 60.0   # Segundos que dura cada oleada
 @export var arena_width: int = 40         # Suelo en tiles
 @export var arena_height: int = 24
 
@@ -25,6 +26,7 @@ extends Node2D
 @onready var player: Node2D = $Player
 @onready var coins_label: Label = $UI/CoinsLabel
 @onready var wave_label: Label = $UI/WaveLabel
+@onready var timer_label: Label = $UI/TimerLabel
 @onready var info_label: Label = $UI/InfoLabel
 @onready var shop = $UI/Shop
 
@@ -42,6 +44,7 @@ const TILE_BR := Vector2i(2, 2)
 
 var wave_number: int = 0
 var wave_active: bool = false
+var time_left: float = 0.0
 var _spawn_accum: float = 0.0
 
 func _ready() -> void:
@@ -58,11 +61,20 @@ func _ready() -> void:
 	player.global_position = Vector2(arena_width, arena_height) * 64.0 * 0.5
 
 	_update_wave_label()
+	timer_label.text = ""
 	info_label.text = "Pulsa N para empezar la oleada 1"
 
 func _process(delta: float) -> void:
 	if not wave_active:
 		return
+
+	# Cuenta atrás de la oleada
+	time_left -= delta
+	_update_timer_label()
+	if time_left <= 0.0:
+		_end_wave()
+		return
+
 	_spawn_accum -= delta
 	if _spawn_accum <= 0.0:
 		_spawn_accum = _spawn_interval()
@@ -80,18 +92,23 @@ func _unhandled_input(event: InputEvent) -> void:
 func _start_wave() -> void:
 	wave_number += 1
 	wave_active = true
+	time_left = wave_duration
 	_spawn_accum = 0.0
 	_update_wave_label()
-	info_label.text = "Oleada %d en curso — pulsa M para terminar" % wave_number
+	_update_timer_label()
+	info_label.text = "Oleada %d en curso — pulsa M para terminar antes" % wave_number
 
 func _end_wave() -> void:
 	wave_active = false
+	time_left = 0.0
+	timer_label.text = ""
 	_clear_enemies()
 	info_label.text = ""
 	shop.open()
 
 func _on_shop_continue() -> void:
-	info_label.text = "Pulsa N para empezar la oleada %d" % (wave_number + 1)
+	# Al cerrar la tienda comienza automáticamente la siguiente oleada
+	_start_wave()
 
 func _stage() -> int:
 	return clampi(wave_number, 1, 3)
@@ -138,6 +155,9 @@ func _update_wave_label() -> void:
 		wave_label.text = "Oleada: -"
 	else:
 		wave_label.text = "Oleada %d  (Etapa %d)" % [wave_number, _stage()]
+
+func _update_timer_label() -> void:
+	timer_label.text = "Tiempo: %d s" % ceili(maxf(time_left, 0.0))
 
 # =============================================================================
 # SUELO

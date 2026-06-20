@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://cbigminion001"]
+[gd_scene load_steps=8 format=3 uid="uid://cbigminion001"]
 
 [ext_resource type="Script" uid="uid://benemy0000001" path="res://Scripts/enemy.gd" id="1_enemy"]
 [ext_resource type="PackedScene" uid="uid://ccoin00000001" path="res://Scenes/Coin.tscn" id="2_coin"]
 [ext_resource type="Texture2D" uid="uid://61k3ayfxasx4" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Red Units/Warrior/Warrior_Idle.png" id="3_idle"]
 [ext_resource type="Texture2D" uid="uid://c0iar62xvql40" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Red Units/Warrior/Warrior_Run.png" id="4_run"]
+[ext_resource type="SpriteFrames" uid="uid://cbigminframes1" path="res://Scenes/bigminion_frames.tres" id="5_frames"]
 
 [sub_resource type="CircleShape2D" id="body_shape"]
 radius = 36.0
@@ -27,6 +28,10 @@ run_frames = 6
 sprite_scale = 0.8
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(0.8, 0.8)
+sprite_frames = ExtResource("5_frames")
+animation = &"idle"
+autoplay = "idle"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("body_shape")

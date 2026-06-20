@@ -1,0 +1,115 @@
+[gd_resource type="SpriteFrames" load_steps=17 format=3 uid="uid://cbigminframes1"]
+
+[ext_resource type="Texture2D" uid="uid://61k3ayfxasx4" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Red Units/Warrior/Warrior_Idle.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://c0iar62xvql40" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Red Units/Warrior/Warrior_Run.png" id="2"]
+
+[sub_resource type="AtlasTexture" id="i0"]
+atlas = ExtResource("1")
+region = Rect2(0, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="i1"]
+atlas = ExtResource("1")
+region = Rect2(192, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="i2"]
+atlas = ExtResource("1")
+region = Rect2(384, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="i3"]
+atlas = ExtResource("1")
+region = Rect2(576, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="i4"]
+atlas = ExtResource("1")
+region = Rect2(768, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="i5"]
+atlas = ExtResource("1")
+region = Rect2(960, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="i6"]
+atlas = ExtResource("1")
+region = Rect2(1152, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="i7"]
+atlas = ExtResource("1")
+region = Rect2(1344, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="r0"]
+atlas = ExtResource("2")
+region = Rect2(0, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="r1"]
+atlas = ExtResource("2")
+region = Rect2(192, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="r2"]
+atlas = ExtResource("2")
+region = Rect2(384, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="r3"]
+atlas = ExtResource("2")
+region = Rect2(576, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="r4"]
+atlas = ExtResource("2")
+region = Rect2(768, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="r5"]
+atlas = ExtResource("2")
+region = Rect2(960, 0, 192, 192)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("i0")
+}, {
+"duration": 1.0,
+"texture": SubResource("i1")
+}, {
+"duration": 1.0,
+"texture": SubResource("i2")
+}, {
+"duration": 1.0,
+"texture": SubResource("i3")
+}, {
+"duration": 1.0,
+"texture": SubResource("i4")
+}, {
+"duration": 1.0,
+"texture": SubResource("i5")
+}, {
+"duration": 1.0,
+"texture": SubResource("i6")
+}, {
+"duration": 1.0,
+"texture": SubResource("i7")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("r0")
+}, {
+"duration": 1.0,
+"texture": SubResource("r1")
+}, {
+"duration": 1.0,
+"texture": SubResource("r2")
+}, {
+"duration": 1.0,
+"texture": SubResource("r3")
+}, {
+"duration": 1.0,
+"texture": SubResource("r4")
+}, {
+"duration": 1.0,
+"texture": SubResource("r5")
+}],
+"loop": true,
+"name": &"run",
+"speed": 12.0
+}]

@@ -42,7 +42,11 @@ func _ready() -> void:
 	add_to_group("enemy")
 	health = max_health
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
-	_build_frames()
+	# Usar el SpriteFrames asignado en la escena; si no hay, construirlo desde
+	# las hojas exportadas (fallback).
+	if sprite.sprite_frames == null:
+		_build_frames()
+	sprite.play("idle")
 	player = _find_player()
 
 func _find_player() -> Node2D:
@@ -57,7 +61,6 @@ func _build_frames() -> void:
 	_add_animation(frames, "idle", idle_sheet, idle_frames)
 	_add_animation(frames, "run", run_sheet, run_frames)
 	sprite.sprite_frames = frames
-	sprite.play("idle")
 
 func _add_animation(frames: SpriteFrames, anim_name: String, sheet: Texture2D, count: int) -> void:
 	if sheet == null or count <= 0:
