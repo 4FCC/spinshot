@@ -1,6 +1,9 @@
 class_name Personaje
 extends CharacterBody2D
 
+# Se emite cuando el jugador muere (lo usa el GameMode para la pantalla de muerte)
+signal died
+
 # =============================================================================
 # MÁQUINA DE ESTADOS DEL PERSONAJE
 # =============================================================================
@@ -107,9 +110,12 @@ func _setup_timers():
 func _unhandled_input(event):
 	if current_state == State.DEAD:
 		return
-	# Clic derecho: dispara la Spin-Bullet
+	# Clic derecho: Spin-Bullet con patrón normal (espiral)
 	if event.is_action_pressed("shoot"):
-		_shoot_spin_bullet()
+		_shoot_spin_bullet(0)
+	# Clic izquierdo: Spin-Bullet con patrón alterno (espiral ondulada)
+	elif event.is_action_pressed("shoot_alt"):
+		_shoot_spin_bullet(1)
 
 # =============================================================================
 # MÁQUINA DE ESTADOS PRINCIPAL
@@ -231,6 +237,7 @@ func _die():
 	velocity = Vector2.ZERO
 	sprite.modulate = Color(0.5, 0.5, 0.5)
 	sprite.play("idle")
+	died.emit()
 
 func dead_state(_delta):
 	velocity = Vector2.ZERO
@@ -239,9 +246,9 @@ func dead_state(_delta):
 # =============================================================================
 # SPIN-BULLET
 # =============================================================================
-func _shoot_spin_bullet():
+func _shoot_spin_bullet(pattern: int = 0):
 	"""Instancia la Spin-Bullet y la pone a orbitar alrededor del jugador en la
-	dirección del mouse."""
+	dirección del mouse. 'pattern' elige la trayectoria de giro (0/1)."""
 	if spin_bullet_scene == null or not shoot_cooldown.is_stopped():
 		return
 
@@ -257,9 +264,9 @@ func _shoot_spin_bullet():
 		host = get_parent()
 	host.add_child(bullet)
 
-	# setup() coloca la bala y fija el centro de giro (este jugador)
+	# setup() coloca la bala, fija el centro de giro y el patrón de trayectoria
 	if bullet.has_method("setup"):
-		bullet.setup(self, dir)
+		bullet.setup(self, dir, pattern)
 
 	shoot_cooldown.start()
 

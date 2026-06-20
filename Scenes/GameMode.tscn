@@ -1,0 +1,75 @@
+[gd_scene load_steps=12 format=3 uid="uid://cgamemode00001"]
+
+[ext_resource type="Script" uid="uid://bgamemode00001" path="res://Scripts/game_mode.gd" id="1_gm"]
+[ext_resource type="PackedScene" uid="uid://cminion000001" path="res://Scenes/Minion.tscn" id="2_minion"]
+[ext_resource type="PackedScene" uid="uid://cbigminion001" path="res://Scenes/BigMinion.tscn" id="3_big"]
+[ext_resource type="PackedScene" uid="uid://cbulletmin0001" path="res://Scenes/BulletMinion.tscn" id="4_bm"]
+[ext_resource type="Script" uid="uid://bshop00000001" path="res://Scripts/shop.gd" id="5_shop"]
+[ext_resource type="Texture2D" uid="uid://v28qnfjec263" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_01.png" id="6_i1"]
+[ext_resource type="Texture2D" uid="uid://ddkjngjfjrj4u" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_02.png" id="7_i2"]
+[ext_resource type="Texture2D" uid="uid://dyon1tg7fya3" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_03.png" id="8_i3"]
+[ext_resource type="Texture2D" uid="uid://dp0w2tvfa748v" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_04.png" id="9_i4"]
+[ext_resource type="Texture2D" uid="uid://ddpcdxqbytdmu" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_05.png" id="10_i5"]
+[ext_resource type="Texture2D" uid="uid://cksvlxug1jkw0" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_06.png" id="11_i6"]
+
+[node name="GameMode" type="Node"]
+script = ExtResource("1_gm")
+minion_scene = ExtResource("2_minion")
+bigminion_scene = ExtResource("3_big")
+bulletminion_scene = ExtResource("4_bm")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="CoinsLabel" type="Label" parent="UI"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -260.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 52.0
+horizontal_alignment = 2
+text = "Monedas: 0"
+
+[node name="WaveLabel" type="Label" parent="UI"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -260.0
+offset_top = 56.0
+offset_right = -24.0
+offset_bottom = 84.0
+horizontal_alignment = 2
+text = "Oleada: -"
+
+[node name="TimerLabel" type="Label" parent="UI"]
+anchor_right = 1.0
+offset_top = 18.0
+offset_bottom = 58.0
+theme_override_font_sizes/font_size = 32
+horizontal_alignment = 1
+text = ""
+
+[node name="InfoLabel" type="Label" parent="UI"]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -64.0
+offset_bottom = -28.0
+horizontal_alignment = 1
+text = ""
+
+[node name="Shop" type="Panel" parent="UI"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -240.0
+offset_right = 260.0
+offset_bottom = 240.0
+script = ExtResource("5_shop")
+icon_health = ExtResource("6_i1")
+icon_damage = ExtResource("7_i2")
+icon_speed = ExtResource("8_i3")
+icon_firerate = ExtResource("9_i4")
+icon_extra1 = ExtResource("10_i5")
+icon_extra2 = ExtResource("11_i6")
