@@ -42,6 +42,8 @@ var current_state: State = State.MOVE
 
 @export_group("Spin-Bullet")
 @export var spin_bullet_scene: PackedScene   # Escena de la bala que orbita
+@export var bullet_damage: int = 3           # Daño de cada Spin-Bullet (mejorable)
+@export var shoot_cooldown_time: float = 0.35 # Cadencia de disparo (mejorable)
 
 # =============================================================================
 # VARIABLES INTERNAS
@@ -58,6 +60,7 @@ var dodge_elapsed: float = 0.0
 var dodge_timer: Timer        # Duración del esquive
 var dodge_cooldown: Timer     # Enfriamiento del esquive
 var damage_timer: Timer       # Invulnerabilidad tras recibir daño
+var shoot_cooldown: Timer     # Cadencia entre Spin-Bullets
 
 # =============================================================================
 # INICIALIZACIÓN
@@ -91,6 +94,12 @@ func _setup_timers():
 	damage_timer.one_shot = true
 	damage_timer.timeout.connect(_on_damage_timer_timeout)
 	add_child(damage_timer)
+
+	# Timer de la cadencia de disparo
+	shoot_cooldown = Timer.new()
+	shoot_cooldown.wait_time = shoot_cooldown_time
+	shoot_cooldown.one_shot = true
+	add_child(shoot_cooldown)
 
 # =============================================================================
 # ENTRADA NO PROCESADA (disparo de la Spin-Bullet)
@@ -233,7 +242,7 @@ func dead_state(_delta):
 func _shoot_spin_bullet():
 	"""Instancia la Spin-Bullet y la pone a orbitar alrededor del jugador en la
 	dirección del mouse."""
-	if spin_bullet_scene == null:
+	if spin_bullet_scene == null or not shoot_cooldown.is_stopped():
 		return
 
 	var dir = get_global_mouse_position() - global_position
@@ -241,6 +250,7 @@ func _shoot_spin_bullet():
 		dir = last_direction
 
 	var bullet = spin_bullet_scene.instantiate()
+	bullet.damage = bullet_damage
 	# Añadir a la raíz de la escena para que orbite en espacio de mundo
 	var host = get_tree().current_scene
 	if host == null:
@@ -250,6 +260,8 @@ func _shoot_spin_bullet():
 	# setup() coloca la bala y fija el centro de giro (este jugador)
 	if bullet.has_method("setup"):
 		bullet.setup(self, dir)
+
+	shoot_cooldown.start()
 
 # =============================================================================
 # ANIMACIONES DEL PERSONAJE
@@ -286,3 +298,24 @@ func _update_dodge_ui():
 		dodge_bar.value = ratio * dodge_bar.max_value
 		dodge_label.text = "Esquive: %.1fs" % dodge_cooldown.time_left
 		dodge_bar.modulate = Color(1.0, 0.7, 0.3)
+
+# =============================================================================
+# MEJORAS (usadas por la tienda)
+# =============================================================================
+func upgrade_max_health(amount: int) -> void:
+	vida_max += amount
+	vida = clamp(vida + amount, 0, vida_max)  # también cura
+	health_bar.max_value = vida_max
+	_update_health_ui()
+
+func upgrade_bullet_damage(amount: int) -> void:
+	bullet_damage += amount
+
+func upgrade_speed(amount: float) -> void:
+	speed += amount
+
+func upgrade_fire_rate(factor: float) -> void:
+	"""Mejora la cadencia reduciendo el cooldown entre disparos."""
+	shoot_cooldown_time = maxf(0.05, shoot_cooldown_time * factor)
+	if shoot_cooldown != null:
+		shoot_cooldown.wait_time = shoot_cooldown_time

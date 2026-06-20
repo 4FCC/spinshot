@@ -1,8 +1,71 @@
-[gd_scene load_steps=2 format=3 uid="uid://b1spinshotmain0"]
+[gd_scene load_steps=12 format=3 uid="uid://b1spinshotmain0"]
 
-[ext_resource type="PackedScene" uid="uid://dplayerbilly01" path="res://Scenes/Player.tscn" id="1_player"]
+[ext_resource type="Script" uid="uid://barena0000001" path="res://Scripts/arena.gd" id="1_arena"]
+[ext_resource type="TileSet" uid="uid://juga8rjk4vmm" path="res://Scenes/grass_tileset.tres" id="2_tiles"]
+[ext_resource type="PackedScene" uid="uid://bm1uo2pxnjqa3" path="res://Scenes/Player.tscn" id="3_player"]
+[ext_resource type="PackedScene" uid="uid://cminion000001" path="res://Scenes/Minion.tscn" id="4_minion"]
+[ext_resource type="PackedScene" uid="uid://cbigminion001" path="res://Scenes/BigMinion.tscn" id="5_big"]
+[ext_resource type="PackedScene" uid="uid://cbulletmin0001" path="res://Scenes/BulletMinion.tscn" id="6_bm"]
+[ext_resource type="Script" uid="uid://bshop00000001" path="res://Scripts/shop.gd" id="7_shop"]
+[ext_resource type="Texture2D" uid="uid://v28qnfjec263" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_01.png" id="8_i1"]
+[ext_resource type="Texture2D" uid="uid://ddkjngjfjrj4u" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_02.png" id="9_i2"]
+[ext_resource type="Texture2D" uid="uid://dyon1tg7fya3" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_03.png" id="10_i3"]
+[ext_resource type="Texture2D" uid="uid://dp0w2tvfa748v" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_04.png" id="11_i4"]
 
 [node name="Main" type="Node2D"]
+script = ExtResource("1_arena")
+minion_scene = ExtResource("4_minion")
+bigminion_scene = ExtResource("5_big")
+bulletminion_scene = ExtResource("6_bm")
 
-[node name="Player" parent="." instance=ExtResource("1_player")]
-position = Vector2(576, 324)
+[node name="Ground" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_tiles")
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+position = Vector2(1280, 768)
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="CoinsLabel" type="Label" parent="UI"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -260.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 52.0
+horizontal_alignment = 2
+text = "Monedas: 0"
+
+[node name="WaveLabel" type="Label" parent="UI"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -260.0
+offset_top = 56.0
+offset_right = -24.0
+offset_bottom = 84.0
+horizontal_alignment = 2
+text = "Oleada: -"
+
+[node name="InfoLabel" type="Label" parent="UI"]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -64.0
+offset_bottom = -28.0
+horizontal_alignment = 1
+text = ""
+
+[node name="Shop" type="Panel" parent="UI"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -240.0
+offset_top = -220.0
+offset_right = 240.0
+offset_bottom = 220.0
+script = ExtResource("7_shop")
+icon_health = ExtResource("8_i1")
+icon_damage = ExtResource("9_i2")
+icon_speed = ExtResource("10_i3")
+icon_firerate = ExtResource("11_i4")
