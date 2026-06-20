@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://btj32n285qvra"]
 
 [ext_resource type="Script" uid="uid://cdevroomscript1" path="res://Scripts/dev_room.gd" id="1_dev"]
-[ext_resource type="TileSet" uid="uid://dgrasstileset1" path="res://Scenes/grass_tileset.tres" id="2_tiles"]
-[ext_resource type="PackedScene" uid="uid://dplayerbilly01" path="res://Scenes/Player.tscn" id="3_player"]
+[ext_resource type="TileSet" uid="uid://juga8rjk4vmm" path="res://Scenes/grass_tileset.tres" id="2_tiles"]
+[ext_resource type="PackedScene" uid="uid://bm1uo2pxnjqa3" path="res://Scenes/Player.tscn" id="3_player"]
 [ext_resource type="Texture2D" uid="uid://cikn8oirta2on" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Tree1.png" id="4_tree"]
 [ext_resource type="Texture2D" uid="uid://lavmjk3u5jl" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Decorations/Rocks/Rock1.png" id="5_rock1"]
 [ext_resource type="Texture2D" uid="uid://d2ayd2fhcxm3g" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Decorations/Rocks/Rock2.png" id="6_rock2"]

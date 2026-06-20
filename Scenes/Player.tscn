@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bm1uo2pxnjqa3"]
 
 [ext_resource type="Script" uid="uid://cg80n10n5s5jj" path="res://Scripts/billy.gd" id="1_billy"]
-[ext_resource type="SpriteFrames" uid="uid://dpawnframes001" path="res://Scenes/player_frames.tres" id="2_frames"]
+[ext_resource type="SpriteFrames" uid="uid://bcojp2o2gqra3" path="res://Scenes/player_frames.tres" id="2_frames"]
 [ext_resource type="PackedScene" uid="uid://cypb1hwhhix31" path="res://Scenes/spin-bullet.tscn" id="3_bullet"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
@@ -70,7 +70,8 @@ text = "Esquive: LISTO"
 [node name="Hint" type="Label" parent="HUD/Root"]
 layout_mode = 0
 offset_top = 88.0
-offset_right = 360.0
-offset_bottom = 140.0
+offset_right = 480.0
+offset_bottom = 168.0
 theme_override_colors/font_color = Color(0.85, 0.82, 0.75, 1)
-text = "WASD/Flechas: mover   Espacio: esquivar   Clic der.: Spin-Bullet   K: daño"
+autowrap_mode = 2
+text = "WASD/Flechas: mover   Espacio: esquivar   Clic der.: Spin-Bullet   N: iniciar oleada   M: terminar oleada   K: daño"
