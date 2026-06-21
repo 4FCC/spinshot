@@ -132,6 +132,17 @@ func take_damage(amount: int) -> void:
 	if health <= 0:
 		_die()
 
+func heal(amount: int) -> void:
+	"""Regeneración aplicada por el enemigo de Apoyo a los aliados cercanos."""
+	if _dead:
+		return
+	health = min(health + amount, max_health)
+	sprite.modulate = Color(0.5, 1.0, 0.5)
+	var timer := get_tree().create_timer(0.12)
+	timer.timeout.connect(func():
+		if is_instance_valid(self) and not _dead:
+			sprite.modulate = Color.WHITE)
+
 func _flash() -> void:
 	sprite.modulate = Color(1, 0.4, 0.4)
 	var timer := get_tree().create_timer(0.1)

@@ -20,7 +20,11 @@ Se usan los assets del pack *Tiny Swords (Free Pack)*.
 - **Clic izquierdo**: Spin-Bullet con giro **ondulado** (trayectoria distinta)
 - **N**: iniciar una oleada
 - **M**: terminar la oleada actual (abre la tienda)
+- **B**: invocar al jefe (tecla de depuración para pruebas)
 - **K**: recibir daño (prueba)
+
+Al recibir daño el jugador tiene una breve **invulnerabilidad** durante la cual
+no recibe más daño y **atraviesa a los enemigos** (normalmente choca con ellos).
 
 ## Bucle de juego
 
@@ -36,21 +40,32 @@ Se usan los assets del pack *Tiny Swords (Free Pack)*.
 Todo el bucle (oleadas, tienda y pantallas) funciona tanto en **Main** como en
 **DEV-ROOM**, porque vive en una escena reutilizable `GameMode.tscn`.
 
-### Etapas (oleadas)
+### Oleadas
 
-- **Etapa 1** — solo **Minions** (frecuentes).
-- **Etapa 2** — solo **BigMinions** (menos frecuentes).
-- **Etapa 3** — solo **BulletMinions** (aún menos frecuentes).
+Hay **10 oleadas** definidas en una tabla de datos (`game_mode.gd` →
+`_build_waves`). Cada oleada mezcla varios tipos de enemigo con pesos y van
+subiendo de dificultad. Al terminar la oleada 10 aparece el **jefe final**.
+Detalles y cómo editarlas en [`docs/oleadas.md`](docs/oleadas.md).
 
 ## Enemigos
 
 - **Minion** (Red Pawn): básico, cuerpo a cuerpo. Vida 6, daño 2.
-- **BigMinion** (Red Warrior): más resistente (vida 12, daño 4). Para a 60 px del jugador.
-- **BulletMinion** (Red Archer): no ataca cuerpo a cuerpo; mantiene la distancia y
-  dispara un **proyectil teledirigido**. Vida 12, daño 2 por proyectil.
+- **BigMinion** (Red Warrior): más resistente (vida 12, daño 4). Para cerca del jugador.
+- **BulletMinion** (Red Archer): mantiene la distancia y dispara un **proyectil teledirigido**.
+- **Cargador** (Red Lancer): persigue y hace **cargas rápidas** en línea recta (telegrafiadas).
+- **Apoyo** (Red Monk): no ataca; **regenera** a los enemigos cercanos y se esconde detrás de ellos.
+- **Jefe final** (Black Warrior): ver más abajo.
 
 Los enemigos se empujan entre sí para no apilarse, formando un muro peligroso
 cuando llegan en masa.
+
+## Jefe final
+
+Máquina de estados (Follow / Attack / Teleport / Spawn / Ranged / Death) con
+**3 fases según su vida**: persigue y golpea, se teletransporta, invoca minions
+y lanza voleas radiales. Aparece al terminar la oleada 10 o con la tecla **B**.
+Su código está en la carpeta `mecanicas de jefe/`. Detalles y los assets que
+faltarían para pulirlo en [`docs/jefe.md`](docs/jefe.md).
 
 ## Tienda
 
@@ -71,7 +86,10 @@ de la resolución.
 - `Scripts/spin_bullet.gd`: bala orbital; desaparece al impactar. `pattern_mode` define el giro.
 - `Scripts/enemy.gd`: enemigo base cuerpo a cuerpo (clase `Enemy`); colisión entre enemigos.
 - `Scripts/bullet_minion.gd`: enemigo a distancia (extiende `Enemy`).
+- `Scripts/charger_minion.gd`: enemigo Cargador con embestidas (extiende `Enemy`).
+- `Scripts/support_minion.gd`: enemigo de Apoyo que cura aliados (extiende `Enemy`).
 - `Scripts/homing_bullet.gd`: proyectil teledirigido del BulletMinion.
+- `mecanicas de jefe/boss.gd` + `boss_bullet.gd`: jefe final y su proyectil.
 - `Scripts/coin.gd`: moneda recogible.
 - `Scripts/game.gd`: singleton (autoload `Game`) con la economía.
 - `Scripts/game_mode.gd`: bucle de juego reutilizable (oleadas, tienda, pantallas).
@@ -92,3 +110,9 @@ Sala de pruebas de **30×30 tiles** (1920×1920 px). Incluye:
 - El sistema completo de oleadas, tienda y pantallas (mismo `GameMode` que Main).
 
 Ábrela y pulsa **F6** para ejecutarla de forma aislada.
+
+## Documentación
+
+- [`docs/oleadas.md`](docs/oleadas.md): sistema de oleadas y cómo modificarlas/añadirlas.
+- [`docs/items.md`](docs/items.md): mejoras de la tienda y cómo agregar nuevas.
+- [`docs/jefe.md`](docs/jefe.md): diseño del jefe y assets que faltarían.

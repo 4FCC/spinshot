@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bfloorbuilder1" path="res://Scripts/floor_builder.gd" id="1_floor"]
 [ext_resource type="TileSet" uid="uid://juga8rjk4vmm" path="res://Scenes/grass_tileset.tres" id="2_tiles"]
 [ext_resource type="PackedScene" uid="uid://bm1uo2pxnjqa3" path="res://Scenes/Player.tscn" id="3_player"]
-[ext_resource type="PackedScene" uid="uid://cgamemode00001" path="res://Scenes/GameMode.tscn" id="4_gm"]
+[ext_resource type="PackedScene" uid="uid://tuuflvma6emi" path="res://Scenes/GameMode.tscn" id="4_gm"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_floor")
