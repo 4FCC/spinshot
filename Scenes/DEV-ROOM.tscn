@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://d2ayd2fhcxm3g" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Decorations/Rocks/Rock2.png" id="6_rock2"]
 [ext_resource type="Texture2D" uid="uid://qgxqg03sl70c" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Decorations/Bushes/Bushe1.png" id="7_bush"]
 [ext_resource type="Texture2D" uid="uid://c16e210mehrka" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Stump 1.png" id="8_stump"]
-[ext_resource type="PackedScene" uid="uid://cgamemode00001" path="res://Scenes/GameMode.tscn" id="9_gm"]
+[ext_resource type="PackedScene" uid="uid://tuuflvma6emi" path="res://Scenes/GameMode.tscn" id="9_gm"]
 [ext_resource type="Script" uid="uid://bbordertrees1" path="res://Scripts/border_trees.gd" id="10_bt"]
 
 [sub_resource type="CircleShape2D" id="cs_tree"]

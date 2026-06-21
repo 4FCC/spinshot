@@ -14,11 +14,16 @@ extends Node
 @export var minion_scene: PackedScene
 @export var bigminion_scene: PackedScene
 @export var bulletminion_scene: PackedScene
+@export var charger_scene: PackedScene
+@export var support_scene: PackedScene
+
+@export_group("Jefe")
+@export var boss_scene: PackedScene        # Aparece al terminar la última oleada
 
 @export_group("Oleadas")
 @export var spawn_radius: float = 650.0   # Distancia a la que aparecen del jugador
 @export var wave_duration: float = 60.0   # Segundos que dura cada oleada
-@export var total_waves: int = 3          # Al completar esta oleada -> victoria
+@export var total_waves: int = 10         # Tras la última oleada aparece el jefe
 
 @onready var ui: CanvasLayer = $UI
 @onready var coins_label: Label = $UI/CoinsLabel
@@ -32,6 +37,8 @@ var wave_number: int = 0
 var wave_active: bool = false
 var time_left: float = 0.0
 var _spawn_accum: float = 0.0
+var _waves: Array = []          # Tabla de oleadas (ver _build_waves)
+var _boss: Node = null          # Instancia del jefe (si está vivo)
 
 # Pantallas
 var _start_screen: Control = null
@@ -45,6 +52,7 @@ func _ready() -> void:
 	# para que las pantallas y sus botones funcionen.
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
+	_build_waves()
 	Game.reset()
 	Game.coins_changed.connect(_on_coins_changed)
 	_on_coins_changed(Game.coins)
@@ -93,6 +101,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_start_wave()
 	elif event.is_action_pressed("end_wave") and wave_active:
 		_end_wave()
+	elif event.is_action_pressed("spawn_boss"):
+		# Tecla de depuración: invoca el jefe manualmente para pruebas
+		_spawn_boss()
 
 # =============================================================================
 # OLEADAS
@@ -113,9 +124,9 @@ func _end_wave() -> void:
 	info_label.text = ""
 	_clear_enemies()
 
-	# Tras la última oleada: victoria. Si no, tienda.
+	# Tras la última oleada aparece el jefe. Si no, se abre la tienda.
 	if wave_number >= total_waves:
-		_show_victory()
+		_spawn_boss()
 	else:
 		shop.open()
 
@@ -123,29 +134,51 @@ func _on_shop_continue() -> void:
 	# Al cerrar la tienda comienza automáticamente la siguiente oleada
 	_start_wave()
 
-func _stage() -> int:
-	return clampi(wave_number, 1, 3)
+# =============================================================================
+# TABLA DE OLEADAS
+# =============================================================================
+# Cada oleada define su intervalo de aparición y un "pool" de tipos de enemigo
+# con pesos: [escena, peso]. El spawner elige al azar según esos pesos. Para
+# modificar o añadir oleadas, edita _build_waves() (ver docs/oleadas.md).
+func _build_waves() -> void:
+	_waves = [
+		{"interval": 0.8, "pool": [[minion_scene, 1]]},
+		{"interval": 0.8, "pool": [[minion_scene, 3], [charger_scene, 1]]},
+		{"interval": 0.9, "pool": [[minion_scene, 2], [bigminion_scene, 1]]},
+		{"interval": 0.9, "pool": [[minion_scene, 2], [charger_scene, 2]]},
+		{"interval": 1.0, "pool": [[bigminion_scene, 2], [bulletminion_scene, 1]]},
+		{"interval": 0.9, "pool": [[minion_scene, 2], [charger_scene, 2], [support_scene, 1]]},
+		{"interval": 1.0, "pool": [[bulletminion_scene, 2], [bigminion_scene, 1], [support_scene, 1]]},
+		{"interval": 0.9, "pool": [[charger_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 1]]},
+		{"interval": 0.9, "pool": [[minion_scene, 2], [charger_scene, 2], [bulletminion_scene, 1], [bigminion_scene, 1], [support_scene, 1]]},
+		{"interval": 0.8, "pool": [[minion_scene, 2], [charger_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 2], [support_scene, 1]]},
+	]
 
 func _spawn_interval() -> float:
-	match _stage():
-		1:
-			return 0.7    # Minions: frecuentes
-		2:
-			return 1.6    # BigMinions: menos frecuentes
-		_:
-			return 2.6    # BulletMinions: aún menos frecuentes
+	var idx := clampi(wave_number - 1, 0, _waves.size() - 1)
+	return _waves[idx].get("interval", 1.0)
 
-func _current_enemy_scene() -> PackedScene:
-	match _stage():
-		1:
-			return minion_scene
-		2:
-			return bigminion_scene
-		_:
-			return bulletminion_scene
+func _pick_enemy_scene() -> PackedScene:
+	"""Elige un tipo de enemigo de la oleada actual por peso (ignora nulos)."""
+	var idx := clampi(wave_number - 1, 0, _waves.size() - 1)
+	var pool: Array = _waves[idx].get("pool", [])
+	var total := 0
+	for entry in pool:
+		if entry[0] != null:
+			total += int(entry[1])
+	if total <= 0:
+		return minion_scene
+	var roll := randi() % total
+	for entry in pool:
+		if entry[0] == null:
+			continue
+		roll -= int(entry[1])
+		if roll < 0:
+			return entry[0]
+	return minion_scene
 
 func _spawn_enemy() -> void:
-	var scene := _current_enemy_scene()
+	var scene := _pick_enemy_scene()
 	if scene == null:
 		return
 	if player == null or not is_instance_valid(player):
@@ -161,8 +194,42 @@ func _spawn_enemy() -> void:
 	enemy.global_position = player.global_position + Vector2(cos(angle), sin(angle)) * spawn_radius
 
 func _clear_enemies() -> void:
+	# Limpia los minions de la oleada, pero NO al jefe.
 	for enemy in get_tree().get_nodes_in_group("enemy"):
+		if enemy.is_in_group("boss"):
+			continue
 		enemy.queue_free()
+
+# =============================================================================
+# JEFE
+# =============================================================================
+func _spawn_boss() -> void:
+	if _boss != null and is_instance_valid(_boss):
+		return   # ya hay un jefe en juego
+	if boss_scene == null:
+		_show_victory()   # sin jefe asignado: victoria directa
+		return
+	if player == null or not is_instance_valid(player):
+		player = _find_player()
+
+	var boss = boss_scene.instantiate()
+	var host := get_tree().current_scene
+	if host == null:
+		host = get_parent()
+	host.add_child(boss)
+	if player != null:
+		boss.global_position = player.global_position + Vector2.RIGHT.rotated(randf() * TAU) * 480.0
+	if boss.has_signal("died"):
+		boss.died.connect(_on_boss_defeated)
+	_boss = boss
+
+	wave_active = false
+	timer_label.text = ""
+	info_label.text = "¡JEFE FINAL!"
+
+func _on_boss_defeated() -> void:
+	_boss = null
+	_show_victory()
 
 # =============================================================================
 # PANTALLAS (inicio / victoria / muerte)
@@ -262,7 +329,7 @@ func _update_wave_label() -> void:
 	if wave_number == 0:
 		wave_label.text = "Oleada: -"
 	else:
-		wave_label.text = "Oleada %d / %d  (Etapa %d)" % [wave_number, total_waves, _stage()]
+		wave_label.text = "Oleada %d / %d" % [wave_number, total_waves]
 
 func _update_timer_label() -> void:
 	timer_label.text = "Tiempo: %d s" % ceili(maxf(time_left, 0.0))

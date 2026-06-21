@@ -140,6 +140,10 @@ func _unhandled_input(event):
 # MÁQUINA DE ESTADOS PRINCIPAL
 # =============================================================================
 func _physics_process(delta):
+	# El jugador choca con los enemigos (capa 2) normalmente, pero los ATRAVIESA
+	# mientras es invulnerable (tras recibir daño o durante el esquive).
+	set_collision_mask_value(2, not is_invulnerable)
+
 	match current_state:
 		State.MOVE:
 			move_state(delta)

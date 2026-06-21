@@ -11,12 +11,18 @@
 [ext_resource type="Texture2D" uid="uid://dp0w2tvfa748v" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_04.png" id="9_i4"]
 [ext_resource type="Texture2D" uid="uid://ddpcdxqbytdmu" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_05.png" id="10_i5"]
 [ext_resource type="Texture2D" uid="uid://cksvlxug1jkw0" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_06.png" id="11_i6"]
+[ext_resource type="PackedScene" uid="uid://cchargersc0001" path="res://Scenes/ChargerMinion.tscn" id="12_ch"]
+[ext_resource type="PackedScene" uid="uid://csupportsc0001" path="res://Scenes/SupportMinion.tscn" id="13_su"]
+[ext_resource type="PackedScene" uid="uid://cboss000000001" path="res://mecanicas de jefe/Boss.tscn" id="14_boss"]
 
 [node name="GameMode" type="Node"]
 script = ExtResource("1_gm")
 minion_scene = ExtResource("2_minion")
 bigminion_scene = ExtResource("3_big")
 bulletminion_scene = ExtResource("4_bm")
+charger_scene = ExtResource("12_ch")
+support_scene = ExtResource("13_su")
+boss_scene = ExtResource("14_boss")
 
 [node name="UI" type="CanvasLayer" parent="."]
 

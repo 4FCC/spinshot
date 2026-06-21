@@ -1,0 +1,62 @@
+[gd_scene load_steps=9 format=3 uid="uid://cboss000000001"]
+
+[ext_resource type="Script" uid="uid://bboss00000001" path="res://mecanicas de jefe/boss.gd" id="1_boss"]
+[ext_resource type="Texture2D" uid="uid://b0dcgjmedsplm" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Idle.png" id="2_idle"]
+[ext_resource type="Texture2D" uid="uid://i3a8t10sj4ga" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Run.png" id="3_run"]
+[ext_resource type="PackedScene" uid="uid://ccoin00000001" path="res://Scenes/Coin.tscn" id="4_coin"]
+[ext_resource type="PackedScene" uid="uid://cminion000001" path="res://Scenes/Minion.tscn" id="5_minion"]
+[ext_resource type="PackedScene" uid="uid://cbossbullet001" path="res://mecanicas de jefe/BossBullet.tscn" id="6_bullet"]
+
+[sub_resource type="CircleShape2D" id="body_shape"]
+radius = 46.0
+
+[sub_resource type="CircleShape2D" id="hit_shape"]
+radius = 64.0
+
+[node name="Boss" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 2
+script = ExtResource("1_boss")
+coin_scene = ExtResource("4_coin")
+minion_scene = ExtResource("5_minion")
+bullet_scene = ExtResource("6_bullet")
+idle_sheet = ExtResource("2_idle")
+run_sheet = ExtResource("3_run")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(1.6, 1.6)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("body_shape")
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("hit_shape")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="BossName" type="Label" parent="UI"]
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -92.0
+offset_right = 300.0
+offset_bottom = -64.0
+horizontal_alignment = 1
+text = "JEFE FINAL"
+
+[node name="BossBar" type="ProgressBar" parent="UI"]
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -60.0
+offset_right = 300.0
+offset_bottom = -32.0
+show_percentage = false

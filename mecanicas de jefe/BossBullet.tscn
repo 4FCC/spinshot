@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://cbossbullet001"]
+
+[ext_resource type="Script" uid="uid://bbossbullet001" path="res://mecanicas de jefe/boss_bullet.gd" id="1_bb"]
+[ext_resource type="Texture2D" uid="uid://b2vahefxaejhj" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Red Units/Archer/Arrow.png" id="2_arrow"]
+
+[sub_resource type="CircleShape2D" id="bb_shape"]
+radius = 14.0
+
+[node name="BossBullet" type="Area2D"]
+collision_layer = 0
+collision_mask = 1
+script = ExtResource("1_bb")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("2_arrow")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("bb_shape")
