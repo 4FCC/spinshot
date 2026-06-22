@@ -56,9 +56,20 @@ La diferencia es el modo: Main juega solo (auto), DEV-ROOM es manual + depuraci�
 
 ## Inventario
 
-Se abre con **ESC** (o durante la tienda). Muestra en un panel oscuro los ítems
-comprados con su sprite y cantidad; al pasar el cursor por encima aparece un
-**tooltip** con nombre, descripción, efectos y nivel/cantidad.
+Se abre con **ESC** (o durante la tienda). Muestra en un panel de madera los
+ítems comprados con su **sprite definitivo** y cantidad/nivel; al pasar el cursor
+por encima aparece un **tooltip** con nombre, descripción, efectos y nivel.
+Al abrirlo (igual que en las pantallas de inicio/muerte/victoria) se **ocultan
+temporalmente** la barra de vida, la de esquive y los textos de info/monedas
+para que la interfaz quede limpia.
+
+## Interfaz / assets
+
+- Los **ítems de la tienda e inventario** usan los sprites de `Items assets/`
+  (un .png por ID de objeto).
+- La interfaz (tienda, inventario, pantallas, barras de vida/esquive) comparte
+  un estilo **madera/dorado** centralizado en `Scripts/ui_theme.gd`
+  (`UiTheme`), acorde al kit `UI assets/MediavelFree.png`.
 
 ## Herramientas de depuración (solo DEV-ROOM)
 
