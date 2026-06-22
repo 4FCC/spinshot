@@ -14,6 +14,11 @@
 [ext_resource type="PackedScene" uid="uid://cchargersc0001" path="res://Scenes/ChargerMinion.tscn" id="12_ch"]
 [ext_resource type="PackedScene" uid="uid://csupportsc0001" path="res://Scenes/SupportMinion.tscn" id="13_su"]
 [ext_resource type="PackedScene" uid="uid://cboss000000001" path="res://mecanicas de jefe/Boss.tscn" id="14_boss"]
+[ext_resource type="Texture2D" uid="uid://captqmb2csmlx" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_07.png" id="15_i7"]
+[ext_resource type="Texture2D" uid="uid://bpsxcl3fqoxkl" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_08.png" id="16_i8"]
+[ext_resource type="Texture2D" uid="uid://pkxstcvvj0m1" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_09.png" id="17_i9"]
+[ext_resource type="Texture2D" uid="uid://odr52ubib2hv" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_10.png" id="18_i10"]
+[ext_resource type="Texture2D" uid="uid://y6sfoqi7njwp" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/UI Elements/UI Elements/Icons/Icon_11.png" id="19_i11"]
 
 [node name="GameMode" type="Node"]
 script = ExtResource("1_gm")
@@ -79,3 +84,8 @@ icon_speed = ExtResource("8_i3")
 icon_firerate = ExtResource("9_i4")
 icon_extra1 = ExtResource("10_i5")
 icon_extra2 = ExtResource("11_i6")
+icon_coinheal = ExtResource("15_i7")
+icon_bounce = ExtResource("16_i8")
+icon_split = ExtResource("17_i9")
+icon_lethal = ExtResource("18_i10")
+icon_autododge = ExtResource("19_i11")

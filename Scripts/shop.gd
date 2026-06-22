@@ -15,6 +15,11 @@ signal continue_pressed
 @export var icon_firerate: Texture2D
 @export var icon_extra1: Texture2D
 @export var icon_extra2: Texture2D
+@export var icon_coinheal: Texture2D
+@export var icon_bounce: Texture2D
+@export var icon_split: Texture2D
+@export var icon_lethal: Texture2D
+@export var icon_autododge: Texture2D
 
 @export var slots: int = 4          # Cuántas opciones se muestran a la vez
 @export var reroll_cost: int = 3    # Coste de la tirada de dados
@@ -47,6 +52,17 @@ func _build_pool() -> void:
 			"apply": func(p): p.upgrade_speed(40.0)},
 		{"name": "Cadencia de disparo +15%", "cost": 7, "icon": icon_firerate,
 			"apply": func(p): p.upgrade_fire_rate(0.85)},
+		# --- Ítems con habilidad especial ---
+		{"name": "Robo de vida al recoger moneda (máx 3)", "cost": 10, "icon": icon_coinheal,
+			"apply": func(p): p.add_coin_heal()},
+		{"name": "Rebote ofensivo: +1 SpinShot (máx 3)", "cost": 15, "icon": icon_bounce,
+			"apply": func(p): p.add_bounce()},
+		{"name": "División de proyectil (única)", "cost": 18, "icon": icon_split,
+			"apply": func(p): p.enable_split()},
+		{"name": "Giro letal: +1% muerte al girar", "cost": 6, "icon": icon_lethal,
+			"apply": func(p): p.add_lethal()},
+		{"name": "Esquiva automática +25% (máx 3)", "cost": 12, "icon": icon_autododge,
+			"apply": func(p): p.add_autododge()},
 	]
 
 func _build_ui() -> void:

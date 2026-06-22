@@ -34,8 +34,9 @@ no recibe más daño y **atraviesa a los enemigos** (normalmente choca con ellos
 4. La oleada termina a los 60 s (o antes con **M**): se abre la **tienda**.
 5. Compra mejoras (o usa **Tirar dado** para cambiar las opciones) y pulsa **Continuar**:
    la siguiente oleada empieza automáticamente.
-6. Al superar la última oleada aparece la **pantalla de victoria**; si mueres, la
-   **pantalla de muerte**. Ambas permiten reiniciar.
+6. Tras la **oleada 10** se abre la tienda una última vez; al salir comienza el
+   combate contra el **jefe final**. Al derrotarlo aparece la **pantalla de
+   victoria**; si mueres, la **pantalla de muerte**. Ambas permiten reiniciar.
 
 Todo el bucle (oleadas, tienda y pantallas) funciona tanto en **Main** como en
 **DEV-ROOM**, porque vive en una escena reutilizable `GameMode.tscn`.
@@ -69,9 +70,17 @@ faltarían para pulirlo en [`docs/jefe.md`](docs/jefe.md).
 
 ## Tienda
 
-Muestra 4 mejoras tomadas al azar de un pool (vida +5/+10, daño +1/+2,
-velocidad +40, cadencia +15%). El botón **Tirar dado** cambia las opciones por
-monedas. Costes y efectos son configurables en `shop.gd`.
+Muestra 4 mejoras tomadas al azar de un pool. El botón **Tirar dado** cambia las
+opciones por monedas. Además de las de estadísticas (vida, daño, velocidad,
+cadencia) hay **ítems con habilidad especial**:
+
+- **Robo de vida**: 25%/nivel de curar 1–3 al recoger moneda (máx 75%).
+- **Rebote ofensivo**: la SpinShot genera nuevas SpinShots al impactar (máx 3).
+- **División de proyectil**: la SpinShot se parte en dos a media trayectoria.
+- **Giro letal**: +1%/compra de matar al enemigo haciéndolo girar.
+- **Esquiva automática**: 25%/nivel de esquivar al recibir daño (máx 75%).
+
+Detalles en [`docs/items.md`](docs/items.md).
 
 ## Cámara
 
