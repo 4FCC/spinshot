@@ -68,6 +68,22 @@ offset_bottom = -28.0
 horizontal_alignment = 1
 text = ""
 
+[node name="AnnounceLabel" type="Label" parent="UI"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -480.0
+offset_top = -90.0
+offset_right = 480.0
+offset_bottom = 90.0
+theme_override_font_sizes/font_size = 48
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+text = ""
+visible = false
+
 [node name="Shop" type="Panel" parent="UI"]
 anchor_left = 0.5
 anchor_top = 0.5

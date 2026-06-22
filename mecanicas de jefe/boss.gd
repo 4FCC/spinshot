@@ -21,7 +21,7 @@ enum S { FOLLOW, ATTACK, TELEPORT, SPAWN, RANGED, DEAD }
 
 @export_group("Estadísticas")
 @export var max_health: int = 90
-@export var move_speed: float = 95.0
+@export var move_speed: float = 300.0
 @export var contact_damage: int = 4
 @export var contact_cooldown: float = 0.8
 
@@ -112,7 +112,7 @@ func _phase() -> int:
 	return 3
 
 func _speed_mult() -> float:
-	return 1.0 + 0.25 * (_phase() - 1)   # 1.0 / 1.25 / 1.5
+	return 0.85 + 0.15 * (_phase() - 1)   # fase 1 lento / fase 2 igual al jugador / fase 3 rápido
 
 # =============================================================================
 # ESTADOS

@@ -22,7 +22,7 @@ extends Node
 
 @export_group("Oleadas")
 @export var spawn_radius: float = 650.0   # Distancia a la que aparecen del jugador
-@export var wave_duration: float = 60.0   # Segundos que dura cada oleada
+@export var wave_duration: float = 40.0   # Segundos que dura cada oleada
 @export var total_waves: int = 10         # Tras la última oleada aparece el jefe
 
 @export_group("Modo")
@@ -35,6 +35,7 @@ extends Node
 @onready var wave_label: Label = $UI/WaveLabel
 @onready var timer_label: Label = $UI/TimerLabel
 @onready var info_label: Label = $UI/InfoLabel
+@onready var announce_label: Label = $UI/AnnounceLabel
 @onready var shop = $UI/Shop
 
 var player: Node2D = null
@@ -140,7 +141,7 @@ func _handle_debug_input(event: InputEvent) -> void:
 			KEY_5:
 				_debug_spawn(support_scene)
 			KEY_O:
-				shop.open()
+				_enter_shop()
 			KEY_C:
 				Game.add_coins(100)
 			KEY_G:
@@ -195,13 +196,43 @@ func _end_wave() -> void:
 		info_label.text = "DEV-ROOM:  M = siguiente oleada  ·  O = tienda  ·  B = jefe"
 		return
 
+	# Aviso de oleada superada (~2s, centrado y grande) antes de mostrar la tienda.
+	var is_final_wave := wave_number >= total_waves
+	_show_announce("¡Oleada %d superada!%s" % [wave_number, ("\nEl jefe se aproxima..." if is_final_wave else "")])
+	await get_tree().create_timer(2.0).timeout
+	if not is_instance_valid(self):
+		return
+	_hide_announce()
+
 	# Main: tienda entre oleadas; tras la última, al salir aparece el jefe.
-	if wave_number >= total_waves:
+	if is_final_wave:
 		_boss_pending = true
 		info_label.text = "Compra mejoras y prepárate para el JEFE"
+	_enter_shop()
+
+func _show_announce(text: String) -> void:
+	announce_label.text = text
+	announce_label.visible = true
+
+func _hide_announce() -> void:
+	announce_label.visible = false
+	announce_label.text = ""
+
+func _enter_shop() -> void:
+	# Al entrar a la tienda: las balas en vuelo desaparecen y el jugador se
+	# congela (las monedas en el suelo NO se tocan, se recogen en la próxima oleada).
+	_clear_bullets()
+	if player != null and is_instance_valid(player) and player.has_method("set_frozen"):
+		player.set_frozen(true)
 	shop.open()
 
+func _clear_bullets() -> void:
+	for bullet in get_tree().get_nodes_in_group("spin_bullet"):
+		bullet.queue_free()
+
 func _on_shop_continue() -> void:
+	if player != null and is_instance_valid(player) and player.has_method("set_frozen"):
+		player.set_frozen(false)
 	if _boss_pending:
 		# Al salir de la tienda tras la oleada final, aparece el jefe
 		_boss_pending = false

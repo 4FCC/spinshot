@@ -25,13 +25,27 @@ Al recibir daño el jugador tiene una breve **invulnerabilidad** durante la cual
 no recibe más daño y **atraviesa a los enemigos** (normalmente choca con ellos
 y con los muros del escenario).
 
+### Código secreto (Easter egg)
+
+Con las teclas de movimiento, el combo **arriba, arriba, abajo, abajo,
+izquierda, derecha, izquierda, derecha** activa/desactiva el **god mode**
+(no recibe daño) en cualquier escena, no solo en DEV-ROOM. Hay 1.5 s de margen
+entre teclas antes de que se reinicie el combo. Mientras está activo, el sprite
+del jugador **parpadea** (alterna opacidad) como indicador; el parpadeo se
+detiene al volver a introducir el combo. Lógica en `Scripts/billy.gd`
+(`_check_cheat_code` / `_toggle_secret_god_mode`).
+
 ## Bucle de juego (Main)
 
 1. En la **pantalla de inicio** pulsa JUGAR.
-2. La **oleada 1 empieza automáticamente** (cada oleada dura **60 s**, con cuenta atrás).
+2. La **oleada 1 empieza automáticamente** (cada oleada dura **40 s**, con cuenta atrás).
 3. Mata enemigos con las Spin-Bullets; cada enemigo suelta **monedas** al morir.
-4. Al terminar la oleada se abre la **tienda**; compra mejoras (o usa **Tirar dado**)
-   y pulsa **Continuar**: la siguiente oleada empieza sola.
+4. Al terminar la oleada aparece un aviso grande **centrado en pantalla**
+   ("¡Oleada N superada!") durante 2 s y luego se abre la **tienda**: al entrar,
+   las Spin-Bullets que quedan en vuelo desaparecen y el jugador queda
+   **congelado** (las monedas en el suelo NO se tocan, se recogen en la
+   siguiente oleada). Compra mejoras (o usa **Tirar dado**) y pulsa
+   **Continuar**: el jugador se descongela y la siguiente oleada empieza sola.
 5. Tras la **oleada 10** se abre la tienda una última vez; al salir comienza el
    combate contra el **jefe final**. Al derrotarlo aparece la **pantalla de
    victoria**; si mueres, la **pantalla de muerte**. Ambas permiten reiniciar.
@@ -53,7 +67,8 @@ comprados con su sprite y cantidad; al pasar el cursor por encima aparece un
 - **1–5**: generar enemigos de prueba (Minion / BigMinion / BulletMinion / Cargador / Apoyo) — no atacan
 - **O**: abrir la tienda en cualquier momento
 - **C**: +100 monedas
-- **G**: activar/desactivar el daño recibido (god mode)
+- **G**: activar/desactivar el god mode (mismo efecto que el código secreto de
+  arriba, pero con un solo atajo, sólo disponible en DEV-ROOM)
 
 ### Oleadas
 
@@ -74,13 +89,23 @@ Detalles y cómo editarlas en [`docs/oleadas.md`](docs/oleadas.md).
 Los enemigos se empujan entre sí para no apilarse, formando un muro peligroso
 cuando llegan en masa.
 
+### Velocidades
+
+El jugador se mueve a **300**. Todos los enemigos comunes (Minion, BigMinion,
+BulletMinion, SupportMinion, ChargerMinion) van a **268**, ligeramente más
+lentos que el jugador (tras varias rondas de ajuste a partir del feedback de
+playtesting). La embestida especial del ChargerMinion no usa `move_speed`, sino
+`charge_speed` = **750**, sin cambios.
+
 ## Jefe final
 
 Máquina de estados (Follow / Attack / Teleport / Spawn / Ranged / Death) con
 **3 fases según su vida**: persigue y golpea, se teletransporta, invoca minions
 y lanza voleas radiales. Aparece al terminar la oleada 10 o con la tecla **B**.
-Su código está en la carpeta `mecanicas de jefe/`. Detalles y los assets que
-faltarían para pulirlo en [`docs/jefe.md`](docs/jefe.md).
+Su velocidad base (`move_speed` = 300, igual al jugador) se multiplica por fase
+para que se sienta **lento → igual → rápido** a medida que pierde vida (0.85 /
+1.0 / 1.15). Su código está en la carpeta `mecanicas de jefe/`. Detalles y los
+assets que faltarían para pulirlo en [`docs/jefe.md`](docs/jefe.md).
 
 ## Tienda
 
@@ -98,10 +123,10 @@ Detalles en [`docs/items.md`](docs/items.md).
 
 ## Cámara
 
-La cámara sigue al jugador con suavizado y se desplaza ligeramente hacia la
-posición del cursor (lookahead). El zoom se ajusta automáticamente al tamaño de
-la ventana para mostrar siempre la misma cantidad de mundo, independientemente
-de la resolución.
+La cámara sigue al jugador con suavizado de posición (sin lookahead hacia el
+cursor). El zoom se ajusta automáticamente al tamaño de la ventana para
+mostrar siempre la misma cantidad de mundo, independientemente de la
+resolución.
 
 ## Estructura del proyecto
 
@@ -115,9 +140,10 @@ de la resolución.
 - `mecanicas de jefe/boss.gd` + `boss_bullet.gd`: jefe final y su proyectil.
 - `Scripts/coin.gd`: moneda recogible.
 - `Scripts/game.gd`: singleton (autoload `Game`) con la economía.
-- `Scripts/game_mode.gd`: bucle de juego reutilizable (oleadas, tienda, pantallas).
+- `Scripts/game_mode.gd`: bucle de juego reutilizable (oleadas, tienda, pantallas, aviso centrado).
 - `Scripts/floor_builder.gd`: construye el suelo de césped en el `Ground` (TileMapLayer).
 - `Scripts/border_trees.gd`: genera en runtime el anillo de árboles que delimita el DEV-ROOM.
+- `Scripts/decoration_scatter.gd`: reparte al azar los obstáculos interiores del DEV-ROOM.
 - `Scripts/shop.gd`: tienda con tirada de dados.
 - `Scenes/`: `Main` y `DEV-ROOM` (ambas usan `floor_builder` + `GameMode`),
   `GameMode`, `Player`, `spin-bullet`, `Coin`, `Minion`, `BigMinion`,
@@ -125,9 +151,11 @@ de la resolución.
 
 ## DEV-ROOM
 
-Sala de pruebas de **30×30 tiles** (1920×1920 px). Incluye:
+Sala de pruebas de **32×32 tiles** (2048×2048 px, tile = 64 px). Incluye:
 - Suelo de césped con `TileMapLayer`.
-- Decoraciones interiores (árboles, rocas, arbustos, tocón) con colisión.
+- Decoraciones interiores (árboles, rocas, arbustos, tocones) con colisión,
+  colocadas al azar por `decoration_scatter.gd` (mínimo 10 obstáculos),
+  evitando una zona segura alrededor del spawn del jugador.
 - Anillo de árboles perimetral generado en runtime (`border_trees.gd`) más
   muros invisibles de seguridad, que impiden salir del área de juego.
 - El sistema completo de oleadas, tienda y pantallas (mismo `GameMode` que Main).

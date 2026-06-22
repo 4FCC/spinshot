@@ -34,7 +34,7 @@ const _CAMERA_TARGET_HEIGHT := 768.0
 # =============================================================================
 # PROPIEDADES CONFIGURABLES
 # =============================================================================
-@export var speed: float = 350.0
+@export var speed: float = 300.0
 @export var acceleration: float = 1500.0
 @export var friction: float = 1800.0
 @export var vida: int = 20
@@ -60,6 +60,7 @@ const _CAMERA_TARGET_HEIGHT := 768.0
 var input_direction: Vector2
 var last_direction: Vector2 = Vector2.DOWN
 var is_invulnerable: bool = false
+var is_frozen: bool = false   # Congelado mientras la tienda está abierta
 
 # Dirección y giro acumulado del esquive (para la animación de girar)
 var dodge_direction: Vector2 = Vector2.ZERO
@@ -86,6 +87,14 @@ var inventory: Dictionary = {}
 # Depuración (solo DEV-ROOM)
 var debug_invincible: bool = false
 
+# Código secreto (estilo Konami): arriba arriba abajo abajo izquierda derecha izquierda derecha
+# alterna el modo dios. Disponible en cualquier partida, no solo en DEV-ROOM.
+const _CHEAT_SEQUENCE := ["Arriba", "Arriba", "Abajo", "Abajo", "Izquierda", "Derecha", "Izquierda", "Derecha"]
+const _CHEAT_RESET_MS := 1500
+var _cheat_step: int = 0
+var _cheat_last_ms: int = 0
+var _god_mode_tween: Tween = null
+
 # =============================================================================
 # INICIALIZACIÓN
 # =============================================================================
@@ -106,10 +115,6 @@ func _update_camera_zoom() -> void:
 	var vp_h := get_viewport().get_visible_rect().size.y
 	var z := vp_h / _CAMERA_TARGET_HEIGHT
 	camera.zoom = Vector2(z, z)
-
-func _process(_delta: float) -> void:
-	var mouse_offset = get_local_mouse_position() * 0.1
-	camera.offset = mouse_offset.limit_length(70.0)
 
 func _setup_timers():
 	# Timer que controla la duración del esquive
@@ -144,6 +149,9 @@ func _setup_timers():
 func _unhandled_input(event):
 	if current_state == State.DEAD:
 		return
+	_check_cheat_code(event)
+	if is_frozen:
+		return
 	# Clic derecho: Spin-Bullet con patrón normal (espiral)
 	if event.is_action_pressed("shoot"):
 		_shoot_spin_bullet(0)
@@ -152,12 +160,68 @@ func _unhandled_input(event):
 		_shoot_spin_bullet(1)
 
 # =============================================================================
+# CÓDIGO SECRETO (GOD MODE)
+# =============================================================================
+func _check_cheat_code(event: InputEvent) -> void:
+	var pressed_action := ""
+	for action in ["Arriba", "Abajo", "Izquierda", "Derecha"]:
+		if event.is_action_pressed(action):
+			pressed_action = action
+			break
+	if pressed_action == "":
+		return
+
+	var now := Time.get_ticks_msec()
+	if _cheat_step > 0 and now - _cheat_last_ms > _CHEAT_RESET_MS:
+		_cheat_step = 0
+
+	if pressed_action == _CHEAT_SEQUENCE[_cheat_step]:
+		_cheat_step += 1
+		_cheat_last_ms = now
+		if _cheat_step >= _CHEAT_SEQUENCE.size():
+			_cheat_step = 0
+			_toggle_secret_god_mode()
+	elif pressed_action == _CHEAT_SEQUENCE[0]:
+		_cheat_step = 1
+		_cheat_last_ms = now
+	else:
+		_cheat_step = 0
+
+func _toggle_secret_god_mode() -> void:
+	debug_invincible = not debug_invincible
+	print("Código secreto: God mode %s" % ("ACTIVADO" if debug_invincible else "DESACTIVADO"))
+	if debug_invincible:
+		_start_god_mode_blink()
+	else:
+		_stop_god_mode_blink()
+
+func _start_god_mode_blink() -> void:
+	_stop_god_mode_blink()
+	_god_mode_tween = create_tween()
+	_god_mode_tween.set_loops()
+	_god_mode_tween.tween_property(sprite, "modulate:a", 0.3, 0.25)
+	_god_mode_tween.tween_property(sprite, "modulate:a", 1.0, 0.25)
+
+func _stop_god_mode_blink() -> void:
+	if _god_mode_tween != null and _god_mode_tween.is_valid():
+		_god_mode_tween.kill()
+	_god_mode_tween = null
+	sprite.modulate.a = 1.0
+
+# =============================================================================
 # MÁQUINA DE ESTADOS PRINCIPAL
 # =============================================================================
 func _physics_process(delta):
 	# El jugador choca con los enemigos (capa 2) normalmente, pero los ATRAVIESA
 	# mientras es invulnerable (tras recibir daño o durante el esquive).
 	set_collision_mask_value(2, not is_invulnerable)
+
+	if is_frozen:
+		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
+		move_and_slide()
+		_update_walk_animation()
+		_update_dodge_ui()
+		return
 
 	match current_state:
 		State.MOVE:
@@ -358,6 +422,15 @@ func _update_dodge_ui():
 		dodge_bar.value = ratio * dodge_bar.max_value
 		dodge_label.text = "Esquive: %.1fs" % dodge_cooldown.time_left
 		dodge_bar.modulate = Color(1.0, 0.7, 0.3)
+
+# =============================================================================
+# CONGELAR (usado por la tienda)
+# =============================================================================
+func set_frozen(value: bool) -> void:
+	is_frozen = value
+	if is_frozen:
+		velocity = Vector2.ZERO
+		sprite.play("idle")
 
 # =============================================================================
 # MEJORAS (usadas por la tienda)

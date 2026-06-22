@@ -10,165 +10,68 @@
 [ext_resource type="Texture2D" uid="uid://c16e210mehrka" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Stump 1.png" id="8_stump"]
 [ext_resource type="PackedScene" uid="uid://tuuflvma6emi" path="res://Scenes/GameMode.tscn" id="9_gm"]
 [ext_resource type="Script" uid="uid://bbordertrees1" path="res://Scripts/border_trees.gd" id="10_bt"]
-
-[sub_resource type="CircleShape2D" id="cs_tree"]
-radius = 45.0
-
-[sub_resource type="CircleShape2D" id="cs_rock"]
-radius = 32.0
-
-[sub_resource type="CircleShape2D" id="cs_bush"]
-radius = 28.0
-
-[sub_resource type="CircleShape2D" id="cs_stump"]
-radius = 18.0
+[ext_resource type="Script" path="res://Scripts/decoration_scatter.gd" id="11_ds"]
 
 [sub_resource type="RectangleShape2D" id="rs_wall_h"]
-size = Vector2(2048, 64)
+size = Vector2(2176, 64)
 
 [sub_resource type="RectangleShape2D" id="rs_wall_v"]
-size = Vector2(64, 2048)
+size = Vector2(64, 2176)
 
 [node name="DevRoom" type="Node2D"]
 script = ExtResource("1_dev")
-width = 30
-height = 30
+width = 32
+height = 32
 
 [node name="Ground" type="TileMapLayer" parent="."]
 tile_set = ExtResource("2_tiles")
 
 [node name="Decorations" type="Node2D" parent="."]
-
-[node name="Tree1" type="StaticBody2D" parent="Decorations"]
-position = Vector2(380, 340)
-
-[node name="Sprite2D" type="Sprite2D" parent="Decorations/Tree1"]
-texture = ExtResource("4_tree")
-region_enabled = true
-region_rect = Rect2(0, 0, 192, 256)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Decorations/Tree1"]
-position = Vector2(0, 60)
-shape = SubResource("cs_tree")
-
-[node name="Tree2" type="StaticBody2D" parent="Decorations"]
-position = Vector2(1545, 340)
-
-[node name="Sprite2D" type="Sprite2D" parent="Decorations/Tree2"]
-texture = ExtResource("4_tree")
-region_enabled = true
-region_rect = Rect2(0, 0, 192, 256)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Decorations/Tree2"]
-position = Vector2(0, 60)
-shape = SubResource("cs_tree")
-
-[node name="Tree3" type="StaticBody2D" parent="Decorations"]
-position = Vector2(380, 1580)
-
-[node name="Sprite2D" type="Sprite2D" parent="Decorations/Tree3"]
-texture = ExtResource("4_tree")
-region_enabled = true
-region_rect = Rect2(0, 0, 192, 256)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Decorations/Tree3"]
-position = Vector2(0, 60)
-shape = SubResource("cs_tree")
-
-[node name="Tree4" type="StaticBody2D" parent="Decorations"]
-position = Vector2(1545, 1580)
-
-[node name="Sprite2D" type="Sprite2D" parent="Decorations/Tree4"]
-texture = ExtResource("4_tree")
-region_enabled = true
-region_rect = Rect2(0, 0, 192, 256)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Decorations/Tree4"]
-position = Vector2(0, 60)
-shape = SubResource("cs_tree")
-
-[node name="Stump" type="StaticBody2D" parent="Decorations"]
-position = Vector2(960, 414)
-
-[node name="Sprite2D" type="Sprite2D" parent="Decorations/Stump"]
-texture = ExtResource("8_stump")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Decorations/Stump"]
-shape = SubResource("cs_stump")
-
-[node name="Bush" type="StaticBody2D" parent="Decorations"]
-position = Vector2(1260, 960)
-
-[node name="Sprite2D" type="Sprite2D" parent="Decorations/Bush"]
-texture = ExtResource("7_bush")
-region_enabled = true
-region_rect = Rect2(0, 0, 128, 128)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Decorations/Bush"]
-shape = SubResource("cs_bush")
-
-[node name="Rock1" type="StaticBody2D" parent="Decorations"]
-position = Vector2(540, 750)
-
-[node name="Sprite2D" type="Sprite2D" parent="Decorations/Rock1"]
-texture = ExtResource("5_rock1")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Decorations/Rock1"]
-shape = SubResource("cs_rock")
-
-[node name="Rock2" type="StaticBody2D" parent="Decorations"]
-position = Vector2(960, 1260)
-
-[node name="Sprite2D" type="Sprite2D" parent="Decorations/Rock2"]
-texture = ExtResource("6_rock2")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Decorations/Rock2"]
-shape = SubResource("cs_rock")
-
-[node name="Rock3" type="StaticBody2D" parent="Decorations"]
-position = Vector2(1320, 540)
-
-[node name="Sprite2D" type="Sprite2D" parent="Decorations/Rock3"]
-texture = ExtResource("5_rock1")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Decorations/Rock3"]
-shape = SubResource("cs_rock")
+script = ExtResource("11_ds")
+room_width_px = 2048.0
+room_height_px = 2048.0
+safe_zone_center = Vector2(1024, 1024)
+obstacle_count = 10
+tree_texture = ExtResource("4_tree")
+rock_textures = [ExtResource("5_rock1"), ExtResource("6_rock2")]
+bush_texture = ExtResource("7_bush")
+stump_texture = ExtResource("8_stump")
 
 [node name="BorderTrees" type="Node2D" parent="."]
 script = ExtResource("10_bt")
 tree_texture = ExtResource("4_tree")
-room_width_px = 1920
-room_height_px = 1920
+room_width_px = 2048
+room_height_px = 2048
 spacing = 192
 
 [node name="Walls" type="Node2D" parent="."]
 
 [node name="WallTop" type="StaticBody2D" parent="Walls"]
-position = Vector2(960, -32)
+position = Vector2(1024, -32)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallTop"]
 shape = SubResource("rs_wall_h")
 
 [node name="WallBottom" type="StaticBody2D" parent="Walls"]
-position = Vector2(960, 1952)
+position = Vector2(1024, 2080)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallBottom"]
 shape = SubResource("rs_wall_h")
 
 [node name="WallLeft" type="StaticBody2D" parent="Walls"]
-position = Vector2(-32, 960)
+position = Vector2(-32, 1024)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallLeft"]
 shape = SubResource("rs_wall_v")
 
 [node name="WallRight" type="StaticBody2D" parent="Walls"]
-position = Vector2(1952, 960)
+position = Vector2(2080, 1024)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallRight"]
 shape = SubResource("rs_wall_v")
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
-position = Vector2(960, 960)
+position = Vector2(1024, 1024)
 
 [node name="GameMode" parent="." instance=ExtResource("9_gm")]
 debug_mode = true

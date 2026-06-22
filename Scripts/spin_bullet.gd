@@ -45,6 +45,7 @@ var _did_split: bool = false
 
 
 func _ready() -> void:
+	add_to_group("spin_bullet")
 	if player == null and player_path != NodePath(""):
 		player = get_node_or_null(player_path) as Node2D
 		if player != null:
