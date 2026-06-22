@@ -54,14 +54,28 @@ Todo el bucle (oleadas, tienda, jefe, pantallas, inventario) vive en la escena
 reutilizable `GameMode.tscn`, que tanto **Main** como **DEV-ROOM** instancian.
 La diferencia es el modo: Main juega solo (auto), DEV-ROOM es manual + depuración.
 
+## Pantalla completa y resolución
+
+- **F11** alterna entre ventana y pantalla completa (en cualquier momento).
+- La **resolución base** del juego se define en `project.godot` → `[display]`
+  (`window/size/viewport_width` / `viewport_height`, ahora 1280×720). En pantalla
+  completa el juego usa la resolución del monitor y **escala** ese lienzo base
+  gracias a `window/stretch/mode = "canvas_items"` (la UI se mantiene nítida).
+  Para cambiar la resolución base, edita esos dos valores (o desde el editor:
+  *Project Settings → Display → Window → Size*). Para forzar una resolución de
+  ventana concreta por código: `DisplayServer.window_set_size(Vector2i(w, h))`.
+
 ## Inventario
 
 Se abre con **ESC** (o durante la tienda). Muestra en un panel de madera los
 ítems comprados con su **sprite definitivo** y cantidad/nivel; al pasar el cursor
 por encima aparece un **tooltip** con nombre, descripción, efectos y nivel.
-Al abrirlo (igual que en las pantallas de inicio/muerte/victoria) se **ocultan
-temporalmente** la barra de vida, la de esquive y los textos de info/monedas
-para que la interfaz quede limpia.
+Al abrirlo (igual que en la tienda y en las pantallas de inicio/muerte/victoria)
+se **ocultan temporalmente** la barra de vida, la de esquive y los textos de
+info/monedas para que la interfaz quede limpia. Junto al inventario se muestra
+un **panel de estadísticas** del personaje (vida, velocidad, daño, cadencia,
+esquive e ítems con habilidad), generado por `Scripts/stats_panel.gd`. Ese mismo
+panel aparece a la derecha de la **tienda**.
 
 ## Interfaz / assets
 

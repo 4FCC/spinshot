@@ -33,6 +33,7 @@ var _coins_label: Label = null
 var _cards_row: HBoxContainer = null
 var _reroll_button: Button = null
 var _title_label: Label = null
+var _stats_holder: Control = null
 
 func _ready() -> void:
 	visible = false
@@ -120,12 +121,23 @@ func _build_ui() -> void:
 	_reroll_button.pressed.connect(_on_reroll)
 	top.add_child(_reroll_button)
 
-	# ----- Fila de tarjetas (ocupa el grueso del espacio) -----
+	# ----- Centro: tarjetas (izquierda) + estadísticas (derecha) -----
+	var mid := HBoxContainer.new()
+	mid.add_theme_constant_override("separation", 16)
+	mid.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(mid)
+
 	_cards_row = HBoxContainer.new()
-	_cards_row.add_theme_constant_override("separation", 16)
+	_cards_row.add_theme_constant_override("separation", 14)
 	_cards_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_cards_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vbox.add_child(_cards_row)
+	mid.add_child(_cards_row)
+
+	# Columna de estadísticas del personaje (se rellena en _refresh)
+	_stats_holder = VBoxContainer.new()
+	_stats_holder.custom_minimum_size = Vector2(240, 0)
+	_stats_holder.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	mid.add_child(_stats_holder)
 
 	# ----- Botón continuar -----
 	var continue_button := Button.new()
@@ -220,13 +232,15 @@ func _make_card(item: Dictionary, index: int) -> Control:
 	UiTheme.apply_title(name_label, 19)
 	col.add_child(name_label)
 
-	# Imagen grande, centrada, que crece para ocupar el espacio
+	# Imagen grande, centrada, que crece para ocupar el espacio.
+	# texture_filter NEAREST: el pixel-art se ve grande y nítido al escalar.
 	var icon := TextureRect.new()
 	icon.texture = item.get("icon", null)
-	icon.custom_minimum_size = Vector2(0, 150)
+	icon.custom_minimum_size = Vector2(0, 168)
 	icon.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	col.add_child(icon)
 
 	# Descripción completa
@@ -257,6 +271,8 @@ func _make_card(item: Dictionary, index: int) -> Control:
 	return card
 
 func _refresh() -> void:
+	if not visible:
+		return
 	if _coins_label != null:
 		_coins_label.text = "%d monedas" % Game.coins
 	for i in _option_buttons.size():
@@ -267,6 +283,16 @@ func _refresh() -> void:
 	if _reroll_button != null:
 		_reroll_button.text = "REROLL (%d)" % reroll_cost
 		_reroll_button.disabled = Game.coins < reroll_cost
+	_refresh_stats()
+
+func _refresh_stats() -> void:
+	if _stats_holder == null:
+		return
+	for c in _stats_holder.get_children():
+		c.queue_free()
+	var sp := StatsPanel.build(player)
+	sp.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_stats_holder.add_child(sp)
 
 func _on_buy(index: int) -> void:
 	if index >= _current.size():

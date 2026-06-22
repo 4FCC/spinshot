@@ -57,6 +57,7 @@ var _screen_active: bool = false
 var _inventory_panel: Control = null
 var _inventory_grid: GridContainer = null
 var _inventory_open: bool = false
+var _inv_stats_holder: Control = null
 
 func _ready() -> void:
 	randomize()
@@ -116,6 +117,10 @@ func _process(delta: float) -> void:
 		_spawn_enemy()
 
 func _unhandled_input(event: InputEvent) -> void:
+	# F11 alterna pantalla completa (en cualquier momento, también en menús)
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F11:
+		_toggle_fullscreen()
+		return
 	if _screen_active:
 		return
 	# Inventario (ESC): disponible en cualquier escena
@@ -171,6 +176,13 @@ func _debug_spawn(scene: PackedScene) -> void:
 		host = get_parent()
 	host.add_child(e)
 	e.global_position = player.global_position + Vector2.RIGHT.rotated(randf() * TAU) * 320.0
+
+func _toggle_fullscreen() -> void:
+	var mode := DisplayServer.window_get_mode()
+	if mode == DisplayServer.WINDOW_MODE_FULLSCREEN or mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 
 func _toggle_god_mode() -> void:
 	if player == null or not is_instance_valid(player):
@@ -232,6 +244,8 @@ func _enter_shop() -> void:
 	_clear_bullets()
 	if player != null and is_instance_valid(player) and player.has_method("set_frozen"):
 		player.set_frozen(true)
+	# Ocultar el HUD del jugador para que no estorbe a la tienda
+	_set_gameplay_ui_visible(false)
 	shop.open(wave_number)
 
 func _clear_bullets() -> void:
@@ -241,6 +255,8 @@ func _clear_bullets() -> void:
 func _on_shop_continue() -> void:
 	if player != null and is_instance_valid(player) and player.has_method("set_frozen"):
 		player.set_frozen(false)
+	# Restaurar el HUD al salir de la tienda
+	_set_gameplay_ui_visible(true)
 	if _boss_pending:
 		# Al salir de la tienda tras la oleada final, aparece el jefe
 		_boss_pending = false
@@ -468,20 +484,24 @@ func _build_inventory() -> void:
 
 	var bg := ColorRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0, 0, 0, 0.55)
+	bg.color = Color(0, 0, 0, 0.6)
 	_inventory_panel.add_child(bg)
 
-	var panel := Panel.new()
-	panel.set_anchors_preset(Control.PRESET_CENTER)
-	panel.offset_left = -300.0
-	panel.offset_top = -230.0
-	panel.offset_right = 300.0
-	panel.offset_bottom = 230.0
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_inventory_panel.add_child(center)
+
+	# Inventario (izquierda) + Estadísticas (derecha)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 16)
+	center.add_child(row)
+
+	var panel := PanelContainer.new()
 	UiTheme.apply_panel(panel)
-	_inventory_panel.add_child(panel)
+	panel.custom_minimum_size = Vector2(440, 0)
+	row.add_child(panel)
 
 	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 22)
 	margin.add_theme_constant_override("margin_top", 18)
 	margin.add_theme_constant_override("margin_right", 22)
@@ -499,7 +519,7 @@ func _build_inventory() -> void:
 	vbox.add_child(title)
 
 	_inventory_grid = GridContainer.new()
-	_inventory_grid.columns = 6
+	_inventory_grid.columns = 5
 	_inventory_grid.add_theme_constant_override("h_separation", 10)
 	_inventory_grid.add_theme_constant_override("v_separation", 10)
 	vbox.add_child(_inventory_grid)
@@ -509,6 +529,11 @@ func _build_inventory() -> void:
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	UiTheme.apply_label(hint)
 	vbox.add_child(hint)
+
+	# Columna de estadísticas (se rellena en _refresh_inventory)
+	_inv_stats_holder = VBoxContainer.new()
+	_inv_stats_holder.custom_minimum_size = Vector2(280, 0)
+	row.add_child(_inv_stats_holder)
 
 	ui.add_child(_inventory_panel)
 
@@ -524,7 +549,9 @@ func _toggle_inventory() -> void:
 		get_tree().paused = true
 	else:
 		_inventory_panel.visible = false
-		_set_gameplay_ui_visible(true)
+		# No volver a mostrar el HUD si seguimos dentro de la tienda
+		if not shop.visible:
+			_set_gameplay_ui_visible(true)
 		if not _screen_active:
 			get_tree().paused = false
 
@@ -546,6 +573,12 @@ func _refresh_inventory() -> void:
 
 	if player == null or not is_instance_valid(player):
 		player = _find_player()
+
+	# Reconstruir el panel de estadísticas
+	if _inv_stats_holder != null:
+		for c in _inv_stats_holder.get_children():
+			c.queue_free()
+		_inv_stats_holder.add_child(StatsPanel.build(player))
 	var inv: Dictionary = {}
 	if player != null:
 		var v = player.get("inventory")
@@ -581,6 +614,7 @@ func _make_inventory_slot(data: Dictionary) -> Control:
 	icon.texture = data.get("icon", null)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	slot.add_child(icon)
 
