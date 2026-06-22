@@ -28,10 +28,11 @@ signal continue_pressed
 var player: Node2D = null
 var _pool: Array = []          # Todas las mejoras posibles
 var _current: Array = []       # Mejoras mostradas ahora
-var _option_buttons: Array = []
+var _option_buttons: Array = []   # Botones "Comprar" de cada tarjeta
 var _coins_label: Label = null
-var _options_box: VBoxContainer = null
+var _cards_row: HBoxContainer = null
 var _reroll_button: Button = null
+var _title_label: Label = null
 
 func _ready() -> void:
 	visible = false
@@ -83,53 +84,63 @@ func _build_ui() -> void:
 
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 18)
-	margin.add_theme_constant_override("margin_top", 18)
-	margin.add_theme_constant_override("margin_right", 18)
-	margin.add_theme_constant_override("margin_bottom", 18)
+	margin.add_theme_constant_override("margin_left", 28)
+	margin.add_theme_constant_override("margin_top", 20)
+	margin.add_theme_constant_override("margin_right", 28)
+	margin.add_theme_constant_override("margin_bottom", 22)
 	add_child(margin)
 
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 10)
+	vbox.add_theme_constant_override("separation", 14)
 	margin.add_child(vbox)
 
-	var title := Label.new()
-	title.text = "TIENDA"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UiTheme.apply_title(title, 30)
-	vbox.add_child(title)
+	# ----- Barra superior: título · monedas · reroll -----
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 16)
+	vbox.add_child(top)
+
+	_title_label = Label.new()
+	_title_label.text = "TIENDA"
+	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	UiTheme.apply_title(_title_label, 30)
+	top.add_child(_title_label)
 
 	_coins_label = Label.new()
+	_coins_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_coins_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UiTheme.apply_label(_coins_label)
-	vbox.add_child(_coins_label)
-
-	vbox.add_child(HSeparator.new())
-
-	# Contenedor donde se generan las opciones (cambian con cada tirada)
-	_options_box = VBoxContainer.new()
-	_options_box.add_theme_constant_override("separation", 8)
-	vbox.add_child(_options_box)
-
-	vbox.add_child(HSeparator.new())
+	_coins_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	UiTheme.apply_title(_coins_label, 24)
+	top.add_child(_coins_label)
 
 	_reroll_button = Button.new()
-	_reroll_button.custom_minimum_size = Vector2(0, 44)
+	_reroll_button.custom_minimum_size = Vector2(220, 48)
+	_reroll_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	UiTheme.apply_button(_reroll_button)
 	_reroll_button.pressed.connect(_on_reroll)
-	vbox.add_child(_reroll_button)
+	top.add_child(_reroll_button)
 
+	# ----- Fila de tarjetas (ocupa el grueso del espacio) -----
+	_cards_row = HBoxContainer.new()
+	_cards_row.add_theme_constant_override("separation", 16)
+	_cards_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_cards_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_child(_cards_row)
+
+	# ----- Botón continuar -----
 	var continue_button := Button.new()
-	continue_button.text = "Continuar"
-	continue_button.custom_minimum_size = Vector2(0, 48)
+	continue_button.text = "CONTINUAR"
+	continue_button.custom_minimum_size = Vector2(0, 50)
 	UiTheme.apply_button(continue_button)
 	continue_button.pressed.connect(_on_continue)
 	vbox.add_child(continue_button)
 
-func open() -> void:
+func open(wave: int = 0) -> void:
 	if player == null or not is_instance_valid(player):
 		var players := get_tree().get_nodes_in_group("player")
 		player = players[0] if players.size() > 0 else null
+	if _title_label != null:
+		_title_label.text = "TIENDA  (Oleada %d)" % wave if wave > 0 else "TIENDA"
 	_roll()        # nueva selección al abrir
 	visible = true
 	_refresh()
@@ -175,34 +186,86 @@ func _prune_and_refill() -> void:
 	_populate_options()
 
 func _populate_options() -> void:
-	for child in _options_box.get_children():
+	for child in _cards_row.get_children():
 		child.queue_free()
 	_option_buttons.clear()
 
 	for i in _current.size():
-		var upg = _current[i]
-		var button := Button.new()
-		button.custom_minimum_size = Vector2(0, 56)
-		button.icon = upg["icon"]
-		button.text = "  %s   (%d monedas)" % [upg["name"], upg["cost"]]
-		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button.expand_icon = true
-		button.tooltip_text = String(upg.get("desc", ""))
-		UiTheme.apply_button(button)
-		button.pressed.connect(_on_buy.bind(i))
-		_options_box.add_child(button)
-		_option_buttons.append(button)
+		_cards_row.add_child(_make_card(_current[i], i))
+
+func _make_card(item: Dictionary, index: int) -> Control:
+	# Tarjeta: nombre arriba, imagen grande al centro, descripción completa
+	# debajo, precio y botón de compra al fondo.
+	var card := PanelContainer.new()
+	UiTheme.apply_panel(card)
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	card.custom_minimum_size = Vector2(210, 0)
+
+	var pad := MarginContainer.new()
+	pad.add_theme_constant_override("margin_left", 14)
+	pad.add_theme_constant_override("margin_top", 12)
+	pad.add_theme_constant_override("margin_right", 14)
+	pad.add_theme_constant_override("margin_bottom", 12)
+	card.add_child(pad)
+
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 10)
+	pad.add_child(col)
+
+	var name_label := Label.new()
+	name_label.text = String(item.get("name", ""))
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD
+	UiTheme.apply_title(name_label, 19)
+	col.add_child(name_label)
+
+	# Imagen grande, centrada, que crece para ocupar el espacio
+	var icon := TextureRect.new()
+	icon.texture = item.get("icon", null)
+	icon.custom_minimum_size = Vector2(0, 150)
+	icon.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	col.add_child(icon)
+
+	# Descripción completa
+	var desc := Label.new()
+	desc.text = String(item.get("desc", ""))
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD
+	desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	desc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	UiTheme.apply_label(desc)
+	col.add_child(desc)
+
+	# Precio
+	var price := Label.new()
+	price.text = "%d monedas" % int(item.get("cost", 0))
+	price.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	UiTheme.apply_title(price, 20)
+	col.add_child(price)
+
+	# Botón comprar
+	var buy := Button.new()
+	buy.text = "COMPRAR"
+	buy.custom_minimum_size = Vector2(0, 44)
+	UiTheme.apply_button(buy)
+	buy.pressed.connect(_on_buy.bind(index))
+	col.add_child(buy)
+	_option_buttons.append(buy)
+
+	return card
 
 func _refresh() -> void:
 	if _coins_label != null:
-		_coins_label.text = "Monedas: %d" % Game.coins
+		_coins_label.text = "%d monedas" % Game.coins
 	for i in _option_buttons.size():
 		if i >= _current.size():
 			continue
 		var item = _current[i]
 		_option_buttons[i].disabled = Game.coins < int(item["cost"]) or not _is_available(item)
 	if _reroll_button != null:
-		_reroll_button.text = "Tirar dado: nuevas opciones (%d monedas)" % reroll_cost
+		_reroll_button.text = "REROLL (%d)" % reroll_cost
 		_reroll_button.disabled = Game.coins < reroll_cost
 
 func _on_buy(index: int) -> void:

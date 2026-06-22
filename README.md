@@ -120,7 +120,10 @@ assets que faltarían para pulirlo en [`docs/jefe.md`](docs/jefe.md).
 
 ## Tienda
 
-Muestra 4 mejoras tomadas al azar de un pool. El botón **Tirar dado** cambia las
+Panel **ancho** (ocupa casi toda la pantalla) con una barra superior
+(título · monedas · **REROLL**) y una fila de **tarjetas grandes**: cada una
+muestra el nombre, una **imagen grande** del objeto, su **descripción completa**
+debajo, el precio y un botón **COMPRAR**. El botón **REROLL** cambia las
 opciones por monedas. Además de las de estadísticas (vida, daño, velocidad,
 cadencia) hay **ítems con habilidad especial**:
 
