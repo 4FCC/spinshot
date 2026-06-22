@@ -47,6 +47,24 @@ Las SpinShots llevan estas habilidades como variables (`bounce_count`,
 copia al crear cada bala. Como las balas se replican a sí mismas, la habilidad
 de división también afecta a las creadas por el rebote.
 
+## Límites de compra (campo `max`) e inventario
+
+Cada ítem del pool tiene un campo `"max"` (número máximo de compras; **0 = ilimitado**):
+
+- Los ítems de **compra única** usan `"max": 1` (p. ej. *División de proyectil*).
+- Los **acumulables** usan su tope (`coinheal`, `bounce`, `autododge` → `"max": 3`).
+- Los de estadística o sin tope usan `"max": 0`.
+
+La tienda solo ofrece ítems **disponibles** (`_is_available`): los que ya
+alcanzaron su `max` **no vuelven a salir** ni al abrir la tienda ni al usar el
+dado, y desaparecen de la vista en cuanto se agotan dentro de la misma compra
+(`_prune_and_refill`).
+
+Cada compra se registra en el inventario del jugador (`billy.register_item`),
+que la **UI de inventario** (ESC) muestra con su sprite, cantidad/nivel y un
+tooltip con nombre, descripción y efectos. Para que un ítem aparezca bien en el
+inventario, su entrada del pool debe tener `id`, `name`, `desc` e `icon`.
+
 ## Efectos disponibles en el jugador
 
 Los `apply` llaman a métodos de `billy.gd`. Los actuales:

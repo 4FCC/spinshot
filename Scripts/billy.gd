@@ -80,6 +80,12 @@ var has_split: bool = false    # División de proyectil (única)
 var lethal_level: int = 0      # Giro letal: +1% por nivel (ilimitado)
 var autododge_level: int = 0   # Esquiva automática al recibir daño (máx 3 -> 75%)
 
+# Inventario de ítems comprados: id -> {name, desc, icon, count}
+var inventory: Dictionary = {}
+
+# Depuración (solo DEV-ROOM)
+var debug_invincible: bool = false
+
 # =============================================================================
 # INICIALIZACIÓN
 # =============================================================================
@@ -177,10 +183,6 @@ func move_state(_delta):
 	if Input.is_action_just_pressed("dodge") and dodge_cooldown.is_stopped():
 		start_dodge()
 
-	# Prueba rápida del estado de daño (tecla K)
-	if Input.is_action_just_pressed("test_damage"):
-		take_damage(3)
-
 func _read_movement_input(delta: float) -> void:
 	input_direction = Input.get_vector("Izquierda", "Derecha", "Arriba", "Abajo")
 	var target := input_direction.normalized() * speed
@@ -230,6 +232,9 @@ func _on_dodge_timer_timeout():
 # ESTADO: RECIBIR DAÑO
 # =============================================================================
 func take_damage(amount: int):
+	# Modo invencible de depuración (solo se activa desde DEV-ROOM)
+	if debug_invincible:
+		return
 	# No recibir daño si está muerto, invulnerable o esquivando
 	if current_state == State.DEAD or is_invulnerable or current_state == State.DODGE:
 		return
@@ -400,3 +405,23 @@ func on_coin_collected() -> void:
 	if randf() < 0.25 * coin_heal_level:
 		vida = clamp(vida + randi_range(1, 3), 0, vida_max)
 		_update_health_ui()
+
+# =============================================================================
+# INVENTARIO (registro de ítems comprados, para la UI de inventario)
+# =============================================================================
+func register_item(item: Dictionary) -> void:
+	var id := String(item.get("id", ""))
+	if id == "":
+		return
+	if inventory.has(id):
+		inventory[id]["count"] += 1
+	else:
+		inventory[id] = {
+			"name": item.get("name", id),
+			"desc": item.get("desc", ""),
+			"icon": item.get("icon", null),
+			"count": 1,
+		}
+
+func get_item_count(id: String) -> int:
+	return inventory[id]["count"] if inventory.has(id) else 0

@@ -39,7 +39,8 @@ func _update_ai(delta: float) -> void:
 				velocity = Vector2.ZERO
 			_cooldown -= delta
 			# Cuando toca y el jugador está en rango, empieza el aviso de carga
-			if _cooldown <= 0.0 and to_player.length() <= charge_range:
+			# (los maniquíes de prueba nunca embisten)
+			if not passive and _cooldown <= 0.0 and to_player.length() <= charge_range:
 				_phase = ChargePhase.WINDUP
 				_phase_timer = windup_time
 

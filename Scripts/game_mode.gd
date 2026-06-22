@@ -25,6 +25,11 @@ extends Node
 @export var wave_duration: float = 60.0   # Segundos que dura cada oleada
 @export var total_waves: int = 10         # Tras la última oleada aparece el jefe
 
+@export_group("Modo")
+# Main: debug_mode = false (auto), DEV-ROOM: debug_mode = true (manual + atajos).
+@export var debug_mode: bool = false       # Activa los atajos de depuración (solo DEV-ROOM)
+@export var auto_start_waves: bool = true  # Encadena las oleadas automáticamente (Main)
+
 @onready var ui: CanvasLayer = $UI
 @onready var coins_label: Label = $UI/CoinsLabel
 @onready var wave_label: Label = $UI/WaveLabel
@@ -47,6 +52,11 @@ var _victory_screen: Control = null
 var _death_screen: Control = null
 var _screen_active: bool = false
 
+# Inventario
+var _inventory_panel: Control = null
+var _inventory_grid: GridContainer = null
+var _inventory_open: bool = false
+
 func _ready() -> void:
 	randomize()
 	# El GameMode (y su UI) sigue activo aunque el árbol esté en pausa,
@@ -62,6 +72,7 @@ func _ready() -> void:
 	shop.visible = false
 
 	_build_screens()
+	_build_inventory()
 	_update_wave_label()
 	timer_label.text = ""
 	info_label.text = ""
@@ -98,13 +109,67 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _screen_active:
 		return
+	# Inventario (ESC): disponible en cualquier escena
+	if event.is_action_pressed("ui_cancel"):
+		_toggle_inventory()
+		return
+	if _inventory_open:
+		return
+	# Atajos de depuración: SOLO en DEV-ROOM (debug_mode)
+	if debug_mode:
+		_handle_debug_input(event)
+
+func _handle_debug_input(event: InputEvent) -> void:
+	# Control de oleadas/jefe (DEV-ROOM): M = iniciar, N = terminar, B = jefe
 	if event.is_action_pressed("start_wave") and not wave_active and not shop.visible:
 		_start_wave()
 	elif event.is_action_pressed("end_wave") and wave_active:
 		_end_wave()
 	elif event.is_action_pressed("spawn_boss"):
-		# Tecla de depuración: invoca el jefe manualmente para pruebas
 		_spawn_boss()
+	elif event is InputEventKey and event.pressed and not event.echo:
+		match event.keycode:
+			KEY_1:
+				_debug_spawn(minion_scene)
+			KEY_2:
+				_debug_spawn(bigminion_scene)
+			KEY_3:
+				_debug_spawn(bulletminion_scene)
+			KEY_4:
+				_debug_spawn(charger_scene)
+			KEY_5:
+				_debug_spawn(support_scene)
+			KEY_O:
+				shop.open()
+			KEY_C:
+				Game.add_coins(100)
+			KEY_G:
+				_toggle_god_mode()
+
+func _debug_spawn(scene: PackedScene) -> void:
+	"""Genera un enemigo de prueba (no ataca) cerca del jugador."""
+	if scene == null:
+		return
+	if player == null or not is_instance_valid(player):
+		player = _find_player()
+	if player == null:
+		return
+	var e = scene.instantiate()
+	if e.has_method("make_passive"):
+		e.make_passive()
+	var host := get_tree().current_scene
+	if host == null:
+		host = get_parent()
+	host.add_child(e)
+	e.global_position = player.global_position + Vector2.RIGHT.rotated(randf() * TAU) * 320.0
+
+func _toggle_god_mode() -> void:
+	if player == null or not is_instance_valid(player):
+		player = _find_player()
+	if player == null:
+		return
+	player.debug_invincible = not player.debug_invincible
+	info_label.text = "God mode: %s" % ("ON" if player.debug_invincible else "OFF")
 
 # =============================================================================
 # OLEADAS
@@ -116,7 +181,7 @@ func _start_wave() -> void:
 	_spawn_accum = 0.0
 	_update_wave_label()
 	_update_timer_label()
-	info_label.text = "Oleada %d en curso — pulsa M para terminar antes" % wave_number
+	info_label.text = "Oleada %d en curso%s" % [wave_number, ("  —  N: terminar" if debug_mode else "")]
 
 func _end_wave() -> void:
 	wave_active = false
@@ -125,8 +190,12 @@ func _end_wave() -> void:
 	info_label.text = ""
 	_clear_enemies()
 
-	# Siempre se abre la tienda al terminar una oleada. Tras la última oleada,
-	# al salir de la tienda comienza el combate contra el jefe (no otra oleada).
+	# En DEV-ROOM no se encadena nada automáticamente: el jugador usa los atajos.
+	if debug_mode:
+		info_label.text = "DEV-ROOM:  M = siguiente oleada  ·  O = tienda  ·  B = jefe"
+		return
+
+	# Main: tienda entre oleadas; tras la última, al salir aparece el jefe.
 	if wave_number >= total_waves:
 		_boss_pending = true
 		info_label.text = "Compra mejoras y prepárate para el JEFE"
@@ -137,9 +206,11 @@ func _on_shop_continue() -> void:
 		# Al salir de la tienda tras la oleada final, aparece el jefe
 		_boss_pending = false
 		_spawn_boss()
-	else:
-		# En el resto de casos, empieza automáticamente la siguiente oleada
+	elif auto_start_waves:
+		# Main: empieza automáticamente la siguiente oleada
 		_start_wave()
+	elif debug_mode:
+		info_label.text = "DEV-ROOM:  M = siguiente oleada  ·  O = tienda  ·  B = jefe"
 
 # =============================================================================
 # TABLA DE OLEADAS
@@ -243,7 +314,7 @@ func _on_boss_defeated() -> void:
 # =============================================================================
 func _build_screens() -> void:
 	_start_screen = _make_screen("SPINSHOT",
-		"Clic der./izq.: disparar Spin-Bullet (dos giros)\nWASD: mover   Espacio: esquivar\nN: iniciar oleada   M: terminarla",
+		"WASD: mover   Espacio: esquivar\nClic izq./der.: disparar Spin-Bullet (dos giros)\nESC: inventario",
 		"JUGAR", _on_start_pressed)
 	_victory_screen = _make_screen("¡VICTORIA!",
 		"Has superado todas las oleadas.", "Jugar de nuevo", _on_restart_pressed)
@@ -317,7 +388,12 @@ func _hide_screens() -> void:
 
 func _on_start_pressed() -> void:
 	_hide_screens()
-	info_label.text = "Pulsa N para empezar la oleada 1"
+	if debug_mode:
+		info_label.text = "DEV-ROOM:  M = oleada · N = terminar · B = jefe · 1-5 = enemigos · O = tienda · C = +100 · G = god"
+	elif auto_start_waves:
+		_start_wave()   # Main: las oleadas empiezan automáticamente
+	else:
+		info_label.text = "Pulsa para empezar"
 
 func _on_restart_pressed() -> void:
 	get_tree().paused = false
@@ -325,6 +401,127 @@ func _on_restart_pressed() -> void:
 
 func _on_player_died() -> void:
 	_show_death()
+
+# =============================================================================
+# INVENTARIO (ESC o desde la tienda)
+# =============================================================================
+func _build_inventory() -> void:
+	_inventory_panel = Control.new()
+	_inventory_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_inventory_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_inventory_panel.visible = false
+
+	var bg := ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0, 0, 0, 0.55)
+	_inventory_panel.add_child(bg)
+
+	var panel := Panel.new()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.offset_left = -300.0
+	panel.offset_top = -230.0
+	panel.offset_right = 300.0
+	panel.offset_bottom = 230.0
+	_inventory_panel.add_child(panel)
+
+	var margin := MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_bottom", 18)
+	panel.add_child(margin)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	margin.add_child(vbox)
+
+	var title := Label.new()
+	title.text = "INVENTARIO"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 28)
+	vbox.add_child(title)
+
+	_inventory_grid = GridContainer.new()
+	_inventory_grid.columns = 6
+	_inventory_grid.add_theme_constant_override("h_separation", 10)
+	_inventory_grid.add_theme_constant_override("v_separation", 10)
+	vbox.add_child(_inventory_grid)
+
+	var hint := Label.new()
+	hint.text = "Pasa el cursor sobre un ítem para ver sus detalles.  ESC para cerrar."
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
+	vbox.add_child(hint)
+
+	ui.add_child(_inventory_panel)
+
+func _toggle_inventory() -> void:
+	if _screen_active:
+		return
+	_inventory_open = not _inventory_open
+	if _inventory_open:
+		_refresh_inventory()
+		_inventory_panel.visible = true
+		get_tree().paused = true
+	else:
+		_inventory_panel.visible = false
+		if not _screen_active:
+			get_tree().paused = false
+
+func _refresh_inventory() -> void:
+	for c in _inventory_grid.get_children():
+		c.queue_free()
+
+	if player == null or not is_instance_valid(player):
+		player = _find_player()
+	var inv: Dictionary = {}
+	if player != null:
+		var v = player.get("inventory")
+		if v is Dictionary:
+			inv = v
+
+	if inv.is_empty():
+		var empty := Label.new()
+		empty.text = "(Aún no has comprado ningún ítem)"
+		_inventory_grid.add_child(empty)
+		return
+
+	for id in inv.keys():
+		_inventory_grid.add_child(_make_inventory_slot(inv[id]))
+
+func _make_inventory_slot(data: Dictionary) -> Control:
+	var slot := Panel.new()
+	slot.custom_minimum_size = Vector2(80, 80)
+	slot.tooltip_text = "%s\n\n%s\n\nCantidad/Nivel: %d" % [
+		String(data.get("name", "")),
+		String(data.get("desc", "")),
+		int(data.get("count", 1)),
+	]
+
+	var icon := TextureRect.new()
+	icon.set_anchors_preset(Control.PRESET_FULL_RECT)
+	icon.offset_left = 6.0
+	icon.offset_top = 6.0
+	icon.offset_right = -6.0
+	icon.offset_bottom = -6.0
+	icon.texture = data.get("icon", null)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	slot.add_child(icon)
+
+	var count := Label.new()
+	count.text = "x%d" % int(data.get("count", 1))
+	count.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	count.offset_left = -28.0
+	count.offset_top = -22.0
+	count.offset_right = -4.0
+	count.offset_bottom = -2.0
+	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	slot.add_child(count)
+
+	return slot
 
 # =============================================================================
 # UI

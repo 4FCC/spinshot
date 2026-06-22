@@ -38,6 +38,9 @@ func _update_ai(delta: float) -> void:
 	else:
 		velocity = dir.rotated(PI / 2.0) * move_speed * 0.5
 
+	if passive:
+		return   # maniquí de pruebas: no dispara
+
 	_fire_timer -= delta
 	if _fire_timer <= 0.0:
 		_fire_timer = fire_interval
