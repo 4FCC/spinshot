@@ -232,7 +232,7 @@ func _enter_shop() -> void:
 	_clear_bullets()
 	if player != null and is_instance_valid(player) and player.has_method("set_frozen"):
 		player.set_frozen(true)
-	shop.open()
+	shop.open(wave_number)
 
 func _clear_bullets() -> void:
 	for bullet in get_tree().get_nodes_in_group("spin_bullet"):

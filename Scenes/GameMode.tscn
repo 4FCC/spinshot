@@ -85,14 +85,12 @@ text = ""
 visible = false
 
 [node name="Shop" type="Panel" parent="UI"]
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -260.0
-offset_top = -240.0
-offset_right = 260.0
-offset_bottom = 240.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 48.0
+offset_top = 44.0
+offset_right = -48.0
+offset_bottom = -44.0
 script = ExtResource("5_shop")
 icon_health = ExtResource("6_i1")
 icon_damage = ExtResource("7_i2")
