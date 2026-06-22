@@ -79,6 +79,8 @@ func _build_pool() -> void:
 	]
 
 func _build_ui() -> void:
+	UiTheme.apply_panel(self)
+
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 18)
@@ -94,11 +96,12 @@ func _build_ui() -> void:
 	var title := Label.new()
 	title.text = "TIENDA"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 28)
+	UiTheme.apply_title(title, 30)
 	vbox.add_child(title)
 
 	_coins_label = Label.new()
 	_coins_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	UiTheme.apply_label(_coins_label)
 	vbox.add_child(_coins_label)
 
 	vbox.add_child(HSeparator.new())
@@ -112,12 +115,14 @@ func _build_ui() -> void:
 
 	_reroll_button = Button.new()
 	_reroll_button.custom_minimum_size = Vector2(0, 44)
+	UiTheme.apply_button(_reroll_button)
 	_reroll_button.pressed.connect(_on_reroll)
 	vbox.add_child(_reroll_button)
 
 	var continue_button := Button.new()
 	continue_button.text = "Continuar"
 	continue_button.custom_minimum_size = Vector2(0, 48)
+	UiTheme.apply_button(continue_button)
 	continue_button.pressed.connect(_on_continue)
 	vbox.add_child(continue_button)
 
@@ -183,6 +188,7 @@ func _populate_options() -> void:
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.expand_icon = true
 		button.tooltip_text = String(upg.get("desc", ""))
+		UiTheme.apply_button(button)
 		button.pressed.connect(_on_buy.bind(i))
 		_options_box.add_child(button)
 		_option_buttons.append(button)

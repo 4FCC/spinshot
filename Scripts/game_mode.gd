@@ -74,12 +74,20 @@ func _ready() -> void:
 
 	_build_screens()
 	_build_inventory()
+	_style_labels()
 	_update_wave_label()
 	timer_label.text = ""
 	info_label.text = ""
 
 	call_deferred("_connect_player")
 	_show_start()
+
+func _style_labels() -> void:
+	UiTheme.apply_label(coins_label)
+	UiTheme.apply_label(wave_label)
+	UiTheme.apply_label(info_label)
+	UiTheme.apply_title(timer_label, 32)
+	UiTheme.apply_title(announce_label, 48)
 
 func _connect_player() -> void:
 	player = _find_player()
@@ -359,34 +367,48 @@ func _make_screen(title_text: String, subtitle_text: String, button_text: String
 
 	var bg := ColorRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.05, 0.05, 0.08, 0.85)
+	bg.color = Color(0.03, 0.03, 0.05, 0.9)
 	screen.add_child(bg)
 
 	var center := CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	screen.add_child(center)
 
+	# Panel de madera que envuelve el contenido de la pantalla
+	var panel := PanelContainer.new()
+	UiTheme.apply_panel(panel)
+	center.add_child(panel)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 40)
+	margin.add_theme_constant_override("margin_top", 30)
+	margin.add_theme_constant_override("margin_right", 40)
+	margin.add_theme_constant_override("margin_bottom", 30)
+	panel.add_child(margin)
+
 	var vbox := VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_theme_constant_override("separation", 18)
-	center.add_child(vbox)
+	margin.add_child(vbox)
 
 	var title := Label.new()
 	title.text = title_text
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 52)
+	UiTheme.apply_title(title, 52)
 	vbox.add_child(title)
 
 	if subtitle_text != "":
 		var sub := Label.new()
 		sub.text = subtitle_text
 		sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		UiTheme.apply_label(sub)
 		vbox.add_child(sub)
 
 	var button := Button.new()
 	button.text = button_text
 	button.custom_minimum_size = Vector2(240, 54)
 	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	UiTheme.apply_button(button)
 	button.pressed.connect(button_cb)
 	vbox.add_child(button)
 
@@ -408,6 +430,7 @@ func _set_screen(screen: Control) -> void:
 	_victory_screen.visible = screen == _victory_screen
 	_death_screen.visible = screen == _death_screen
 	_screen_active = true
+	_set_gameplay_ui_visible(false)
 	get_tree().paused = true
 
 func _hide_screens() -> void:
@@ -415,6 +438,7 @@ func _hide_screens() -> void:
 	_victory_screen.visible = false
 	_death_screen.visible = false
 	_screen_active = false
+	_set_gameplay_ui_visible(true)
 	get_tree().paused = false
 
 func _on_start_pressed() -> void:
@@ -453,13 +477,14 @@ func _build_inventory() -> void:
 	panel.offset_top = -230.0
 	panel.offset_right = 300.0
 	panel.offset_bottom = 230.0
+	UiTheme.apply_panel(panel)
 	_inventory_panel.add_child(panel)
 
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_left", 22)
 	margin.add_theme_constant_override("margin_top", 18)
-	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_right", 22)
 	margin.add_theme_constant_override("margin_bottom", 18)
 	panel.add_child(margin)
 
@@ -470,7 +495,7 @@ func _build_inventory() -> void:
 	var title := Label.new()
 	title.text = "INVENTARIO"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 28)
+	UiTheme.apply_title(title, 30)
 	vbox.add_child(title)
 
 	_inventory_grid = GridContainer.new()
@@ -482,7 +507,7 @@ func _build_inventory() -> void:
 	var hint := Label.new()
 	hint.text = "Pasa el cursor sobre un ítem para ver sus detalles.  ESC para cerrar."
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
+	UiTheme.apply_label(hint)
 	vbox.add_child(hint)
 
 	ui.add_child(_inventory_panel)
@@ -493,12 +518,27 @@ func _toggle_inventory() -> void:
 	_inventory_open = not _inventory_open
 	if _inventory_open:
 		_refresh_inventory()
+		# Ocultar el HUD y los textos para que la interfaz quede limpia
+		_set_gameplay_ui_visible(false)
 		_inventory_panel.visible = true
 		get_tree().paused = true
 	else:
 		_inventory_panel.visible = false
+		_set_gameplay_ui_visible(true)
 		if not _screen_active:
 			get_tree().paused = false
+
+func _set_gameplay_ui_visible(v: bool) -> void:
+	"""Muestra/oculta el HUD de la partida (vida, esquive, monedas, oleada,
+	tiempo, info) para que no estorbe al abrir el inventario o una pantalla."""
+	coins_label.visible = v
+	wave_label.visible = v
+	timer_label.visible = v
+	info_label.visible = v
+	if not v:
+		announce_label.visible = false
+	if player != null and is_instance_valid(player) and player.has_method("set_hud_visible"):
+		player.set_hud_visible(v)
 
 func _refresh_inventory() -> void:
 	for c in _inventory_grid.get_children():
@@ -515,6 +555,7 @@ func _refresh_inventory() -> void:
 	if inv.is_empty():
 		var empty := Label.new()
 		empty.text = "(Aún no has comprado ningún ítem)"
+		UiTheme.apply_label(empty)
 		_inventory_grid.add_child(empty)
 		return
 
@@ -524,6 +565,7 @@ func _refresh_inventory() -> void:
 func _make_inventory_slot(data: Dictionary) -> Control:
 	var slot := Panel.new()
 	slot.custom_minimum_size = Vector2(80, 80)
+	UiTheme.apply_slot(slot)
 	slot.tooltip_text = "%s\n\n%s\n\nCantidad/Nivel: %d" % [
 		String(data.get("name", "")),
 		String(data.get("desc", "")),
@@ -545,10 +587,15 @@ func _make_inventory_slot(data: Dictionary) -> Control:
 	var count := Label.new()
 	count.text = "x%d" % int(data.get("count", 1))
 	count.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	count.offset_left = -28.0
-	count.offset_top = -22.0
+	count.offset_left = -30.0
+	count.offset_top = -24.0
 	count.offset_right = -4.0
 	count.offset_bottom = -2.0
+	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	count.add_theme_color_override("font_color", UiTheme.GOLD)
+	count.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+	count.add_theme_constant_override("shadow_offset_x", 1)
+	count.add_theme_constant_override("shadow_offset_y", 1)
 	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	slot.add_child(count)
 

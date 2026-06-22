@@ -110,6 +110,16 @@ func _ready():
 	camera.position_smoothing_speed = 6.0
 	_update_camera_zoom()
 	get_viewport().size_changed.connect(_update_camera_zoom)
+	_style_hud()
+
+func _style_hud() -> void:
+	# Aspecto madera/dorado coherente con el resto de la interfaz
+	UiTheme.apply_progress(health_bar, Color(0.78, 0.20, 0.20))
+	UiTheme.apply_progress(dodge_bar, Color(0.85, 0.85, 0.92))
+	UiTheme.apply_label(health_label)
+	UiTheme.apply_label(dodge_label)
+	if has_node("HUD/Root/Hint"):
+		UiTheme.apply_label($HUD/Root/Hint)
 
 func _update_camera_zoom() -> void:
 	var vp_h := get_viewport().get_visible_rect().size.y
@@ -431,6 +441,12 @@ func set_frozen(value: bool) -> void:
 	if is_frozen:
 		velocity = Vector2.ZERO
 		sprite.play("idle")
+
+func set_hud_visible(value: bool) -> void:
+	"""Muestra/oculta el HUD del jugador (vida, esquive, ayuda) para que no
+	estorbe al abrir el inventario u otras pantallas."""
+	if has_node("HUD/Root"):
+		$HUD/Root.visible = value
 
 # =============================================================================
 # MEJORAS (usadas por la tienda)
