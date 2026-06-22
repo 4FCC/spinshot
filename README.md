@@ -12,34 +12,48 @@ sueltan al morir y una tienda de mejoras entre oleadas.
 
 Se usan los assets del pack *Tiny Swords (Free Pack)*.
 
-## Controles
+## Controles (jugador, escena Main)
 
 - **WASD / Flechas**: mover (con aceleración y fricción)
-- **Espacio**: esquivar (gira sobre sí mismo + invulnerabilidad breve)
+- **Espacio**: esquivar (gira sobre sí mismo + invulnerabilidad durante todo el
+  recorrido del esquive)
 - **Clic derecho**: Spin-Bullet con giro en **espiral**
 - **Clic izquierdo**: Spin-Bullet con giro **ondulado** (trayectoria distinta)
-- **N**: iniciar una oleada
-- **M**: terminar la oleada actual (abre la tienda)
-- **B**: invocar al jefe (tecla de depuración para pruebas)
-- **K**: recibir daño (prueba)
+- **ESC**: abrir/cerrar el **inventario** (también accesible en la tienda)
 
 Al recibir daño el jugador tiene una breve **invulnerabilidad** durante la cual
-no recibe más daño y **atraviesa a los enemigos** (normalmente choca con ellos).
+no recibe más daño y **atraviesa a los enemigos** (normalmente choca con ellos
+y con los muros del escenario).
 
-## Bucle de juego
+## Bucle de juego (Main)
 
 1. En la **pantalla de inicio** pulsa JUGAR.
-2. Pulsa **N** para iniciar una oleada (dura **60 s**, con cuenta atrás en pantalla).
+2. La **oleada 1 empieza automáticamente** (cada oleada dura **60 s**, con cuenta atrás).
 3. Mata enemigos con las Spin-Bullets; cada enemigo suelta **monedas** al morir.
-4. La oleada termina a los 60 s (o antes con **M**): se abre la **tienda**.
-5. Compra mejoras (o usa **Tirar dado** para cambiar las opciones) y pulsa **Continuar**:
-   la siguiente oleada empieza automáticamente.
-6. Tras la **oleada 10** se abre la tienda una última vez; al salir comienza el
+4. Al terminar la oleada se abre la **tienda**; compra mejoras (o usa **Tirar dado**)
+   y pulsa **Continuar**: la siguiente oleada empieza sola.
+5. Tras la **oleada 10** se abre la tienda una última vez; al salir comienza el
    combate contra el **jefe final**. Al derrotarlo aparece la **pantalla de
    victoria**; si mueres, la **pantalla de muerte**. Ambas permiten reiniciar.
 
-Todo el bucle (oleadas, tienda y pantallas) funciona tanto en **Main** como en
-**DEV-ROOM**, porque vive en una escena reutilizable `GameMode.tscn`.
+Todo el bucle (oleadas, tienda, jefe, pantallas, inventario) vive en la escena
+reutilizable `GameMode.tscn`, que tanto **Main** como **DEV-ROOM** instancian.
+La diferencia es el modo: Main juega solo (auto), DEV-ROOM es manual + depuración.
+
+## Inventario
+
+Se abre con **ESC** (o durante la tienda). Muestra en un panel oscuro los ítems
+comprados con su sprite y cantidad; al pasar el cursor por encima aparece un
+**tooltip** con nombre, descripción, efectos y nivel/cantidad.
+
+## Herramientas de depuración (solo DEV-ROOM)
+
+- **M**: iniciar la siguiente oleada · **N**: terminar la oleada actual
+- **B**: invocar al jefe
+- **1–5**: generar enemigos de prueba (Minion / BigMinion / BulletMinion / Cargador / Apoyo) — no atacan
+- **O**: abrir la tienda en cualquier momento
+- **C**: +100 monedas
+- **G**: activar/desactivar el daño recibido (god mode)
 
 ### Oleadas
 

@@ -40,6 +40,7 @@ var player: Node2D = null
 var _attack_timer: float = 0.0
 var _dead: bool = false
 var _lethal: bool = false      # bajo efecto de "giro letal"
+var passive: bool = false      # enemigo de prueba (DEV-ROOM): no ataca
 
 const LETHAL_SPIN_SPEED := 18.0   # rad/s mientras gira hasta morir
 
@@ -114,8 +115,13 @@ func _update_ai(_delta: float) -> void:
 	else:
 		velocity = to_player.normalized() * move_speed
 
+func make_passive() -> void:
+	"""Convierte al enemigo en maniquí de pruebas: no hace daño."""
+	passive = true
+	melee_enabled = false
+
 func _try_melee() -> void:
-	if player == null or _attack_timer > 0.0:
+	if passive or player == null or _attack_timer > 0.0:
 		return
 	for body in hitbox.get_overlapping_bodies():
 		if body.is_in_group("player") and body.has_method("take_damage"):

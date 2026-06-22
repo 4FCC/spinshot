@@ -4,8 +4,9 @@ extends Panel
 # SHOP — Tienda entre oleadas
 # =============================================================================
 # Muestra una selección aleatoria de mejoras de un pool. Un botón de "tirada de
-# dados" (reroll) cambia las opciones disponibles por monedas. Al terminar, el
-# botón "Continuar" emite la señal para empezar la siguiente oleada.
+# dados" (reroll) cambia las opciones por monedas. Respeta los límites de compra
+# de cada ítem: los de compra única o que alcanzan su nivel máximo dejan de
+# aparecer (ni al abrir la tienda ni con el reroll).
 
 signal continue_pressed
 
@@ -39,29 +40,41 @@ func _ready() -> void:
 	Game.coins_changed.connect(func(_t): _refresh())
 
 func _build_pool() -> void:
+	# "max" = número máximo de compras (0 = ilimitado).
 	_pool = [
-		{"name": "Vida máxima +5", "cost": 5, "icon": icon_health,
+		{"id": "health5", "name": "Vida máxima +5", "cost": 5, "max": 0, "icon": icon_health,
+			"desc": "Aumenta la vida máxima en 5 y cura esa cantidad.",
 			"apply": func(p): p.upgrade_max_health(5)},
-		{"name": "Vida máxima +10", "cost": 9, "icon": icon_extra1,
+		{"id": "health10", "name": "Vida máxima +10", "cost": 9, "max": 0, "icon": icon_extra1,
+			"desc": "Aumenta la vida máxima en 10 y cura esa cantidad.",
 			"apply": func(p): p.upgrade_max_health(10)},
-		{"name": "Daño de bala +1", "cost": 8, "icon": icon_damage,
+		{"id": "dmg1", "name": "Daño de bala +1", "cost": 8, "max": 0, "icon": icon_damage,
+			"desc": "+1 de daño a cada Spin-Bullet.",
 			"apply": func(p): p.upgrade_bullet_damage(1)},
-		{"name": "Daño de bala +2", "cost": 14, "icon": icon_extra2,
+		{"id": "dmg2", "name": "Daño de bala +2", "cost": 14, "max": 0, "icon": icon_extra2,
+			"desc": "+2 de daño a cada Spin-Bullet.",
 			"apply": func(p): p.upgrade_bullet_damage(2)},
-		{"name": "Velocidad +40", "cost": 6, "icon": icon_speed,
+		{"id": "speed", "name": "Velocidad +40", "cost": 6, "max": 0, "icon": icon_speed,
+			"desc": "+40 de velocidad de movimiento.",
 			"apply": func(p): p.upgrade_speed(40.0)},
-		{"name": "Cadencia de disparo +15%", "cost": 7, "icon": icon_firerate,
+		{"id": "firerate", "name": "Cadencia de disparo +15%", "cost": 7, "max": 0, "icon": icon_firerate,
+			"desc": "Reduce el tiempo entre disparos un 15%.",
 			"apply": func(p): p.upgrade_fire_rate(0.85)},
 		# --- Ítems con habilidad especial ---
-		{"name": "Robo de vida al recoger moneda (máx 3)", "cost": 10, "icon": icon_coinheal,
+		{"id": "coinheal", "name": "Robo de vida al recoger moneda", "cost": 10, "max": 3, "icon": icon_coinheal,
+			"desc": "25% por nivel de curar 1-3 al recoger una moneda. Máx 3 niveles (75%).",
 			"apply": func(p): p.add_coin_heal()},
-		{"name": "Rebote ofensivo: +1 SpinShot (máx 3)", "cost": 15, "icon": icon_bounce,
+		{"id": "bounce", "name": "Rebote ofensivo: +1 SpinShot", "cost": 15, "max": 3, "icon": icon_bounce,
+			"desc": "Cada SpinShot genera una nueva al impactar a un enemigo. Máx 3.",
 			"apply": func(p): p.add_bounce()},
-		{"name": "División de proyectil (única)", "cost": 18, "icon": icon_split,
+		{"id": "split", "name": "División de proyectil (única)", "cost": 18, "max": 1, "icon": icon_split,
+			"desc": "La SpinShot se divide en dos a media trayectoria. Compra única.",
 			"apply": func(p): p.enable_split()},
-		{"name": "Giro letal: +1% muerte al girar", "cost": 6, "icon": icon_lethal,
+		{"id": "lethal", "name": "Giro letal: +1% muerte al girar", "cost": 6, "max": 0, "icon": icon_lethal,
+			"desc": "+1% por compra de matar al enemigo haciéndolo girar. Sin límite.",
 			"apply": func(p): p.add_lethal()},
-		{"name": "Esquiva automática +25% (máx 3)", "cost": 12, "icon": icon_autododge,
+		{"id": "autododge", "name": "Esquiva automática +25%", "cost": 12, "max": 3, "icon": icon_autododge,
+			"desc": "25% por nivel de esquivar automáticamente al recibir daño. Máx 3 (75%).",
 			"apply": func(p): p.add_autododge()},
 	]
 
@@ -103,7 +116,7 @@ func _build_ui() -> void:
 	vbox.add_child(_reroll_button)
 
 	var continue_button := Button.new()
-	continue_button.text = "Continuar (siguiente oleada)"
+	continue_button.text = "Continuar"
 	continue_button.custom_minimum_size = Vector2(0, 48)
 	continue_button.pressed.connect(_on_continue)
 	vbox.add_child(continue_button)
@@ -116,11 +129,44 @@ func open() -> void:
 	visible = true
 	_refresh()
 
+func _is_available(item: Dictionary) -> bool:
+	"""Un ítem está disponible si no ha alcanzado su límite de compras."""
+	var max_buys := int(item.get("max", 0))
+	if max_buys <= 0:
+		return true
+	if player == null or not is_instance_valid(player):
+		return true
+	return player.get_item_count(String(item.get("id", ""))) < max_buys
+
+func _available_pool() -> Array:
+	var result := []
+	for item in _pool:
+		if _is_available(item):
+			result.append(item)
+	return result
+
 func _roll() -> void:
-	"""Tirada de dados: elige 'slots' mejoras aleatorias distintas del pool."""
-	var available := _pool.duplicate()
+	"""Tirada de dados: elige 'slots' mejoras DISPONIBLES y distintas del pool."""
+	var available := _available_pool()
 	available.shuffle()
 	_current = available.slice(0, min(slots, available.size()))
+	_populate_options()
+
+func _prune_and_refill() -> void:
+	"""Quita de la vista los ítems que ya no estén disponibles (compra única o
+	nivel máximo) y rellena los huecos con otras opciones disponibles."""
+	var kept := []
+	for it in _current:
+		if _is_available(it):
+			kept.append(it)
+	var extra := []
+	for it in _available_pool():
+		if not kept.has(it):
+			extra.append(it)
+	extra.shuffle()
+	while kept.size() < slots and extra.size() > 0:
+		kept.append(extra.pop_back())
+	_current = kept
 	_populate_options()
 
 func _populate_options() -> void:
@@ -136,6 +182,7 @@ func _populate_options() -> void:
 		button.text = "  %s   (%d monedas)" % [upg["name"], upg["cost"]]
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.expand_icon = true
+		button.tooltip_text = String(upg.get("desc", ""))
 		button.pressed.connect(_on_buy.bind(i))
 		_options_box.add_child(button)
 		_option_buttons.append(button)
@@ -144,7 +191,10 @@ func _refresh() -> void:
 	if _coins_label != null:
 		_coins_label.text = "Monedas: %d" % Game.coins
 	for i in _option_buttons.size():
-		_option_buttons[i].disabled = Game.coins < int(_current[i]["cost"])
+		if i >= _current.size():
+			continue
+		var item = _current[i]
+		_option_buttons[i].disabled = Game.coins < int(item["cost"]) or not _is_available(item)
 	if _reroll_button != null:
 		_reroll_button.text = "Tirar dado: nuevas opciones (%d monedas)" % reroll_cost
 		_reroll_button.disabled = Game.coins < reroll_cost
@@ -152,10 +202,16 @@ func _refresh() -> void:
 func _on_buy(index: int) -> void:
 	if index >= _current.size():
 		return
-	var upg = _current[index]
-	if Game.spend(int(upg["cost"])):
+	var item = _current[index]
+	if not _is_available(item):
+		return
+	if Game.spend(int(item["cost"])):
 		if player != null and is_instance_valid(player):
-			upg["apply"].call(player)
+			item["apply"].call(player)
+			if player.has_method("register_item"):
+				player.register_item(item)
+	# Tras comprar, retira los ítems que se hayan agotado y rellena
+	_prune_and_refill()
 	_refresh()
 
 func _on_reroll() -> void:

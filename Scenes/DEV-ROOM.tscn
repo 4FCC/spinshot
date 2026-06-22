@@ -171,3 +171,5 @@ shape = SubResource("rs_wall_v")
 position = Vector2(960, 960)
 
 [node name="GameMode" parent="." instance=ExtResource("9_gm")]
+debug_mode = true
+auto_start_waves = false
