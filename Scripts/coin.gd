@@ -16,4 +16,7 @@ func set_value(v: int) -> void:
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player"):
 		Game.add_coins(value)
+		# Permite efectos al recoger moneda (p. ej. robo de vida)
+		if body.has_method("on_coin_collected"):
+			body.on_coin_collected()
 		queue_free()

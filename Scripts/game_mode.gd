@@ -39,6 +39,7 @@ var time_left: float = 0.0
 var _spawn_accum: float = 0.0
 var _waves: Array = []          # Tabla de oleadas (ver _build_waves)
 var _boss: Node = null          # Instancia del jefe (si está vivo)
+var _boss_pending: bool = false # Tras la oleada final: tienda y luego jefe
 
 # Pantallas
 var _start_screen: Control = null
@@ -124,15 +125,21 @@ func _end_wave() -> void:
 	info_label.text = ""
 	_clear_enemies()
 
-	# Tras la última oleada aparece el jefe. Si no, se abre la tienda.
+	# Siempre se abre la tienda al terminar una oleada. Tras la última oleada,
+	# al salir de la tienda comienza el combate contra el jefe (no otra oleada).
 	if wave_number >= total_waves:
-		_spawn_boss()
-	else:
-		shop.open()
+		_boss_pending = true
+		info_label.text = "Compra mejoras y prepárate para el JEFE"
+	shop.open()
 
 func _on_shop_continue() -> void:
-	# Al cerrar la tienda comienza automáticamente la siguiente oleada
-	_start_wave()
+	if _boss_pending:
+		# Al salir de la tienda tras la oleada final, aparece el jefe
+		_boss_pending = false
+		_spawn_boss()
+	else:
+		# En el resto de casos, empieza automáticamente la siguiente oleada
+		_start_wave()
 
 # =============================================================================
 # TABLA DE OLEADAS

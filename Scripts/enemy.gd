@@ -17,6 +17,7 @@ extends CharacterBody2D
 @export var attack_cooldown: float = 0.8
 @export var melee_enabled: bool = true
 @export var stop_distance: float = 50.0
+@export var lethal_spin_time: float = 1.0   # "Giro letal": gira y muere tras este tiempo
 
 @export_group("Recompensa")
 @export var coin_scene: PackedScene
@@ -38,6 +39,9 @@ var health: int
 var player: Node2D = null
 var _attack_timer: float = 0.0
 var _dead: bool = false
+var _lethal: bool = false      # bajo efecto de "giro letal"
+
+const LETHAL_SPIN_SPEED := 18.0   # rad/s mientras gira hasta morir
 
 func _ready() -> void:
 	add_to_group("enemy")
@@ -80,6 +84,12 @@ func _add_animation(frames: SpriteFrames, anim_name: String, sheet: Texture2D, c
 # =============================================================================
 func _physics_process(delta: float) -> void:
 	if _dead:
+		return
+
+	# Giro letal: el enemigo gira en el sitio hasta morir; no hace nada más.
+	if _lethal:
+		sprite.rotation += LETHAL_SPIN_SPEED * delta
+		velocity = Vector2.ZERO
 		return
 
 	_attack_timer = maxf(0.0, _attack_timer - delta)
@@ -131,6 +141,20 @@ func take_damage(amount: int) -> void:
 	_flash()
 	if health <= 0:
 		_die()
+
+func apply_lethal_spin() -> void:
+	"""Giro letal (ítem): el enemigo empieza a girar y muere tras un instante.
+	Reemplaza el daño normal del impacto que lo activó."""
+	if _dead or _lethal:
+		return
+	_lethal = true
+	velocity = Vector2.ZERO
+	melee_enabled = false
+	sprite.modulate = Color(1.0, 0.9, 0.3)
+	var t := get_tree().create_timer(lethal_spin_time)
+	t.timeout.connect(func():
+		if is_instance_valid(self) and not _dead:
+			_die())
 
 func heal(amount: int) -> void:
 	"""Regeneración aplicada por el enemigo de Apoyo a los aliados cercanos."""

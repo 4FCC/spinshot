@@ -72,6 +72,15 @@ var damage_timer: Timer       # Invulnerabilidad tras recibir daño
 var shoot_cooldown: Timer     # Cadencia entre Spin-Bullets
 
 # =============================================================================
+# NIVELES DE ÍTEMS (habilidades especiales, ver tienda y docs/items.md)
+# =============================================================================
+var coin_heal_level: int = 0   # Robo de vida al recoger monedas (máx 3 -> 75%)
+var bounce_level: int = 0      # Rebote ofensivo: SpinShots extra al impactar (máx 3)
+var has_split: bool = false    # División de proyectil (única)
+var lethal_level: int = 0      # Giro letal: +1% por nivel (ilimitado)
+var autododge_level: int = 0   # Esquiva automática al recibir daño (máx 3 -> 75%)
+
+# =============================================================================
 # INICIALIZACIÓN
 # =============================================================================
 func _ready():
@@ -225,6 +234,11 @@ func take_damage(amount: int):
 	if current_state == State.DEAD or is_invulnerable or current_state == State.DODGE:
 		return
 
+	# Esquiva automática (ítem): probabilidad de esquivar el golpe por completo
+	if autododge_level > 0 and randf() < 0.25 * autododge_level:
+		start_dodge()
+		return
+
 	current_state = State.TAKING_DAMAGE
 	vida = clamp(vida - amount, 0, vida_max)
 	_update_health_ui()
@@ -249,6 +263,10 @@ func taking_damage_state(_delta):
 		start_dodge()
 
 func _on_damage_timer_timeout():
+	# Si estamos esquivando, NO tocar la invulnerabilidad: el esquive la controla
+	# (así el dodge mantiene invulnerabilidad durante todo su recorrido).
+	if current_state == State.DODGE:
+		return
 	is_invulnerable = false
 	sprite.modulate = Color.WHITE
 	if current_state == State.TAKING_DAMAGE:
@@ -283,6 +301,11 @@ func _shoot_spin_bullet(pattern: int = 0):
 
 	var bullet = spin_bullet_scene.instantiate()
 	bullet.damage = bullet_damage
+	# Habilidades de ítems que lleva cada SpinShot
+	bullet.bounce_count = bounce_level
+	bullet.has_split = has_split
+	bullet.lethal_chance = lethal_level * 0.01
+	bullet.bullet_scene = spin_bullet_scene
 	# Añadir a la raíz de la escena para que orbite en espacio de mundo
 	var host = get_tree().current_scene
 	if host == null:
@@ -351,3 +374,29 @@ func upgrade_fire_rate(factor: float) -> void:
 	shoot_cooldown_time = maxf(0.05, shoot_cooldown_time * factor)
 	if shoot_cooldown != null:
 		shoot_cooldown.wait_time = shoot_cooldown_time
+
+# =============================================================================
+# ÍTEMS CON HABILIDAD ESPECIAL
+# =============================================================================
+func add_coin_heal() -> void:
+	coin_heal_level = min(coin_heal_level + 1, 3)
+
+func add_bounce() -> void:
+	bounce_level = min(bounce_level + 1, 3)
+
+func enable_split() -> void:
+	has_split = true
+
+func add_lethal() -> void:
+	lethal_level += 1   # ilimitado, +1% por compra
+
+func add_autododge() -> void:
+	autododge_level = min(autododge_level + 1, 3)
+
+func on_coin_collected() -> void:
+	"""Robo de vida: cada moneda tiene 25% por nivel de curar 1-3 (máx 75%)."""
+	if coin_heal_level <= 0:
+		return
+	if randf() < 0.25 * coin_heal_level:
+		vida = clamp(vida + randi_range(1, 3), 0, vida_max)
+		_update_health_ui()

@@ -28,6 +28,25 @@ de `Scenes/GameMode.tscn`).
 La economía es global: el autoload **`Game`** (`Scripts/game.gd`) guarda las
 monedas y emite `coins_changed`. Las monedas las sueltan los enemigos (`coin.gd`).
 
+## Ítems con habilidad especial
+
+Además de los que dan estadísticas, hay 5 ítems que otorgan habilidades. Su
+nivel se guarda en el jugador (`billy.gd`) y la lógica vive en el jugador, la
+moneda (`coin.gd`) o la SpinShot (`spin_bullet.gd`).
+
+| Ítem | Efecto | Acumulable | Dónde está la lógica |
+|------|--------|-----------|----------------------|
+| Robo de vida | 25% por nivel de curar 1–3 al recoger una moneda (máx 75%) | hasta 3 | `billy.on_coin_collected()` + `coin.gd` |
+| Rebote ofensivo | Al impactar a un enemigo genera N SpinShots nuevas (no rebotan otra vez) | hasta 3 | `spin_bullet._spawn_bounce()` |
+| División de proyectil | A mitad de trayectoria la SpinShot se divide en dos (afecta a ambos clics y a las generadas por rebote) | única | `spin_bullet._spawn_split()` |
+| Giro letal | 1% por nivel de matar al enemigo haciéndolo girar (reemplaza el daño) | ilimitado | `spin_bullet._on_body_entered` + `enemy.apply_lethal_spin()` |
+| Esquiva automática | 25% por nivel de activar el dodge al recibir daño (máx 75%) | hasta 3 | `billy.take_damage()` |
+
+Las SpinShots llevan estas habilidades como variables (`bounce_count`,
+`has_split`, `lethal_chance`, `bullet_scene`), que `billy._shoot_spin_bullet()`
+copia al crear cada bala. Como las balas se replican a sí mismas, la habilidad
+de división también afecta a las creadas por el rebote.
+
 ## Efectos disponibles en el jugador
 
 Los `apply` llaman a métodos de `billy.gd`. Los actuales:
@@ -38,6 +57,11 @@ Los `apply` llaman a métodos de `billy.gd`. Los actuales:
 | `upgrade_bullet_damage(n)` | +`n` daño por Spin-Bullet. |
 | `upgrade_speed(n)` | +`n` velocidad de movimiento. |
 | `upgrade_fire_rate(factor)` | Reduce el cooldown de disparo (`factor` < 1). |
+| `add_coin_heal()` | +1 nivel de robo de vida (máx 3). |
+| `add_bounce()` | +1 SpinShot de rebote (máx 3). |
+| `enable_split()` | Activa la división de proyectil. |
+| `add_lethal()` | +1% de giro letal (ilimitado). |
+| `add_autododge()` | +1 nivel de esquiva automática (máx 3). |
 
 ## Cómo agregar un ítem nuevo
 
