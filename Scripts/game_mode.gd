@@ -54,6 +54,7 @@ var _spawn_accum: float = 0.0
 var _waves: Array = []          # Tabla de oleadas (ver _build_waves)
 var _boss: Node = null          # Instancia del jefe (si está vivo)
 var _boss_pending: bool = false # Tras la oleada final: tienda y luego jefe
+var _ground: TileMapLayer = null  # Suelo de césped para validar puntos de spawn
 
 # Pantallas
 var _start_screen: Control = null
@@ -366,22 +367,96 @@ func _spawn_group() -> void:
 		player = _find_player()
 	if player == null:
 		return
+	if _ground == null or not is_instance_valid(_ground):
+		_ground = _find_ground()
 
 	var is_large := randf() < large_group_chance
 	var count := randi_range(large_group_min, large_group_max) if is_large \
 		else randi_range(small_group_min, small_group_max)
 
-	# Centro del grupo a distancia fija del jugador; los enemigos se reparten
-	# alrededor de ese centro.
-	var base_angle := randf() * TAU
-	var center: Vector2 = player.global_position + Vector2(cos(base_angle), sin(base_angle)) * spawn_radius
+	# Centro del grupo: punto válido (sobre césped) a distancia del jugador. Si el
+	# jugador está pegado a un borde/esquina, se prueban otros ángulos y radios.
+	var center := _pick_grass_point_near_player()
 	var spread := 140.0 if is_large else 70.0
 
+	# Cada enemigo se reparte alrededor del centro, pero SIEMPRE sobre césped.
 	var positions: Array = []
 	for i in count:
-		positions.append(center + Vector2(randf_range(-spread, spread), randf_range(-spread, spread)))
+		positions.append(_grass_spawn_position(center, spread))
 
 	_telegraph_and_spawn(positions, is_large)
+
+# =============================================================================
+# VALIDACIÓN DE PUNTOS DE APARICIÓN (deben caer sobre el TileMap de césped)
+# =============================================================================
+func _find_ground() -> TileMapLayer:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return null
+	var named := scene.find_child("Ground", true, false)
+	if named is TileMapLayer:
+		return named as TileMapLayer
+	return _first_tilemap(scene)
+
+func _first_tilemap(node: Node) -> TileMapLayer:
+	if node is TileMapLayer:
+		return node
+	for c in node.get_children():
+		var r := _first_tilemap(c)
+		if r != null:
+			return r
+	return null
+
+func _is_on_grass(world_pos: Vector2) -> bool:
+	# Sin tilemap localizado no se puede validar: se acepta el punto.
+	if _ground == null or not is_instance_valid(_ground):
+		return true
+	var cell := _ground.local_to_map(_ground.to_local(world_pos))
+	return _ground.get_cell_source_id(cell) != -1
+
+func _pick_grass_point_near_player() -> Vector2:
+	"""Devuelve un punto sobre césped alrededor del jugador. Prueba varios
+	ángulos al radio deseado y, si el jugador está en un borde/esquina, reduce el
+	radio hasta encontrar césped. Como último recurso usa un punto lejano válido."""
+	var origin: Vector2 = player.global_position
+	var radii := [spawn_radius, spawn_radius * 0.75, spawn_radius * 0.5, spawn_radius * 0.35]
+	for r in radii:
+		var start := randf() * TAU
+		for i in range(16):
+			var ang: float = start + i * (TAU / 16.0)
+			var p: Vector2 = origin + Vector2(cos(ang), sin(ang)) * r
+			if _is_on_grass(p):
+				return p
+	return _random_grass_point_far(origin)
+
+func _grass_spawn_position(center: Vector2, spread: float) -> Vector2:
+	"""Reparte un enemigo alrededor del centro sin salirse del césped."""
+	for attempt in range(10):
+		var p: Vector2 = center + Vector2(randf_range(-spread, spread), randf_range(-spread, spread))
+		if _is_on_grass(p):
+			return p
+	return center   # el centro ya está validado sobre césped
+
+func _random_grass_point_far(from: Vector2) -> Vector2:
+	"""Elige una celda de césped al azar, preferentemente a distancia del jugador."""
+	if _ground == null or not is_instance_valid(_ground):
+		return from
+	var used := _ground.get_used_rect()
+	if used.size.x <= 0 or used.size.y <= 0:
+		return from
+	var fallback := from
+	var min_d := spawn_radius * 0.5
+	for attempt in range(48):
+		var cx := used.position.x + (randi() % used.size.x)
+		var cy := used.position.y + (randi() % used.size.y)
+		var cell := Vector2i(cx, cy)
+		if _ground.get_cell_source_id(cell) == -1:
+			continue
+		var w: Vector2 = _ground.to_global(_ground.map_to_local(cell))
+		fallback = w
+		if w.distance_to(from) >= min_d:
+			return w
+	return fallback
 
 func _telegraph_and_spawn(positions: Array, is_large: bool) -> void:
 	# 1) Mostrar los indicadores de aparición unos segundos

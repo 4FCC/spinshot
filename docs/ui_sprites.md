@@ -209,9 +209,10 @@ Recurso: `Scenes/effect_frames.tres`; escena reutilizable `Scenes/Effect.tscn`
 (`Scripts/effect.gd`) que reproduce la animación y se autodestruye al terminar.
 
 ### Indicador de aparición — `UI assets/Spritesheet_UI_Flat_Animated.png` (128×128)
-Rejilla de 32×32. Se usa la **caja redondeada animada** (fila 3, `y=96`,
-fotogramas 0–3, en bucle) como aviso de la zona donde aparecerá un grupo de
-enemigos. Recurso `Scenes/spawn_indicator_frames.tres`, escena
-`Scenes/SpawnIndicator.tscn` (`Scripts/spawn_indicator.gd`). El color **rojo** se
-aplica por código (`INDICATOR_COLOR` en `game_mode.gd`), con un pulso de escala
-para que destaque.
+La lámina son celdas de 16×16; cada bloque de **32×32** (2×2 celdas) es un marco
+de **4 esquinas** (reticle). Se usa la **animación de retícula** (NO la caja
+rellena): bloques `y=0`, fotogramas en `x = 0, 32, 64, 96` (las esquinas laten
+hacia dentro y fuera), en bucle. Recurso `Scenes/spawn_indicator_frames.tres`,
+escena `Scenes/SpawnIndicator.tscn` (`Scripts/spawn_indicator.gd`). El color
+**rojo** se aplica por código (`INDICATOR_COLOR` en `game_mode.gd`), con un pulso
+de escala para que destaque.
