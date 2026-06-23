@@ -1,10 +1,10 @@
-[gd_scene load_steps=8 format=3 uid="uid://btj32n285qvra"]
+[gd_scene format=3 uid="uid://btj32n285qvra"]
 
-[ext_resource type="Script" uid="uid://bfloorbuilder1" path="res://Scripts/floor_builder.gd" id="1_dev"]
+[ext_resource type="Script" uid="uid://xlyuqnyxcm7e" path="res://Scripts/floor_builder.gd" id="1_dev"]
 [ext_resource type="TileSet" uid="uid://juga8rjk4vmm" path="res://Scenes/grass_tileset.tres" id="2_tiles"]
 [ext_resource type="PackedScene" uid="uid://bm1uo2pxnjqa3" path="res://Scenes/Player.tscn" id="3_player"]
-[ext_resource type="PackedScene" uid="uid://tuuflvma6emi" path="res://Scenes/GameMode.tscn" id="9_gm"]
 [ext_resource type="Script" uid="uid://bcloudborder1" path="res://Scripts/cloud_border.gd" id="5_clouds"]
+[ext_resource type="PackedScene" uid="uid://tuuflvma6emi" path="res://Scenes/GameMode.tscn" id="9_gm"]
 
 [sub_resource type="RectangleShape2D" id="rs_wall_h"]
 size = Vector2(2048, 64)
@@ -12,48 +12,44 @@ size = Vector2(2048, 64)
 [sub_resource type="RectangleShape2D" id="rs_wall_v"]
 size = Vector2(64, 1280)
 
-[node name="DevRoom" type="Node2D"]
+[node name="DevRoom" type="Node2D" unique_id=1188736967]
 script = ExtResource("1_dev")
-width = 30
-height = 18
 
-[node name="Ground" type="TileMapLayer" parent="."]
+[node name="Ground" type="TileMapLayer" parent="." unique_id=1027325070]
 tile_set = ExtResource("2_tiles")
 
-[node name="CloudBorder" type="Node2D" parent="."]
+[node name="CloudBorder" type="Node2D" parent="." unique_id=555541057]
 script = ExtResource("5_clouds")
-area_width = 1920.0
-area_height = 1152.0
 
-[node name="Walls" type="Node2D" parent="."]
+[node name="Walls" type="Node2D" parent="." unique_id=412228100]
 
-[node name="WallTop" type="StaticBody2D" parent="Walls"]
+[node name="WallTop" type="StaticBody2D" parent="Walls" unique_id=652965953]
 position = Vector2(960, -32)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallTop"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallTop" unique_id=1786766801]
 shape = SubResource("rs_wall_h")
 
-[node name="WallBottom" type="StaticBody2D" parent="Walls"]
+[node name="WallBottom" type="StaticBody2D" parent="Walls" unique_id=492862004]
 position = Vector2(960, 1184)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallBottom"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallBottom" unique_id=482401649]
 shape = SubResource("rs_wall_h")
 
-[node name="WallLeft" type="StaticBody2D" parent="Walls"]
+[node name="WallLeft" type="StaticBody2D" parent="Walls" unique_id=955808214]
 position = Vector2(-32, 576)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallLeft"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallLeft" unique_id=46686067]
 shape = SubResource("rs_wall_v")
 
-[node name="WallRight" type="StaticBody2D" parent="Walls"]
+[node name="WallRight" type="StaticBody2D" parent="Walls" unique_id=221257565]
 position = Vector2(1952, 576)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallRight"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallRight" unique_id=1019457850]
 shape = SubResource("rs_wall_v")
 
-[node name="Player" parent="." instance=ExtResource("3_player")]
+[node name="Player" parent="." unique_id=416619167 instance=ExtResource("3_player")]
 position = Vector2(960, 576)
 
-[node name="GameMode" parent="." instance=ExtResource("9_gm")]
+[node name="GameMode" parent="." unique_id=1319442466 instance=ExtResource("9_gm")]
 debug_mode = true
 auto_start_waves = false
