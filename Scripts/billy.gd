@@ -26,9 +26,9 @@ const _CAMERA_TARGET_HEIGHT := 768.0
 @onready var camera: Camera2D = $Camera2D
 
 # UI (HUD): barra de vida y barra/etiqueta del esquive
-@onready var health_bar: ProgressBar = $HUD/Root/HealthBar
+@onready var health_bar: TextureProgressBar = $HUD/Root/HealthBar
 @onready var health_label: Label = $HUD/Root/HealthBar/HealthLabel
-@onready var dodge_bar: ProgressBar = $HUD/Root/DodgeBar
+@onready var dodge_bar: TextureProgressBar = $HUD/Root/DodgeBar
 @onready var dodge_label: Label = $HUD/Root/DodgeBar/DodgeLabel
 
 # =============================================================================
@@ -95,6 +95,9 @@ var _cheat_step: int = 0
 var _cheat_last_ms: int = 0
 var _god_mode_tween: Tween = null
 
+# Efecto de partículas (nube de polvo de la esquiva automática)
+const EFFECT_SCENE := preload("res://Scenes/Effect.tscn")
+
 # =============================================================================
 # INICIALIZACIÓN
 # =============================================================================
@@ -113,9 +116,8 @@ func _ready():
 	_style_hud()
 
 func _style_hud() -> void:
-	# Aspecto madera/dorado coherente con el resto de la interfaz
-	UiTheme.apply_progress(health_bar, Color(0.78, 0.20, 0.20))
-	UiTheme.apply_progress(dodge_bar, Color(0.85, 0.85, 0.92))
+	# Las barras usan los sprites (04.png + Rectangulo) definidos en la escena.
+	# Aquí solo damos color/legibilidad al texto que va encima.
 	UiTheme.apply_label(health_label)
 	UiTheme.apply_label(dodge_label)
 	if has_node("HUD/Root/Hint"):
@@ -313,8 +315,10 @@ func take_damage(amount: int):
 	if current_state == State.DEAD or is_invulnerable or current_state == State.DODGE:
 		return
 
-	# Esquiva automática (ítem): probabilidad de esquivar el golpe por completo
+	# Esquiva automática (ítem): probabilidad de esquivar el golpe por completo.
+	# Suelta una nube de polvo para indicarlo visualmente.
 	if autododge_level > 0 and randf() < 0.25 * autododge_level:
+		_spawn_autododge_dust()
 		start_dodge()
 		return
 
@@ -331,6 +335,19 @@ func take_damage(amount: int):
 
 	is_invulnerable = true
 	damage_timer.start()
+
+func _spawn_autododge_dust() -> void:
+	"""Nube de polvo de la esquiva automática (efecto del spritesheet 25)."""
+	var host := get_tree().current_scene
+	if host == null:
+		host = get_parent()
+	if host == null:
+		return
+	var fx = EFFECT_SCENE.instantiate()
+	host.add_child(fx)
+	fx.global_position = global_position
+	fx.scale = Vector2(1.6, 1.6)
+	fx.play_effect("dust")
 
 func taking_damage_state(_delta):
 	# Se puede seguir moviendo mientras dura la invulnerabilidad
@@ -422,16 +439,16 @@ func _update_dodge_ui():
 		return
 
 	if dodge_cooldown.is_stopped():
-		# Esquive listo
+		# Esquive listo (barra azul llena)
 		dodge_bar.value = dodge_bar.max_value
 		dodge_label.text = "Esquive: LISTO"
-		dodge_bar.modulate = Color(0.4, 1.0, 0.5)
+		dodge_bar.modulate = Color.WHITE
 	else:
-		# Mostrar el progreso de recarga del esquive
+		# Mostrar el progreso de recarga del esquive (algo atenuada)
 		var ratio = 1.0 - (dodge_cooldown.time_left / dodge_cooldown.wait_time)
 		dodge_bar.value = ratio * dodge_bar.max_value
 		dodge_label.text = "Esquive: %.1fs" % dodge_cooldown.time_left
-		dodge_bar.modulate = Color(1.0, 0.7, 0.3)
+		dodge_bar.modulate = Color(0.75, 0.75, 0.8)
 
 # =============================================================================
 # CONGELAR (usado por la tienda)

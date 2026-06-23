@@ -190,20 +190,6 @@ func _roll() -> void:
 	available.shuffle()
 	_current = available.slice(0, min(slots, available.size()))
 
-func _prune_and_refill() -> void:
-	var kept := []
-	for it in _current:
-		if _is_available(it):
-			kept.append(it)
-	var extra := []
-	for it in _available_pool():
-		if not kept.has(it):
-			extra.append(it)
-	extra.shuffle()
-	while kept.size() < slots and extra.size() > 0:
-		kept.append(extra.pop_back())
-	_current = kept
-
 func _refresh() -> void:
 	if not visible:
 		return
@@ -215,26 +201,29 @@ func _refresh() -> void:
 		_reroll_button.disabled = Game.coins < reroll_cost
 
 	for i in _cards.size():
-		if i < _current.size():
-			var item = _current[i]
-			var affordable: bool = Game.coins >= int(item["cost"]) and _is_available(item)
-			_cards[i].visible = true
-			_cards[i].setup(item, i, affordable)
-		else:
+		var item = _current[i] if i < _current.size() else null
+		if item == null:
+			# Hueco vacío: la carta se compró (se repone solo con ROLL).
 			_cards[i].visible = false
+			continue
+		var affordable: bool = Game.coins >= int(item["cost"]) and _is_available(item)
+		_cards[i].visible = true
+		_cards[i].setup(item, i, affordable)
 
 func _on_buy(index: int) -> void:
 	if index >= _current.size():
 		return
 	var item = _current[index]
-	if not _is_available(item):
+	if item == null or not _is_available(item):
 		return
 	if Game.spend(int(item["cost"])):
 		if player != null and is_instance_valid(player):
 			item["apply"].call(player)
 			if player.has_method("register_item"):
 				player.register_item(item)
-	_prune_and_refill()
+		# La carta comprada desaparece de la tienda; deja un hueco vacío.
+		# Para conseguir nuevas cartas hay que usar ROLL.
+		_current[index] = null
 	_refresh()
 
 func _on_reroll() -> void:
