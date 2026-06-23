@@ -1,0 +1,128 @@
+[gd_resource type="SpriteFrames" load_steps=18 format=3 uid="uid://bspinbullfrm0"]
+
+[ext_resource type="Texture2D" uid="uid://ddrjvtygwlfbc" path="res://ASSET_SPINBULLET/Bullet 24x24 Free  Part 1B.png" id="1_sheet"]
+
+[sub_resource type="AtlasTexture" id="b0"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="b1"]
+atlas = ExtResource("1_sheet")
+region = Rect2(24, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="b2"]
+atlas = ExtResource("1_sheet")
+region = Rect2(48, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="b3"]
+atlas = ExtResource("1_sheet")
+region = Rect2(72, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="b4"]
+atlas = ExtResource("1_sheet")
+region = Rect2(96, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="b5"]
+atlas = ExtResource("1_sheet")
+region = Rect2(120, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="b6"]
+atlas = ExtResource("1_sheet")
+region = Rect2(144, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="b7"]
+atlas = ExtResource("1_sheet")
+region = Rect2(168, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="o0"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 240, 24, 24)
+
+[sub_resource type="AtlasTexture" id="o1"]
+atlas = ExtResource("1_sheet")
+region = Rect2(24, 240, 24, 24)
+
+[sub_resource type="AtlasTexture" id="o2"]
+atlas = ExtResource("1_sheet")
+region = Rect2(48, 240, 24, 24)
+
+[sub_resource type="AtlasTexture" id="o3"]
+atlas = ExtResource("1_sheet")
+region = Rect2(72, 240, 24, 24)
+
+[sub_resource type="AtlasTexture" id="o4"]
+atlas = ExtResource("1_sheet")
+region = Rect2(96, 240, 24, 24)
+
+[sub_resource type="AtlasTexture" id="o5"]
+atlas = ExtResource("1_sheet")
+region = Rect2(120, 240, 24, 24)
+
+[sub_resource type="AtlasTexture" id="o6"]
+atlas = ExtResource("1_sheet")
+region = Rect2(144, 240, 24, 24)
+
+[sub_resource type="AtlasTexture" id="o7"]
+atlas = ExtResource("1_sheet")
+region = Rect2(168, 240, 24, 24)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("b0")
+},{
+"duration": 1.0,
+"texture": SubResource("b1")
+},{
+"duration": 1.0,
+"texture": SubResource("b2")
+},{
+"duration": 1.0,
+"texture": SubResource("b3")
+},{
+"duration": 1.0,
+"texture": SubResource("b4")
+},{
+"duration": 1.0,
+"texture": SubResource("b5")
+},{
+"duration": 1.0,
+"texture": SubResource("b6")
+},{
+"duration": 1.0,
+"texture": SubResource("b7")
+}],
+"loop": true,
+"name": &"blue",
+"speed": 14.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("o0")
+},{
+"duration": 1.0,
+"texture": SubResource("o1")
+},{
+"duration": 1.0,
+"texture": SubResource("o2")
+},{
+"duration": 1.0,
+"texture": SubResource("o3")
+},{
+"duration": 1.0,
+"texture": SubResource("o4")
+},{
+"duration": 1.0,
+"texture": SubResource("o5")
+},{
+"duration": 1.0,
+"texture": SubResource("o6")
+},{
+"duration": 1.0,
+"texture": SubResource("o7")
+}],
+"loop": true,
+"name": &"orange",
+"speed": 14.0
+}]

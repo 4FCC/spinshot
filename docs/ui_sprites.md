@@ -173,3 +173,36 @@ Si quieres un puntero personalizado:
 > Si prefieres, en vez de pasarme los archivos sueltos puedes meterlos en una
 > sola lámina (atlas) y me dices las coordenadas; pero archivos separados es lo
 > más cómodo para el 9-slice.
+
+---
+
+## Apéndice: sprites descargados ya integrados (no hay que dibujarlos)
+
+Estos assets externos ya están conectados en el código y las escenas:
+
+### Barras de vida y esquiva — `UI assets/04.png` (336×240)
+Lámina de barras en 4 colores × 3 estilos. Se usa el estilo redondeado:
+- **Vida (rojo):** región `Rect2(57, 131, 32, 11)`.
+- **Esquiva (azul):** región `Rect2(57, 147, 32, 11)`.
+
+En `Scenes/Player.tscn` las barras son `TextureProgressBar` con
+`nine_patch_stretch` (márgenes 6/4/6/4). El **fondo** de ambas es el sprite
+`Rectangulo_UI_Para_texto` recortado a su marco `Rect2(18, 23, 108, 39)`.
+
+### SpinShots — `ASSET_SPINBULLET/Bullet 24x24 Free  Part 1B.png` (576×360, celdas 24×24)
+- **Clic derecho (azul):** fila 0, fotogramas 0–7 (orbe giratorio).
+- **Clic izquierdo (naranja):** fila 10, fotogramas 0–7.
+
+Recurso de animación: `Scenes/spin_bullet_frames.tres` (animaciones `blue` y
+`orange`, en bucle a 14 fps). Lo reproduce `Scripts/spin_bullet.gd`
+(`_apply_visual`) según el patrón del disparo.
+
+### Efectos de partículas — `asset_particulas_efectos/`
+Se usa la fila gris de cada lámina (celdas 64×64), animación de un solo uso:
+- **`25.png` (896×576) → "dust":** nube de polvo de la **esquiva automática**
+  (fila 5, fotogramas 0–11).
+- **`486.png` (768×576) → "burst":** estallido de **división** y **rebote**
+  de proyectil (fila 5, fotogramas 1–10).
+
+Recurso: `Scenes/effect_frames.tres`; escena reutilizable `Scenes/Effect.tscn`
+(`Scripts/effect.gd`) que reproduce la animación y se autodestruye al terminar.

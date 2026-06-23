@@ -1,18 +1,20 @@
-[gd_scene format=3 uid="uid://cypb1hwhhix31"]
+[gd_scene load_steps=4 format=3 uid="uid://cypb1hwhhix31"]
 
 [ext_resource type="Script" uid="uid://b2u4d1us7us3a" path="res://Scripts/spin_bullet.gd" id="1_dymbd"]
-[ext_resource type="Texture2D" uid="uid://dkmmtgkaycuqp" path="res://icon.svg" id="2_dymbd"]
+[ext_resource type="SpriteFrames" uid="uid://bspinbullfrm0" path="res://Scenes/spin_bullet_frames.tres" id="2_frames"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_dymbd"]
-radius = 28.0
+radius = 14.0
 
 [node name="spin-bullet" type="Node2D" unique_id=672872989]
-scale = Vector2(0.5, 0.5)
 script = ExtResource("1_dymbd")
 
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=950207450]
-scale = Vector2(0.34375, 0.34375)
-texture = ExtResource("2_dymbd")
+[node name="Anim" type="AnimatedSprite2D" parent="." unique_id=950207450]
+texture_filter = 1
+scale = Vector2(1.3, 1.3)
+sprite_frames = ExtResource("2_frames")
+animation = &"blue"
+autoplay = "blue"
 
 [node name="Area2D" type="Area2D" parent="." unique_id=598469913]
 collision_layer = 0

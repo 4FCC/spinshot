@@ -66,6 +66,10 @@ var _controls_box: Control = null
 
 const UI_INVENTORY_TEX := preload("res://UI assets/UI_Inventario_E.png")
 const UI_ESC_TEX := preload("res://UI assets/UI_ESC.png")
+const UI_STAT_TEX := preload("res://UI assets/UI_stat.png")
+const RECT_TEX := preload("res://UI assets/Rectangulo_UI_Para_texto.png")
+# Recorte del marco de madera dentro del sprite Rectangulo (sin el relleno transparente)
+const RECT_REGION := Rect2(18, 23, 108, 39)
 
 func _ready() -> void:
 	randomize()
@@ -390,64 +394,139 @@ func _on_boss_defeated() -> void:
 # PANTALLAS (inicio / victoria / muerte)
 # =============================================================================
 func _build_screens() -> void:
-	_start_screen = _make_screen("", "", "JUGAR", _on_start_pressed)
-	_victory_screen = _make_screen("¡VICTORIA!",
+	# Inicio: solo el sprite Rectangulo con el texto JUGAR (UI antigua eliminada).
+	_start_screen = _build_start_screen()
+	# Victoria y muerte: caja del sprite UI_stat con el mensaje y un botón.
+	_victory_screen = _build_message_screen("¡VICTORIA!",
 		"Has superado todas las oleadas.", "Jugar de nuevo", _on_restart_pressed)
-	_death_screen = _make_screen("HAS MUERTO",
+	_death_screen = _build_message_screen("HAS MUERTO",
 		"Te han derrotado.", "Reintentar", _on_restart_pressed)
 
-func _make_screen(title_text: String, subtitle_text: String, button_text: String, button_cb: Callable) -> Control:
+func _dim_screen() -> Control:
+	"""Crea una pantalla a rejilla completa con un fondo oscuro translúcido."""
 	var screen := Control.new()
 	screen.set_anchors_preset(Control.PRESET_FULL_RECT)
 	screen.mouse_filter = Control.MOUSE_FILTER_STOP
-
 	var bg := ColorRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.color = Color(0.03, 0.03, 0.05, 0.9)
 	screen.add_child(bg)
+	return screen
 
+# Botón con el sprite Rectangulo_UI_Para_texto de fondo (marco de madera).
+func _make_rect_button(text: String, size: Vector2, font_size: int, cb: Callable) -> Control:
+	var holder := Control.new()
+	holder.custom_minimum_size = size
+	holder.size = size
+
+	var np := NinePatchRect.new()
+	np.set_anchors_preset(Control.PRESET_FULL_RECT)
+	np.texture = RECT_TEX
+	np.region_rect = RECT_REGION
+	np.patch_margin_left = 8
+	np.patch_margin_right = 8
+	np.patch_margin_top = 7
+	np.patch_margin_bottom = 7
+	np.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	np.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(np)
+
+	var label := Label.new()
+	label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	label.text = text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", Color(0.24, 0.15, 0.07))
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(label)
+
+	var btn := Button.new()
+	btn.set_anchors_preset(Control.PRESET_FULL_RECT)
+	btn.focus_mode = Control.FOCUS_NONE
+	for s in ["normal", "hover", "pressed", "disabled", "focus"]:
+		btn.add_theme_stylebox_override(s, StyleBoxEmpty.new())
+	btn.mouse_entered.connect(func(): holder.modulate = Color(1.12, 1.12, 1.12))
+	btn.mouse_exited.connect(func(): holder.modulate = Color.WHITE)
+	btn.pressed.connect(cb)
+	holder.add_child(btn)
+	return holder
+
+func _build_start_screen() -> Control:
+	var screen := _dim_screen()
 	var center := CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	screen.add_child(center)
 
-	# Panel de madera que envuelve el contenido de la pantalla
-	var panel := PanelContainer.new()
-	UiTheme.apply_panel(panel)
-	center.add_child(panel)
-
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 40)
-	margin.add_theme_constant_override("margin_top", 30)
-	margin.add_theme_constant_override("margin_right", 40)
-	margin.add_theme_constant_override("margin_bottom", 30)
-	panel.add_child(margin)
-
 	var vbox := VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_theme_constant_override("separation", 18)
-	margin.add_child(vbox)
+	vbox.add_theme_constant_override("separation", 30)
+	center.add_child(vbox)
 
-	if title_text != "":
-		var title := Label.new()
-		title.text = title_text
-		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		UiTheme.apply_title(title, 52)
-		vbox.add_child(title)
+	var title := Label.new()
+	title.text = "SPINSHOT"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	UiTheme.apply_title(title, 64)
+	vbox.add_child(title)
 
-	if subtitle_text != "":
-		var sub := Label.new()
-		sub.text = subtitle_text
-		sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		UiTheme.apply_label(sub)
-		vbox.add_child(sub)
+	var play := _make_rect_button("JUGAR", Vector2(260, 96), 30, _on_start_pressed)
+	play.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	vbox.add_child(play)
 
-	var button := Button.new()
-	button.text = button_text
-	button.custom_minimum_size = Vector2(240, 54)
-	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	UiTheme.apply_button(button)
-	button.pressed.connect(button_cb)
-	vbox.add_child(button)
+	screen.visible = false
+	ui.add_child(screen)
+	return screen
+
+func _build_message_screen(title_text: String, body_text: String, button_text: String, cb: Callable) -> Control:
+	var screen := _dim_screen()
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	screen.add_child(center)
+
+	# Caja del sprite UI_stat (400x400)
+	var box := Control.new()
+	box.custom_minimum_size = Vector2(400, 400)
+	center.add_child(box)
+
+	var bg := TextureRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.texture = UI_STAT_TEX
+	bg.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(bg)
+
+	# Título en la placa superior del sprite
+	var title := Label.new()
+	title.position = Vector2(146, 54)
+	title.size = Vector2(108, 46)
+	title.text = title_text
+	title.clip_text = true
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_color_override("font_color", Color(0.22, 0.13, 0.06))
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(title)
+
+	# Cuerpo del mensaje en el panel interior
+	var body := Label.new()
+	body.position = Vector2(86, 138)
+	body.size = Vector2(228, 110)
+	body.text = body_text
+	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	body.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_theme_font_size_override("font_size", 14)
+	body.add_theme_color_override("font_color", Color(0.24, 0.15, 0.07))
+	body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(body)
+
+	# Botón en la parte baja del panel interior
+	var button := _make_rect_button(button_text, Vector2(196, 66), 18, cb)
+	button.position = Vector2(102, 270)
+	box.add_child(button)
 
 	screen.visible = false
 	ui.add_child(screen)
@@ -633,39 +712,45 @@ func _build_controls_box() -> void:
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_controls_box.add_child(center)
 
-	var panel := PanelContainer.new()
-	UiTheme.apply_panel(panel)
-	center.add_child(panel)
+	# Caja del sprite UI_stat (400x400)
+	var box := Control.new()
+	box.custom_minimum_size = Vector2(400, 400)
+	center.add_child(box)
 
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 28)
-	margin.add_theme_constant_override("margin_top", 22)
-	margin.add_theme_constant_override("margin_right", 28)
-	margin.add_theme_constant_override("margin_bottom", 22)
-	panel.add_child(margin)
-
-	var vb := VBoxContainer.new()
-	vb.add_theme_constant_override("separation", 10)
-	margin.add_child(vb)
+	var bg := TextureRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.texture = UI_STAT_TEX
+	bg.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(bg)
 
 	var title := Label.new()
+	title.position = Vector2(146, 54)
+	title.size = Vector2(108, 46)
 	title.text = "CONTROLES"
+	title.clip_text = true
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UiTheme.apply_title(title, 28)
-	vb.add_child(title)
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 15)
+	title.add_theme_color_override("font_color", Color(0.22, 0.13, 0.06))
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(title)
 
 	var body := Label.new()
-	body.text = "WASD / Flechas:  mover\nEspacio:  esquivar\nClic derecho:  Spin-Bullet (espiral)\nClic izquierdo:  Spin-Bullet (ondulada)\nE:  inventario\nESC:  menú de opciones\nF11:  pantalla completa"
-	UiTheme.apply_label(body)
-	vb.add_child(body)
+	body.position = Vector2(84, 128)
+	body.size = Vector2(232, 132)
+	body.text = "WASD / Flechas: mover\nEspacio: esquivar\nClic der.: SpinShot azul\nClic izq.: SpinShot naranja\nE: inventario\nESC: opciones\nF11: pantalla completa"
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_theme_font_size_override("font_size", 12)
+	body.add_theme_color_override("font_color", Color(0.24, 0.15, 0.07))
+	body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(body)
 
-	var back := Button.new()
-	back.text = "Volver"
-	back.custom_minimum_size = Vector2(180, 46)
-	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	UiTheme.apply_button(back)
-	back.pressed.connect(func(): _controls_box.visible = false)
-	vb.add_child(back)
+	var back := _make_rect_button("Volver", Vector2(170, 60), 16, func(): _controls_box.visible = false)
+	back.position = Vector2(115, 274)
+	box.add_child(back)
 
 func _on_opt_controls() -> void:
 	_controls_box.visible = true

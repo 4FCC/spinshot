@@ -43,6 +43,8 @@ var lethal_chance: float = 0.0  # Probabilidad de aplicar "giro letal" al impact
 var bullet_scene: PackedScene = null   # Escena para auto-replicarse (rebote/división)
 var _did_split: bool = false
 
+const EFFECT_SCENE := preload("res://Scenes/Effect.tscn")
+
 
 func _ready() -> void:
 	add_to_group("spin_bullet")
@@ -80,12 +82,13 @@ func _apply_setup(center: Vector2, direction: Vector2, mode: int) -> void:
 		dir = Vector2.RIGHT
 	global_position = _center + dir * start_radius
 	_angle = dir.angle()
-	_apply_tint()
+	_apply_visual()
 
-func _apply_tint() -> void:
-	# Tinte distinto según el patrón para distinguir ambos disparos
-	if has_node("Sprite2D"):
-		$Sprite2D.modulate = Color(0.6, 0.9, 1.0) if pattern_mode == 1 else Color(1.0, 0.85, 0.5)
+func _apply_visual() -> void:
+	# Sprite distinto según el patrón: orbe azul (clic derecho) u orbe naranja
+	# (clic izquierdo). Cada botón genera una SpinShot visualmente diferente.
+	if has_node("Anim"):
+		$Anim.play("orange" if pattern_mode == 1 else "blue")
 
 func _configure_clone(center: Vector2, angle: float, radius: float, mode: int, cw: bool, t: float) -> void:
 	"""Coloca a esta bala como mitad de una división, continuando la trayectoria."""
@@ -97,7 +100,7 @@ func _configure_clone(center: Vector2, angle: float, radius: float, mode: int, c
 	clockwise = cw
 	_time_alive = t
 	global_position = _center + Vector2(cos(_angle), sin(_angle)) * _radius
-	_apply_tint()
+	_apply_visual()
 
 
 func _process(delta: float) -> void:
@@ -145,6 +148,19 @@ func _on_body_entered(body: Node2D) -> void:
 # =============================================================================
 # REPLICACIÓN (ítems de rebote y división)
 # =============================================================================
+func _spawn_effect(anim_name: String, pos: Vector2, scl: float) -> void:
+	"""Crea un efecto de partículas de un solo uso en la posición indicada."""
+	var host := get_tree().current_scene
+	if host == null:
+		host = get_parent()
+	if host == null:
+		return
+	var fx = EFFECT_SCENE.instantiate()
+	host.add_child(fx)
+	fx.global_position = pos
+	fx.scale = Vector2(scl, scl)
+	fx.play_effect(anim_name)
+
 func _make_child():
 	var b = bullet_scene.instantiate()
 	b.damage = damage
@@ -161,6 +177,8 @@ func _spawn_bounce(pos: Vector2) -> void:
 	var host := get_parent()
 	if host == null:
 		return
+	# Estallido de rebote en el punto de impacto
+	_spawn_effect("burst", pos, 1.1)
 	for i in bounce_count:
 		var b = _make_child()
 		b.bounce_count = 0
@@ -176,6 +194,8 @@ func _spawn_split() -> void:
 	var host := get_parent()
 	if host == null:
 		return
+	# Estallido de división en el punto donde la SpinShot se separa en dos
+	_spawn_effect("burst", global_position, 1.0)
 	var b = _make_child()
 	b.bounce_count = bounce_count
 	b._did_split = true

@@ -57,8 +57,12 @@ Cada ítem del pool tiene un campo `"max"` (número máximo de compras; **0 = il
 
 La tienda solo ofrece ítems **disponibles** (`_is_available`): los que ya
 alcanzaron su `max` **no vuelven a salir** ni al abrir la tienda ni al usar el
-dado, y desaparecen de la vista en cuanto se agotan dentro de la misma compra
-(`_prune_and_refill`).
+dado.
+
+Al **comprar** una carta, esta **desaparece** y deja un hueco vacío en la
+tienda (`_on_buy` pone `_current[index] = null`). La tienda **no se repone
+automáticamente**: para conseguir nuevas cartas hay que usar el botón **ROLL**
+(`_on_reroll`), que paga su coste y genera un nuevo conjunto de opciones.
 
 Cada compra se registra en el inventario del jugador (`billy.register_item`),
 que la **UI de inventario** (ESC) muestra con su sprite, cantidad/nivel y un

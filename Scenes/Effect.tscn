@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://beffectscene1"]
+
+[ext_resource type="Script" uid="uid://beffectscr01" path="res://Scripts/effect.gd" id="1_fx"]
+[ext_resource type="SpriteFrames" uid="uid://beffectfrm00" path="res://Scenes/effect_frames.tres" id="2_frames"]
+
+[node name="Effect" type="AnimatedSprite2D"]
+texture_filter = 1
+z_index = 50
+sprite_frames = ExtResource("2_frames")
+animation = &"dust"
+script = ExtResource("1_fx")
