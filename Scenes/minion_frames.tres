@@ -1,4 +1,4 @@
-[gd_resource type="SpriteFrames" load_steps=17 format=3 uid="uid://cminionframes1"]
+[gd_resource type="SpriteFrames" format=3 uid="uid://c7h3vi1pykvnq"]
 
 [ext_resource type="Texture2D" uid="uid://b6omk5mdmsa71" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Red Units/Pawn/Pawn_Idle.png" id="1"]
 [ext_resource type="Texture2D" uid="uid://cy610anw35uuc" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Red Units/Pawn/Pawn_Run.png" id="2"]

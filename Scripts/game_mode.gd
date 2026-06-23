@@ -333,14 +333,14 @@ func _clear_enemies() -> void:
 			continue
 		enemy.queue_free()
 
-# =============================================================================
+#=============================================================================
 # JEFE
-# =============================================================================
+#=============================================================================
 func _spawn_boss() -> void:
 	if _boss != null and is_instance_valid(_boss):
-		return   # ya hay un jefe en juego
+		return   #ya hay un jefe en juego
 	if boss_scene == null:
-		_show_victory()   # sin jefe asignado: victoria directa
+		_show_victory()   #sin jefe asignado: victoria directa
 		return
 	if player == null or not is_instance_valid(player):
 		player = _find_player()
