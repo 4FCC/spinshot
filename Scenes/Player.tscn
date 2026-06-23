@@ -27,7 +27,8 @@ script = ExtResource("1_billy")
 spin_bullet_scene = ExtResource("3_bullet")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1609067095]
-scale = Vector2(0.6, 0.6)
+texture_filter = 1
+scale = Vector2(1.2, 1.2)
 sprite_frames = ExtResource("2_frames")
 animation = &"idle"
 autoplay = "idle"
