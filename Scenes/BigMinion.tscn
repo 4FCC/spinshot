@@ -7,10 +7,10 @@
 [ext_resource type="SpriteFrames" uid="uid://dsithoshn6iw1" path="res://Scenes/bigminion_frames.tres" id="5_frames"]
 
 [sub_resource type="CircleShape2D" id="body_shape"]
-radius = 26.0
+radius = 31.06445
 
 [sub_resource type="CircleShape2D" id="hit_shape"]
-radius = 29.274563
+radius = 37.054016
 
 [node name="BigMinion" type="CharacterBody2D" unique_id=596581615]
 collision_layer = 2
@@ -31,7 +31,7 @@ sprite_frames = ExtResource("5_frames")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1053254384]
+[node name="Daño" type="CollisionShape2D" parent="." unique_id=1053254384]
 shape = SubResource("body_shape")
 
 [node name="Hitbox" type="Area2D" parent="." unique_id=516327358]

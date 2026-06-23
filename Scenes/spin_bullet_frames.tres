@@ -1,4 +1,4 @@
-[gd_resource type="SpriteFrames" load_steps=18 format=3 uid="uid://bspinbullfrm0"]
+[gd_resource type="SpriteFrames" format=3 uid="uid://bspinbullfrm0"]
 
 [ext_resource type="Texture2D" uid="uid://ddrjvtygwlfbc" path="res://ASSET_SPINBULLET/Bullet 24x24 Free  Part 1B.png" id="1_sheet"]
 
@@ -71,25 +71,25 @@ animations = [{
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("b0")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("b1")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("b2")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("b3")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("b4")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("b5")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("b6")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("b7")
 }],
@@ -100,25 +100,25 @@ animations = [{
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("o0")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("o1")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("o2")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("o3")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("o4")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("o5")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("o6")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("o7")
 }],

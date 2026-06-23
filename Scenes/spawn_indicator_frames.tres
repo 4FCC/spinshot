@@ -1,4 +1,4 @@
-[gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://bspawnindfrm0"]
+[gd_resource type="SpriteFrames" format=3 uid="uid://bspawnindfrm0"]
 
 [ext_resource type="Texture2D" uid="uid://bdk64t2n6vues" path="res://UI assets/Spritesheet_UI_Flat_Animated.png" id="1_ui"]
 
@@ -23,13 +23,13 @@ animations = [{
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("r0")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("r1")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("r2")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("r3")
 }],

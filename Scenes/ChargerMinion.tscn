@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://cchargersc0001"]
+[gd_scene format=3 uid="uid://vw3td786eaea"]
 
 [ext_resource type="Script" uid="uid://bcharger00001" path="res://Scripts/charger_minion.gd" id="1_ch"]
 [ext_resource type="PackedScene" uid="uid://ccoin00000001" path="res://Scenes/Coin.tscn" id="2_coin"]
@@ -6,12 +6,12 @@
 [ext_resource type="Texture2D" uid="uid://k8h3ntx8mwhc" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Red Units/Lancer/Lancer_Run.png" id="4_run"]
 
 [sub_resource type="CircleShape2D" id="body_shape"]
-radius = 24.0
+radius = 18.110771
 
 [sub_resource type="CircleShape2D" id="hit_shape"]
-radius = 42.0
+radius = 29.017237
 
-[node name="ChargerMinion" type="CharacterBody2D"]
+[node name="ChargerMinion" type="CharacterBody2D" unique_id=1186366239]
 collision_layer = 2
 collision_mask = 0
 script = ExtResource("1_ch")
@@ -23,19 +23,17 @@ coin_value = 2
 idle_sheet = ExtResource("3_idle")
 run_sheet = ExtResource("4_run")
 idle_frames = 12
-run_frames = 6
 frame_size = 320
 sprite_scale = 0.42
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1355647428]
 scale = Vector2(0.42, 0.42)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="Daño" type="CollisionShape2D" parent="." unique_id=2057823962]
 shape = SubResource("body_shape")
 
-[node name="Hitbox" type="Area2D" parent="."]
+[node name="Hitbox" type="Area2D" parent="." unique_id=34924169]
 collision_layer = 0
-collision_mask = 1
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox" unique_id=1963314810]
 shape = SubResource("hit_shape")
