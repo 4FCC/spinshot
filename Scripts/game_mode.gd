@@ -25,6 +25,14 @@ extends Node
 @export var wave_duration: float = 40.0   # Segundos que dura cada oleada
 @export var total_waves: int = 10         # Tras la última oleada aparece el jefe
 
+@export_group("Aparición por grupos")
+@export var spawn_warning_time: float = 1.2   # Aviso visual antes de cada grupo
+@export var large_group_chance: float = 0.35  # Probabilidad de grupo grande
+@export var small_group_min: int = 2
+@export var small_group_max: int = 4
+@export var large_group_min: int = 6
+@export var large_group_max: int = 10
+
 @export_group("Modo")
 # Main: debug_mode = false (auto), DEV-ROOM: debug_mode = true (manual + atajos).
 @export var debug_mode: bool = false       # Activa los atajos de depuración (solo DEV-ROOM)
@@ -70,6 +78,10 @@ const UI_STAT_TEX := preload("res://UI assets/UI_stat.png")
 const RECT_TEX := preload("res://UI assets/Rectangulo_UI_Para_texto.png")
 # Recorte del marco de madera dentro del sprite Rectangulo (sin el relleno transparente)
 const RECT_REGION := Rect2(18, 23, 108, 39)
+
+# Indicador de aparición de enemigos (rojo, animado)
+const SPAWN_INDICATOR := preload("res://Scenes/SpawnIndicator.tscn")
+const INDICATOR_COLOR := Color(1.0, 0.22, 0.2, 0.95)
 
 func _ready() -> void:
 	randomize()
@@ -126,8 +138,8 @@ func _process(delta: float) -> void:
 
 	_spawn_accum -= delta
 	if _spawn_accum <= 0.0:
-		_spawn_accum = _spawn_interval()
-		_spawn_enemy()
+		_spawn_accum = _group_interval()
+		_spawn_group()
 
 func _unhandled_input(event: InputEvent) -> void:
 	# F11 alterna pantalla completa (en cualquier momento, también en menús)
@@ -317,6 +329,11 @@ func _spawn_interval() -> float:
 	var idx := clampi(wave_number - 1, 0, _waves.size() - 1)
 	return _waves[idx].get("interval", 1.0)
 
+func _group_interval() -> float:
+	# Como ahora aparecen grupos (varios enemigos), se espacian más que el
+	# intervalo de un solo enemigo, y se cuenta también el tiempo de aviso.
+	return _spawn_interval() * 4.0 + spawn_warning_time
+
 func _pick_enemy_scene() -> PackedScene:
 	"""Elige un tipo de enemigo de la oleada actual por peso (ignora nulos)."""
 	var idx := clampi(wave_number - 1, 0, _waves.size() - 1)
@@ -336,21 +353,71 @@ func _pick_enemy_scene() -> PackedScene:
 			return entry[0]
 	return minion_scene
 
-func _spawn_enemy() -> void:
-	var scene := _pick_enemy_scene()
-	if scene == null:
-		return
+func _spawn_host() -> Node:
+	var host := get_tree().current_scene
+	if host == null:
+		host = get_parent()
+	return host
+
+# Genera un grupo (pequeño o grande) precedido de indicadores rojos en cada
+# punto exacto donde aparecerá un enemigo.
+func _spawn_group() -> void:
 	if player == null or not is_instance_valid(player):
 		player = _find_player()
 	if player == null:
 		return
+
+	var is_large := randf() < large_group_chance
+	var count := randi_range(large_group_min, large_group_max) if is_large \
+		else randi_range(small_group_min, small_group_max)
+
+	# Centro del grupo a distancia fija del jugador; los enemigos se reparten
+	# alrededor de ese centro.
+	var base_angle := randf() * TAU
+	var center: Vector2 = player.global_position + Vector2(cos(base_angle), sin(base_angle)) * spawn_radius
+	var spread := 140.0 if is_large else 70.0
+
+	var positions: Array = []
+	for i in count:
+		positions.append(center + Vector2(randf_range(-spread, spread), randf_range(-spread, spread)))
+
+	_telegraph_and_spawn(positions, is_large)
+
+func _telegraph_and_spawn(positions: Array, is_large: bool) -> void:
+	# 1) Mostrar los indicadores de aparición unos segundos
+	var indicators: Array = []
+	var ind_scale := 2.6 if is_large else 1.9
+	for p in positions:
+		var ind = SPAWN_INDICATOR.instantiate()
+		_spawn_host().add_child(ind)
+		ind.setup(p, INDICATOR_COLOR, ind_scale)
+		indicators.append(ind)
+
+	await get_tree().create_timer(spawn_warning_time).timeout
+	if not is_instance_valid(self):
+		return
+
+	# 2) Quitar los indicadores
+	for ind in indicators:
+		if is_instance_valid(ind):
+			ind.queue_free()
+
+	# Si la oleada terminó o se abrió la tienda/pantalla durante el aviso, no
+	# aparecen los enemigos.
+	if not wave_active or _screen_active or shop.visible:
+		return
+
+	# 3) Spawnear el grupo en los puntos avisados
+	for p in positions:
+		_spawn_enemy_at(p)
+
+func _spawn_enemy_at(pos: Vector2) -> void:
+	var scene := _pick_enemy_scene()
+	if scene == null:
+		return
 	var enemy = scene.instantiate()
-	var angle := randf() * TAU
-	var host := get_tree().current_scene
-	if host == null:
-		host = get_parent()
-	host.add_child(enemy)
-	enemy.global_position = player.global_position + Vector2(cos(angle), sin(angle)) * spawn_radius
+	_spawn_host().add_child(enemy)
+	enemy.global_position = pos
 
 func _clear_enemies() -> void:
 	# Limpia los minions de la oleada, pero NO al jefe.
@@ -358,6 +425,9 @@ func _clear_enemies() -> void:
 		if enemy.is_in_group("boss"):
 			continue
 		enemy.queue_free()
+	# También retira los indicadores de aparición pendientes.
+	for ind in get_tree().get_nodes_in_group("spawn_indicator"):
+		ind.queue_free()
 
 #=============================================================================
 # JEFE

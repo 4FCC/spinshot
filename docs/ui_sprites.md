@@ -197,12 +197,21 @@ Recurso de animación: `Scenes/spin_bullet_frames.tres` (animaciones `blue` y
 `orange`, en bucle a 14 fps). Lo reproduce `Scripts/spin_bullet.gd`
 (`_apply_visual`) según el patrón del disparo.
 
-### Efectos de partículas — `asset_particulas_efectos/`
-Se usa la fila gris de cada lámina (celdas 64×64), animación de un solo uso:
-- **`25.png` (896×576) → "dust":** nube de polvo de la **esquiva automática**
-  (fila 5, fotogramas 0–11).
-- **`486.png` (768×576) → "burst":** estallido de **división** y **rebote**
-  de proyectil (fila 5, fotogramas 1–10).
+### Efectos de partículas — `asset_particulas_efectos/` (celdas 64×64)
+Animación de un solo uso:
+- **`25.png` (896×576) → "dust":** nube de polvo gris de la **esquiva
+  automática** (fila 5, fotogramas 0–11).
+- **`486.png` (768×576) → "burst":** estallido **azul** de **división** y
+  **rebote** de proyectil (fila 2, la variante azul que combina con las
+  SpinShots; fotogramas 1–10).
 
 Recurso: `Scenes/effect_frames.tres`; escena reutilizable `Scenes/Effect.tscn`
 (`Scripts/effect.gd`) que reproduce la animación y se autodestruye al terminar.
+
+### Indicador de aparición — `UI assets/Spritesheet_UI_Flat_Animated.png` (128×128)
+Rejilla de 32×32. Se usa la **caja redondeada animada** (fila 3, `y=96`,
+fotogramas 0–3, en bucle) como aviso de la zona donde aparecerá un grupo de
+enemigos. Recurso `Scenes/spawn_indicator_frames.tres`, escena
+`Scenes/SpawnIndicator.tscn` (`Scripts/spawn_indicator.gd`). El color **rojo** se
+aplica por código (`INDICATOR_COLOR` en `game_mode.gd`), con un pulso de escala
+para que destaque.

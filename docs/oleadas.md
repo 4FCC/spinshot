@@ -8,8 +8,15 @@ El bucle de oleadas vive en `Scripts/game_mode.gd` (escena reutilizable
 1. El jugador pulsa **N** (`start_wave`) para iniciar una oleada.
 2. La oleada dura `wave_duration` segundos (60 por defecto), con cuenta atrás
    en pantalla. También se puede terminar antes con **M** (`end_wave`).
-3. Mientras la oleada está activa, cada `interval` segundos aparece un enemigo
-   en un punto aleatorio a `spawn_radius` píxeles alrededor del jugador.
+3. Mientras la oleada está activa, cada cierto tiempo aparece un **grupo** de
+   enemigos a `spawn_radius` píxeles alrededor del jugador. Los grupos pueden ser
+   **pequeños** (`small_group_min`–`small_group_max`) o **grandes**
+   (`large_group_min`–`large_group_max`, con probabilidad `large_group_chance`).
+   Antes de cada grupo, durante `spawn_warning_time` segundos, se muestra un
+   **indicador rojo animado** en el punto exacto donde aparecerá cada enemigo
+   (sprite `Spritesheet_UI_Flat_Animated`, escena `Scenes/SpawnIndicator.tscn`,
+   teñido de rojo por código). El tiempo entre grupos es
+   `_group_interval()` = `interval` × 4 + `spawn_warning_time`.
 4. Al terminar la oleada se limpian los enemigos restantes y:
    - si quedan oleadas, se abre la **tienda** y al continuar empieza la siguiente;
    - si era la **última** oleada (`total_waves`, por defecto **10**), aparece el **jefe**.
@@ -22,6 +29,10 @@ Variables principales (exportadas en el nodo `GameMode`):
 | `total_waves` | Número de oleadas antes del jefe (10). |
 | `wave_duration` | Duración de cada oleada en segundos. |
 | `spawn_radius` | Distancia a la que aparecen los enemigos. |
+| `spawn_warning_time` | Segundos que se muestra el indicador rojo antes del grupo. |
+| `large_group_chance` | Probabilidad de que un grupo sea grande. |
+| `small_group_min` / `small_group_max` | Tamaño de los grupos pequeños. |
+| `large_group_min` / `large_group_max` | Tamaño de los grupos grandes. |
 | `minion_scene`, `bigminion_scene`, `bulletminion_scene`, `charger_scene`, `support_scene` | Escenas de cada tipo de enemigo. |
 | `boss_scene` | Escena del jefe final. |
 

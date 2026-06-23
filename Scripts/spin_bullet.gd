@@ -57,8 +57,9 @@ func _ready() -> void:
 	_angle = (global_position - _center).angle()
 
 	$Area2D.body_entered.connect(_on_body_entered)
-	# Pequeña gracia para evitar daño inmediato al disparar
-	get_tree().create_timer(0.4).timeout.connect(func(): _can_damage = true)
+	# Gracia SOLO para no dañar al propio jugador en el instante del disparo
+	# (la bala nace pegada a él). A los enemigos los daña desde el primer frame.
+	get_tree().create_timer(0.35).timeout.connect(func(): _can_damage = true)
 
 
 func setup(target: Node2D, direction: Vector2, mode: int = 0) -> void:
@@ -131,9 +132,8 @@ func _process(delta: float) -> void:
 
 
 func _on_body_entered(body: Node2D) -> void:
-	if not _can_damage:
-		return
 	if body.is_in_group("enemy") and body.has_method("take_damage"):
+		# Los enemigos reciben daño desde el primer instante de la trayectoria.
 		# Giro letal: probabilidad de matar al girar (reemplaza el daño normal)
 		if lethal_chance > 0.0 and randf() < lethal_chance and body.has_method("apply_lethal_spin"):
 			body.apply_lethal_spin()
@@ -142,6 +142,9 @@ func _on_body_entered(body: Node2D) -> void:
 		_spawn_bounce(global_position)
 		queue_free()
 	elif body.is_in_group("player") and body.has_method("take_damage"):
+		# Gracia inicial solo para el jugador (la bala nace sobre él al disparar).
+		if not _can_damage:
+			return
 		body.take_damage(damage)
 		queue_free()
 
