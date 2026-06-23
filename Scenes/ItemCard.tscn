@@ -1,43 +1,49 @@
-[gd_scene load_steps=3 format=3 uid="uid://citemcard0001"]
+[gd_scene format=3 uid="uid://citemcard0001"]
 
 [ext_resource type="Script" uid="uid://bitemcard0001" path="res://Scripts/item_card.gd" id="1_card"]
 [ext_resource type="Texture2D" uid="uid://dp5t5n01hlqhq" path="res://UI assets/Card_UI_Items.png" id="2_bg"]
 
-[node name="ItemCard" type="Control"]
+[node name="ItemCard" type="Control" unique_id=2088743871]
 custom_minimum_size = Vector2(400, 400)
+layout_mode = 3
+anchors_preset = 0
 offset_right = 400.0
 offset_bottom = 400.0
 script = ExtResource("1_card")
 
-[node name="Bg" type="TextureRect" parent="."]
+[node name="Bg" type="TextureRect" parent="." unique_id=1599440519]
 texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-texture = ExtResource("2_bg")
 mouse_filter = 2
+texture = ExtResource("2_bg")
 
-[node name="ItemSprite" type="TextureRect" parent="."]
+[node name="ItemSprite" type="TextureRect" parent="." unique_id=850213169]
 texture_filter = 1
+layout_mode = 0
 offset_left = 84.0
 offset_top = 62.0
 offset_right = 316.0
 offset_bottom = 196.0
+mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
-mouse_filter = 2
 
-[node name="NameLabel" type="Label" parent="."]
+[node name="NameLabel" type="Label" parent="." unique_id=176413957]
+layout_mode = 0
 offset_left = 66.0
-offset_top = 203.0
+offset_top = 210.0
 offset_right = 334.0
-offset_bottom = 231.0
+offset_bottom = 238.0
 theme_override_colors/font_color = Color(0.98, 0.86, 0.55, 1)
 theme_override_font_sizes/font_size = 17
 horizontal_alignment = 1
 vertical_alignment = 1
-mouse_filter = 2
 
-[node name="DescLabel" type="Label" parent="."]
+[node name="DescLabel" type="Label" parent="." unique_id=734997012]
+layout_mode = 0
 offset_left = 74.0
 offset_top = 232.0
 offset_right = 326.0
@@ -46,42 +52,48 @@ theme_override_colors/font_color = Color(0.96, 0.91, 0.82, 1)
 theme_override_font_sizes/font_size = 13
 horizontal_alignment = 1
 autowrap_mode = 2
-mouse_filter = 2
 
-[node name="CostLabel" type="Label" parent="."]
-offset_left = 138.0
-offset_top = 324.0
-offset_right = 194.0
-offset_bottom = 362.0
+[node name="CostLabel" type="Label" parent="." unique_id=112753551]
+layout_mode = 0
+offset_left = 142.0
+offset_top = 316.0
+offset_right = 198.0
+offset_bottom = 354.0
 theme_override_colors/font_color = Color(1, 0.95, 0.7, 1)
 theme_override_font_sizes/font_size = 18
-horizontal_alignment = 0
 vertical_alignment = 1
-mouse_filter = 2
 
-[node name="DmgLabel" type="Label" parent="."]
-offset_left = 238.0
-offset_top = 328.0
-offset_right = 274.0
-offset_bottom = 360.0
+[node name="DmgLabel" type="Label" parent="." unique_id=1888547285]
+layout_mode = 0
+offset_left = 235.0
+offset_top = 320.0
+offset_right = 271.0
+offset_bottom = 352.0
 theme_override_colors/font_color = Color(1, 0.85, 0.8, 1)
 theme_override_font_sizes/font_size = 15
 horizontal_alignment = 1
 vertical_alignment = 1
-mouse_filter = 2
 
-[node name="LifeLabel" type="Label" parent="."]
-offset_left = 316.0
-offset_top = 328.0
-offset_right = 352.0
-offset_bottom = 360.0
+[node name="LifeLabel" type="Label" parent="." unique_id=579464517]
+layout_mode = 0
+offset_left = 300.0
+offset_top = 320.0
+offset_right = 336.0
+offset_bottom = 352.0
 theme_override_colors/font_color = Color(1, 0.8, 0.85, 1)
 theme_override_font_sizes/font_size = 15
 horizontal_alignment = 1
 vertical_alignment = 1
-mouse_filter = 2
 
-[node name="BuyButton" type="Button" parent="."]
+[node name="BuyButton" type="Button" parent="." unique_id=1218656710]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -10.0
+offset_right = -6.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
 focus_mode = 0

@@ -1,21 +1,20 @@
-[gd_scene load_steps=8 format=3 uid="uid://cbigminion001"]
+[gd_scene format=3 uid="uid://cbigminion001"]
 
 [ext_resource type="Script" uid="uid://benemy0000001" path="res://Scripts/enemy.gd" id="1_enemy"]
 [ext_resource type="PackedScene" uid="uid://ccoin00000001" path="res://Scenes/Coin.tscn" id="2_coin"]
 [ext_resource type="Texture2D" uid="uid://61k3ayfxasx4" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Red Units/Warrior/Warrior_Idle.png" id="3_idle"]
 [ext_resource type="Texture2D" uid="uid://c0iar62xvql40" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Red Units/Warrior/Warrior_Run.png" id="4_run"]
-[ext_resource type="SpriteFrames" uid="uid://cbigminframes1" path="res://Scenes/bigminion_frames.tres" id="5_frames"]
+[ext_resource type="SpriteFrames" uid="uid://dsithoshn6iw1" path="res://Scenes/bigminion_frames.tres" id="5_frames"]
 
 [sub_resource type="CircleShape2D" id="body_shape"]
 radius = 26.0
 
 [sub_resource type="CircleShape2D" id="hit_shape"]
-radius = 50.0
+radius = 29.274563
 
-[node name="BigMinion" type="CharacterBody2D"]
+[node name="BigMinion" type="CharacterBody2D" unique_id=596581615]
 collision_layer = 2
 collision_mask = 2
-stop_distance = 60.0
 script = ExtResource("1_enemy")
 max_health = 12
 contact_damage = 4
@@ -24,22 +23,19 @@ coin_scene = ExtResource("2_coin")
 coin_value = 3
 idle_sheet = ExtResource("3_idle")
 run_sheet = ExtResource("4_run")
-idle_frames = 8
-run_frames = 6
 sprite_scale = 0.8
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1875959485]
 scale = Vector2(0.8, 0.8)
 sprite_frames = ExtResource("5_frames")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1053254384]
 shape = SubResource("body_shape")
 
-[node name="Hitbox" type="Area2D" parent="."]
+[node name="Hitbox" type="Area2D" parent="." unique_id=516327358]
 collision_layer = 0
-collision_mask = 1
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox" unique_id=115578153]
 shape = SubResource("hit_shape")
