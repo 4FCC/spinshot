@@ -1,4 +1,4 @@
-[gd_resource type="SpriteFrames" load_steps=13 format=3 uid="uid://cbulletframes1"]
+[gd_resource type="SpriteFrames" format=3 uid="uid://8wrsu73ym6a"]
 
 [ext_resource type="Texture2D" uid="uid://2g5r3815dbo0" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Red Units/Archer/Archer_Idle.png" id="1"]
 [ext_resource type="Texture2D" uid="uid://cm2uh3eofdrsu" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Red Units/Archer/Archer_Run.png" id="2"]

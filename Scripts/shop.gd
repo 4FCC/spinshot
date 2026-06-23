@@ -114,8 +114,8 @@ func _build_ui() -> void:
 	UiTheme.apply_title(_coins_label, 24)
 	top.add_child(_coins_label)
 
-	_reroll_button = Button.new()
-	_reroll_button.custom_minimum_size = Vector2(220, 48)
+	_reroll_button = Button.new() #ROLL boton
+	_reroll_button.custom_minimum_size = Vector2(260, 48)
 	_reroll_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	UiTheme.apply_button(_reroll_button)
 	_reroll_button.pressed.connect(_on_reroll)
@@ -123,12 +123,12 @@ func _build_ui() -> void:
 
 	# ----- Centro: tarjetas (izquierda) + estadísticas (derecha) -----
 	var mid := HBoxContainer.new()
-	mid.add_theme_constant_override("separation", 16)
+	mid.add_theme_constant_override("separation", 80)
 	mid.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vbox.add_child(mid)
 
 	_cards_row = HBoxContainer.new()
-	_cards_row.add_theme_constant_override("separation", 14)
+	_cards_row.add_theme_constant_override("separation", 40)
 	_cards_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_cards_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	mid.add_child(_cards_row)
