@@ -11,6 +11,7 @@ extends Enemy
 @export var heal_interval: float = 1.5
 @export var heal_radius: float = 240.0
 @export var preferred_distance: float = 360.0  # Distancia mínima al jugador
+@export var damage_buff: int = 1               # +daño que otorga a aliados en rango
 
 var _heal_timer: float = 0.0
 
@@ -43,6 +44,10 @@ func _update_ai(delta: float) -> void:
 	var move := target - global_position
 	velocity = move.normalized() * move_speed if move.length() > 10.0 else Vector2.ZERO
 
+	# Aura de daño: refresca el +daño en todos los aliados dentro del radio cada
+	# frame. Al salir del rango deja de refrescarse y la bonificación caduca.
+	_apply_damage_aura()
+
 	# Curación periódica de aliados cercanos
 	_heal_timer -= delta
 	if _heal_timer <= 0.0:
@@ -60,6 +65,16 @@ func _nearest_ally() -> Node2D:
 			best_d = d
 			best = e
 	return best
+
+func _apply_damage_aura() -> void:
+	if damage_buff <= 0:
+		return
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if e == self or not is_instance_valid(e):
+			continue
+		if global_position.distance_to(e.global_position) <= heal_radius and e.has_method("apply_damage_buff"):
+			# Duración corta: se renueva cada frame mientras siga en rango.
+			e.apply_damage_buff(damage_buff, 0.3)
 
 func _heal_allies() -> void:
 	var healed := false

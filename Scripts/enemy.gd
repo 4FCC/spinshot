@@ -42,6 +42,11 @@ var _dead: bool = false
 var _lethal: bool = false      # bajo efecto de "giro letal"
 var passive: bool = false      # enemigo de prueba (DEV-ROOM): no ataca
 
+# Aura de daño del enemigo de Apoyo: bonificación temporal que se refresca
+# mientras el enemigo está dentro del radio y caduca al salir.
+var _buff_amount: int = 0
+var _buff_timer: float = 0.0
+
 const LETHAL_SPIN_SPEED := 18.0   # rad/s mientras gira hasta morir
 
 func _ready() -> void:
@@ -87,6 +92,13 @@ func _physics_process(delta: float) -> void:
 	if _dead:
 		return
 
+	# Caducidad del aura de daño (si el Apoyo deja de refrescarla, desaparece).
+	if _buff_timer > 0.0:
+		_buff_timer -= delta
+		if _buff_timer <= 0.0:
+			_buff_amount = 0
+			sprite.modulate = _base_modulate()
+
 	# Giro letal: el enemigo gira en el sitio hasta morir; no hace nada más.
 	if _lethal:
 		sprite.rotation += LETHAL_SPIN_SPEED * delta
@@ -125,7 +137,7 @@ func _try_melee() -> void:
 		return
 	for body in hitbox.get_overlapping_bodies():
 		if body.is_in_group("player") and body.has_method("take_damage"):
-			body.take_damage(contact_damage)
+			body.take_damage(contact_damage + _buff_amount)
 			_attack_timer = attack_cooldown
 			break
 
@@ -171,14 +183,32 @@ func heal(amount: int) -> void:
 	var timer := get_tree().create_timer(0.12)
 	timer.timeout.connect(func():
 		if is_instance_valid(self) and not _dead:
-			sprite.modulate = Color.WHITE)
+			sprite.modulate = _base_modulate())
+
+# =============================================================================
+# AURA DE DAÑO (la aplica el enemigo de Apoyo)
+# =============================================================================
+func apply_damage_buff(amount: int, duration: float) -> void:
+	"""Otorga +daño mientras esté en rango. El Apoyo la refresca cada frame; al
+	salir del radio deja de refrescarse y caduca (ver _physics_process)."""
+	if _dead:
+		return
+	var was_active := _buff_amount > 0
+	_buff_amount = max(_buff_amount, amount)
+	_buff_timer = max(_buff_timer, duration)
+	if not was_active:
+		sprite.modulate = _base_modulate()
+
+func _base_modulate() -> Color:
+	# Tinte cálido mientras el enemigo está potenciado por el aura de daño.
+	return Color(1.0, 0.72, 0.55) if _buff_amount > 0 else Color.WHITE
 
 func _flash() -> void:
 	sprite.modulate = Color(1, 0.4, 0.4)
 	var timer := get_tree().create_timer(0.1)
 	timer.timeout.connect(func():
 		if is_instance_valid(self):
-			sprite.modulate = Color.WHITE)
+			sprite.modulate = _base_modulate())
 
 func _die() -> void:
 	_dead = true

@@ -3,6 +3,22 @@
 El bucle de oleadas vive en `Scripts/game_mode.gd` (escena reutilizable
 `Scenes/GameMode.tscn`, instanciada en `Main` y `DEV-ROOM`).
 
+## Mapa (compartido por Main y DEV-ROOM)
+
+Ambas escenas usan la misma base de mapa, construida por `Scripts/floor_builder.gd`:
+
+- Campo de **césped** de `30×18` tiles de 64 px (1920×1152 px), ~25% más pequeño
+  que el anterior.
+- **Borde de piedra** (`TILE_STONE`, anillo de `stone_border` tiles) que delimita
+  visualmente el área jugable.
+- **Muros** (`StaticBody2D`) en el límite del césped para que el jugador no salga.
+- El exterior se cubre con **nubes** (`Scripts/cloud_border.gd`, assets
+  *Terrain/Decorations/Clouds*) más un cielo de fondo, para que no se vea el
+  fondo por defecto de Godot.
+
+> Los enemigos **solo aparecen sobre césped** (no sobre la piedra ni fuera del
+> mapa): `_is_grass_cell()` comprueba que la celda es del bloque de césped.
+
 ## Cómo funciona
 
 1. El jugador pulsa **N** (`start_wave`) para iniciar una oleada.
@@ -16,7 +32,7 @@ El bucle de oleadas vive en `Scripts/game_mode.gd` (escena reutilizable
    **indicador rojo animado** en el punto exacto donde aparecerá cada enemigo
    (sprite `Spritesheet_UI_Flat_Animated`, escena `Scenes/SpawnIndicator.tscn`,
    teñido de rojo por código). El tiempo entre grupos es
-   `_group_interval()` = `interval` × 4 + `spawn_warning_time`.
+   `_group_interval()` = `interval` × 3 + `spawn_warning_time`.
    - **Todos los puntos de aparición se validan sobre el TileMap de césped**
      (`Ground`): `_is_on_grass()` comprueba que la celda tiene tile. Si el
      jugador está en un borde/esquina, `_pick_grass_point_near_player()` prueba
@@ -91,3 +107,14 @@ Composición actual (resumen):
 
 > Nota: los enemigos deben estar en el grupo `"enemy"` (lo hace `enemy.gd` en
 > `_ready`) para que las Spin-Bullets los dañen y el sistema los limpie.
+
+## Enemigo de Apoyo (`Scripts/support_minion.gd`)
+
+No ataca al jugador; potencia a los aliados dentro de `heal_radius`:
+
+- **Curación** periódica (`heal_amount` cada `heal_interval`).
+- **Aura de daño**: otorga `+damage_buff` al daño por contacto de los aliados en
+  rango. Se **refresca cada frame** mientras estén dentro del radio y **caduca**
+  (~0.3 s) al salir, así el efecto solo dura mientras el enemigo esté en el área
+  de influencia (`enemy.apply_damage_buff` / decaimiento en `enemy._physics_process`).
+  Los enemigos potenciados muestran un tinte cálido.
