@@ -2,82 +2,90 @@ class_name StatsPanel
 extends RefCounted
 
 # =============================================================================
-# STATS PANEL — Cuadro reutilizable con las estadísticas actuales del jugador
+# STATS PANEL — Cuadro de estadísticas usando el sprite UI_stat (400x400)
 # =============================================================================
-# Se usa en la tienda y en el menú de ESC (junto al inventario). Lee los
-# valores directamente del jugador (billy.gd).
+# Devuelve un Control de 400x400 con el fondo UI_stat, el título en su hueco
+# superior y las estadísticas del jugador en el panel interior. El que lo use
+# puede escalarlo/posicionarlo.
+
+const UI_STAT_TEX := preload("res://UI assets/UI_stat.png")
 
 static func build(player) -> Control:
-	var panel := PanelContainer.new()
-	UiTheme.apply_panel(panel)
+	var root := Control.new()
+	root.custom_minimum_size = Vector2(400, 400)
+	root.size = Vector2(400, 400)
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var pad := MarginContainer.new()
-	pad.add_theme_constant_override("margin_left", 16)
-	pad.add_theme_constant_override("margin_top", 12)
-	pad.add_theme_constant_override("margin_right", 16)
-	pad.add_theme_constant_override("margin_bottom", 12)
-	panel.add_child(pad)
+	var bg := TextureRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.texture = UI_STAT_TEX
+	bg.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(bg)
 
-	var vb := VBoxContainer.new()
-	vb.add_theme_constant_override("separation", 6)
-	pad.add_child(vb)
-
+	# Título en el hueco superior del sprite
 	var title := Label.new()
-	title.text = "ESTADÍSTICAS"
+	title.position = Vector2(140, 58)
+	title.size = Vector2(120, 40)
+	title.text = "STATS"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UiTheme.apply_title(title, 22)
-	vb.add_child(title)
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_color_override("font_color", Color(0.25, 0.16, 0.08))
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(title)
+
+	# Lista de estadísticas en el panel interior
+	var vb := VBoxContainer.new()
+	vb.position = Vector2(86, 124)
+	vb.size = Vector2(228, 200)
+	vb.add_theme_constant_override("separation", 4)
+	vb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(vb)
 
 	if player == null or not is_instance_valid(player):
 		_row(vb, "Jugador", "—")
-		return panel
+		return root
 
 	_row(vb, "Vida", "%d / %d" % [player.vida, player.vida_max])
 	_row(vb, "Velocidad", "%d" % roundi(player.speed))
-	_row(vb, "Daño de bala", "%d" % player.bullet_damage)
-	_row(vb, "Cadencia", "%.2f s" % player.shoot_cooldown_time)
-	_row(vb, "Esquive (CD)", "%.2f s" % player.dodge_cooldown_time)
-
-	# Ítems con habilidad (solo si el jugador los tiene)
-	var has_special := false
+	_row(vb, "Daño bala", "%d" % player.bullet_damage)
+	_row(vb, "Cadencia", "%.2fs" % player.shoot_cooldown_time)
+	_row(vb, "Esquive", "%.2fs" % player.dodge_cooldown_time)
 	if player.coin_heal_level > 0:
-		_row(vb, "Robo de vida", "Nv %d (%d%%)" % [player.coin_heal_level, player.coin_heal_level * 25])
-		has_special = true
+		_row(vb, "Robo vida", "Nv %d" % player.coin_heal_level)
 	if player.bounce_level > 0:
-		_row(vb, "Rebote ofensivo", "+%d SpinShot" % player.bounce_level)
-		has_special = true
+		_row(vb, "Rebote", "+%d" % player.bounce_level)
 	if player.has_split:
-		_row(vb, "División de proyectil", "Sí")
-		has_special = true
+		_row(vb, "División", "Sí")
 	if player.lethal_level > 0:
 		_row(vb, "Giro letal", "%d%%" % player.lethal_level)
-		has_special = true
 	if player.autododge_level > 0:
-		_row(vb, "Esquiva automática", "%d%%" % (player.autododge_level * 25))
-		has_special = true
-	if not has_special:
-		var none := Label.new()
-		none.text = "(Sin habilidades especiales)"
-		UiTheme.apply_label(none)
-		vb.add_child(none)
+		_row(vb, "Esq. auto", "%d%%" % (player.autododge_level * 25))
 
-	return panel
+	return root
 
 static func _row(vb: VBoxContainer, name: String, value: String) -> void:
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
+	row.add_theme_constant_override("separation", 8)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var l := Label.new()
 	l.text = name
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	UiTheme.apply_label(l)
+	l.add_theme_font_size_override("font_size", 14)
+	l.add_theme_color_override("font_color", Color(0.22, 0.14, 0.07))
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(l)
 
 	var v := Label.new()
 	v.text = value
 	v.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	UiTheme.apply_label(v)
-	v.add_theme_color_override("font_color", UiTheme.GOLD)
+	v.add_theme_font_size_override("font_size", 14)
+	v.add_theme_color_override("font_color", Color(0.12, 0.08, 0.04))
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(v)
 
 	vb.add_child(row)

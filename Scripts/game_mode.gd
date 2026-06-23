@@ -53,11 +53,19 @@ var _victory_screen: Control = null
 var _death_screen: Control = null
 var _screen_active: bool = false
 
-# Inventario
+# Inventario (tecla E)
 var _inventory_panel: Control = null
 var _inventory_grid: GridContainer = null
 var _inventory_open: bool = false
 var _inv_stats_holder: Control = null
+
+# Menú de opciones (tecla ESC)
+var _options_panel: Control = null
+var _options_open: bool = false
+var _controls_box: Control = null
+
+const UI_INVENTORY_TEX := preload("res://UI assets/UI_Inventario_E.png")
+const UI_ESC_TEX := preload("res://UI assets/UI_ESC.png")
 
 func _ready() -> void:
 	randomize()
@@ -75,6 +83,7 @@ func _ready() -> void:
 
 	_build_screens()
 	_build_inventory()
+	_build_options()
 	_style_labels()
 	_update_wave_label()
 	timer_label.text = ""
@@ -123,11 +132,19 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if _screen_active:
 		return
-	# Inventario (ESC): disponible en cualquier escena
+	# ESC: menú de opciones (o cierra lo que esté abierto)
 	if event.is_action_pressed("ui_cancel"):
-		_toggle_inventory()
+		if _inventory_open:
+			_set_inventory(false)
+		else:
+			_set_options(not _options_open)
 		return
-	if _inventory_open:
+	# E: inventario
+	if event.is_action_pressed("inventory"):
+		if not _options_open:
+			_set_inventory(not _inventory_open)
+		return
+	if _options_open or _inventory_open:
 		return
 	# Atajos de depuración: SOLO en DEV-ROOM (debug_mode)
 	if debug_mode:
@@ -223,6 +240,11 @@ func _end_wave() -> void:
 	if not is_instance_valid(self):
 		return
 	_hide_announce()
+
+	# Curación automática entre rondas, EXCEPTO en la ronda previa al jefe.
+	if not is_final_wave:
+		if player != null and is_instance_valid(player) and player.has_method("full_heal"):
+			player.full_heal()
 
 	# Main: tienda entre oleadas; tras la última, al salir aparece el jefe.
 	if is_final_wave:
@@ -368,9 +390,7 @@ func _on_boss_defeated() -> void:
 # PANTALLAS (inicio / victoria / muerte)
 # =============================================================================
 func _build_screens() -> void:
-	_start_screen = _make_screen("SPINSHOT",
-		"WASD: mover   Espacio: esquivar\nClic izq./der.: disparar Spin-Bullet (dos giros)\nESC: inventario",
-		"JUGAR", _on_start_pressed)
+	_start_screen = _make_screen("", "", "JUGAR", _on_start_pressed)
 	_victory_screen = _make_screen("¡VICTORIA!",
 		"Has superado todas las oleadas.", "Jugar de nuevo", _on_restart_pressed)
 	_death_screen = _make_screen("HAS MUERTO",
@@ -407,11 +427,12 @@ func _make_screen(title_text: String, subtitle_text: String, button_text: String
 	vbox.add_theme_constant_override("separation", 18)
 	margin.add_child(vbox)
 
-	var title := Label.new()
-	title.text = title_text
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UiTheme.apply_title(title, 52)
-	vbox.add_child(title)
+	if title_text != "":
+		var title := Label.new()
+		title.text = title_text
+		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		UiTheme.apply_title(title, 52)
+		vbox.add_child(title)
 
 	if subtitle_text != "":
 		var sub := Label.new()
@@ -491,69 +512,201 @@ func _build_inventory() -> void:
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_inventory_panel.add_child(center)
 
-	# Inventario (izquierda) + Estadísticas (derecha)
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 16)
+	row.add_theme_constant_override("separation", 20)
 	center.add_child(row)
 
-	var panel := PanelContainer.new()
-	UiTheme.apply_panel(panel)
-	panel.custom_minimum_size = Vector2(440, 0)
-	row.add_child(panel)
+	# Panel de inventario con el sprite UI_Inventario_E (500x400)
+	var inv := Control.new()
+	inv.custom_minimum_size = Vector2(500, 400)
+	row.add_child(inv)
 
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 22)
-	margin.add_theme_constant_override("margin_top", 18)
-	margin.add_theme_constant_override("margin_right", 22)
-	margin.add_theme_constant_override("margin_bottom", 18)
-	panel.add_child(margin)
+	var inv_bg := TextureRect.new()
+	inv_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	inv_bg.texture = UI_INVENTORY_TEX
+	inv_bg.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	inv_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	inv_bg.stretch_mode = TextureRect.STRETCH_SCALE
+	inv_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	inv.add_child(inv_bg)
 
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 12)
-	margin.add_child(vbox)
-
-	var title := Label.new()
-	title.text = "INVENTARIO"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UiTheme.apply_title(title, 30)
-	vbox.add_child(title)
+	var inv_title := Label.new()
+	inv_title.position = Vector2(185, 52)
+	inv_title.size = Vector2(130, 40)
+	inv_title.text = "Inventario"
+	inv_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	inv_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	inv_title.add_theme_font_size_override("font_size", 18)
+	inv_title.add_theme_color_override("font_color", Color(0.25, 0.16, 0.08))
+	inv_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	inv.add_child(inv_title)
 
 	_inventory_grid = GridContainer.new()
-	_inventory_grid.columns = 5
-	_inventory_grid.add_theme_constant_override("h_separation", 10)
-	_inventory_grid.add_theme_constant_override("v_separation", 10)
-	vbox.add_child(_inventory_grid)
+	_inventory_grid.position = Vector2(74, 120)
+	_inventory_grid.size = Vector2(352, 230)
+	_inventory_grid.columns = 4
+	_inventory_grid.add_theme_constant_override("h_separation", 8)
+	_inventory_grid.add_theme_constant_override("v_separation", 8)
+	inv.add_child(_inventory_grid)
 
-	var hint := Label.new()
-	hint.text = "Pasa el cursor sobre un ítem para ver sus detalles.  ESC para cerrar."
-	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UiTheme.apply_label(hint)
-	vbox.add_child(hint)
-
-	# Columna de estadísticas (se rellena en _refresh_inventory)
-	_inv_stats_holder = VBoxContainer.new()
-	_inv_stats_holder.custom_minimum_size = Vector2(280, 0)
+	# Estadísticas (sprite UI_stat) al lado
+	_inv_stats_holder = Control.new()
+	_inv_stats_holder.custom_minimum_size = Vector2(400, 400)
 	row.add_child(_inv_stats_holder)
 
 	ui.add_child(_inventory_panel)
 
-func _toggle_inventory() -> void:
+# =============================================================================
+# MENÚ DE OPCIONES (ESC) — sprite UI_ESC
+# =============================================================================
+func _build_options() -> void:
+	_options_panel = Control.new()
+	_options_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_options_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_options_panel.visible = false
+
+	var bg := ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0, 0, 0, 0.6)
+	_options_panel.add_child(bg)
+
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_options_panel.add_child(center)
+
+	var panel := Control.new()
+	panel.custom_minimum_size = Vector2(400, 400)
+	center.add_child(panel)
+
+	var esc_bg := TextureRect.new()
+	esc_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	esc_bg.texture = UI_ESC_TEX
+	esc_bg.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	esc_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	esc_bg.stretch_mode = TextureRect.STRETCH_SCALE
+	esc_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(esc_bg)
+
+	# 7 botones en el orden pedido (huecos del sprite UI_ESC)
+	var col_l := 78.0
+	var col_r := 220.0
+	var w := 104.0
+	var h := 38.0
+	_make_esc_button(panel, Vector2(148, 62), Vector2(w, h), "SpinShot", func(): _on_opt_placeholder("SpinShot"))
+	_make_esc_button(panel, Vector2(col_l, 148), Vector2(w, h), "Controles", _on_opt_controls)
+	_make_esc_button(panel, Vector2(col_r, 148), Vector2(w, h), "Idioma", func(): _on_opt_placeholder("Idioma"))
+	_make_esc_button(panel, Vector2(col_l, 202), Vector2(w, h), "Resolución", func(): _on_opt_placeholder("Resolución"))
+	_make_esc_button(panel, Vector2(col_r, 202), Vector2(w, h), "Sonido", func(): _on_opt_placeholder("Sonido"))
+	_make_esc_button(panel, Vector2(col_l, 256), Vector2(w, h), "Créditos", func(): _on_opt_placeholder("Créditos"))
+	_make_esc_button(panel, Vector2(col_r, 256), Vector2(w, h), "Salida", _on_opt_exit)
+
+	_build_controls_box()
+	ui.add_child(_options_panel)
+
+func _make_esc_button(parent: Control, pos: Vector2, size: Vector2, text: String, cb: Callable) -> void:
+	var b := Button.new()
+	b.position = pos
+	b.size = size
+	b.text = text
+	b.focus_mode = Control.FOCUS_NONE
+	b.clip_text = true
+	for s in ["normal", "hover", "pressed", "disabled", "focus"]:
+		b.add_theme_stylebox_override(s, StyleBoxEmpty.new())
+	b.add_theme_font_size_override("font_size", 13)
+	b.add_theme_color_override("font_color", Color(0.22, 0.14, 0.07))
+	b.add_theme_color_override("font_hover_color", Color(0.05, 0.03, 0.02))
+	b.pressed.connect(cb)
+	parent.add_child(b)
+
+func _build_controls_box() -> void:
+	_controls_box = Control.new()
+	_controls_box.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_controls_box.visible = false
+	_options_panel.add_child(_controls_box)
+
+	var dim := ColorRect.new()
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.color = Color(0, 0, 0, 0.5)
+	_controls_box.add_child(dim)
+
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_controls_box.add_child(center)
+
+	var panel := PanelContainer.new()
+	UiTheme.apply_panel(panel)
+	center.add_child(panel)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 28)
+	margin.add_theme_constant_override("margin_top", 22)
+	margin.add_theme_constant_override("margin_right", 28)
+	margin.add_theme_constant_override("margin_bottom", 22)
+	panel.add_child(margin)
+
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", 10)
+	margin.add_child(vb)
+
+	var title := Label.new()
+	title.text = "CONTROLES"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	UiTheme.apply_title(title, 28)
+	vb.add_child(title)
+
+	var body := Label.new()
+	body.text = "WASD / Flechas:  mover\nEspacio:  esquivar\nClic derecho:  Spin-Bullet (espiral)\nClic izquierdo:  Spin-Bullet (ondulada)\nE:  inventario\nESC:  menú de opciones\nF11:  pantalla completa"
+	UiTheme.apply_label(body)
+	vb.add_child(body)
+
+	var back := Button.new()
+	back.text = "Volver"
+	back.custom_minimum_size = Vector2(180, 46)
+	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	UiTheme.apply_button(back)
+	back.pressed.connect(func(): _controls_box.visible = false)
+	vb.add_child(back)
+
+func _on_opt_controls() -> void:
+	_controls_box.visible = true
+
+func _on_opt_exit() -> void:
+	get_tree().quit()
+
+func _on_opt_placeholder(_name: String) -> void:
+	# Botón interactivo, pendiente de implementación futura.
+	pass
+
+# =============================================================================
+# ESTADO DE LOS OVERLAYS (inventario / opciones)
+# =============================================================================
+func _set_inventory(open: bool) -> void:
 	if _screen_active:
 		return
-	_inventory_open = not _inventory_open
-	if _inventory_open:
+	if open:
+		_options_open = false
+		_options_panel.visible = false
 		_refresh_inventory()
-		# Ocultar el HUD y los textos para que la interfaz quede limpia
-		_set_gameplay_ui_visible(false)
-		_inventory_panel.visible = true
-		get_tree().paused = true
-	else:
+	_inventory_open = open
+	_inventory_panel.visible = open
+	_apply_overlay_state()
+
+func _set_options(open: bool) -> void:
+	if _screen_active:
+		return
+	if open:
+		_inventory_open = false
 		_inventory_panel.visible = false
-		# No volver a mostrar el HUD si seguimos dentro de la tienda
-		if not shop.visible:
-			_set_gameplay_ui_visible(true)
-		if not _screen_active:
-			get_tree().paused = false
+	else:
+		_controls_box.visible = false
+	_options_open = open
+	_options_panel.visible = open
+	_apply_overlay_state()
+
+func _apply_overlay_state() -> void:
+	var any := _options_open or _inventory_open
+	_set_gameplay_ui_visible(not any and not shop.visible)
+	get_tree().paused = any
 
 func _set_gameplay_ui_visible(v: bool) -> void:
 	"""Muestra/oculta el HUD de la partida (vida, esquive, monedas, oleada,

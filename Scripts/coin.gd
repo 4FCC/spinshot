@@ -6,6 +6,7 @@ extends Area2D
 # Al tocar al jugador se recoge y suma a la economía global (Game).
 
 @export var value: int = 1
+@export var description: String = "ILOVEBROTATO"
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)

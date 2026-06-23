@@ -1,12 +1,11 @@
 extends Panel
 
 # =============================================================================
-# SHOP — Tienda entre oleadas
+# SHOP — Tienda entre oleadas (con sprites de UI)
 # =============================================================================
-# Muestra una selección aleatoria de mejoras de un pool. Un botón de "tirada de
-# dados" (reroll) cambia las opciones por monedas. Respeta los límites de compra
-# de cada ítem: los de compra única o que alcanzan su nivel máximo dejan de
-# aparecer (ni al abrir la tienda ni con el reroll).
+# Muestra 4 tarjetas (Card_UI_Items) con la info de cada ítem. Los textos
+# importantes (TIENDA, ROLL, CONTINUAR, monedas) van sobre el sprite
+# Rectangulo_UI_Para_texto. Respeta los límites de compra de cada ítem.
 
 signal continue_pressed
 
@@ -22,18 +21,27 @@ signal continue_pressed
 @export var icon_lethal: Texture2D
 @export var icon_autododge: Texture2D
 
-@export var slots: int = 4          # Cuántas opciones se muestran a la vez
-@export var reroll_cost: int = 3    # Coste de la tirada de dados
+@export var slots: int = 4          # Cuántas tarjetas se muestran a la vez
+@export var reroll_cost: int = 3    # Coste de la tirada (ROLL)
+
+const ITEM_CARD := preload("res://Scenes/ItemCard.tscn")
+const RECT_TEX := preload("res://UI assets/Rectangulo_UI_Para_texto.png")
+const COIN_TEX := preload("res://Items assets/COIN_SPRITE.png")
+
+# Disposición de las 4 tarjetas (espacio base 1280x720)
+const CARD_SCALE := 0.66
+const CARD_W := 400.0 * CARD_SCALE   # ancho mostrado de cada tarjeta
+const CARD_GAP := 32.0
+const CARD_X0 := 56.0
+const CARD_Y := 150.0
 
 var player: Node2D = null
-var _pool: Array = []          # Todas las mejoras posibles
-var _current: Array = []       # Mejoras mostradas ahora
-var _option_buttons: Array = []   # Botones "Comprar" de cada tarjeta
+var _pool: Array = []
+var _current: Array = []
+var _cards: Array = []
 var _coins_label: Label = null
-var _cards_row: HBoxContainer = null
+var _reroll_label: Label = null
 var _reroll_button: Button = null
-var _title_label: Label = null
-var _stats_holder: Control = null
 
 func _ready() -> void:
 	visible = false
@@ -42,123 +50,127 @@ func _ready() -> void:
 	Game.coins_changed.connect(func(_t): _refresh())
 
 func _build_pool() -> void:
-	# "max" = número máximo de compras (0 = ilimitado).
+	# "max" = compras máximas (0 = ilimitado). "dmg"/"life" = stats que muestra la tarjeta.
 	_pool = [
 		{"id": "health5", "name": "Vida máxima +5", "cost": 5, "max": 0, "icon": icon_health,
-			"desc": "Aumenta la vida máxima en 5 y cura esa cantidad.",
+			"desc": "Aumenta la vida máxima en 5 y cura esa cantidad.", "life": 5,
 			"apply": func(p): p.upgrade_max_health(5)},
 		{"id": "health10", "name": "Vida máxima +10", "cost": 9, "max": 0, "icon": icon_extra1,
-			"desc": "Aumenta la vida máxima en 10 y cura esa cantidad.",
+			"desc": "Aumenta la vida máxima en 10 y cura esa cantidad.", "life": 10,
 			"apply": func(p): p.upgrade_max_health(10)},
 		{"id": "dmg1", "name": "Daño de bala +1", "cost": 8, "max": 0, "icon": icon_damage,
-			"desc": "+1 de daño a cada Spin-Bullet.",
+			"desc": "+1 de daño a cada Spin-Bullet.", "dmg": 1,
 			"apply": func(p): p.upgrade_bullet_damage(1)},
 		{"id": "dmg2", "name": "Daño de bala +2", "cost": 14, "max": 0, "icon": icon_extra2,
-			"desc": "+2 de daño a cada Spin-Bullet.",
+			"desc": "+2 de daño a cada Spin-Bullet.", "dmg": 2,
 			"apply": func(p): p.upgrade_bullet_damage(2)},
 		{"id": "speed", "name": "Velocidad +40", "cost": 6, "max": 0, "icon": icon_speed,
 			"desc": "+40 de velocidad de movimiento.",
 			"apply": func(p): p.upgrade_speed(40.0)},
-		{"id": "firerate", "name": "Cadencia de disparo +15%", "cost": 7, "max": 0, "icon": icon_firerate,
+		{"id": "firerate", "name": "Cadencia +15%", "cost": 7, "max": 0, "icon": icon_firerate,
 			"desc": "Reduce el tiempo entre disparos un 15%.",
 			"apply": func(p): p.upgrade_fire_rate(0.85)},
-		# --- Ítems con habilidad especial ---
-		{"id": "coinheal", "name": "Robo de vida al recoger moneda", "cost": 10, "max": 3, "icon": icon_coinheal,
-			"desc": "25% por nivel de curar 1-3 al recoger una moneda. Máx 3 niveles (75%).",
+		{"id": "coinheal", "name": "Robo de vida", "cost": 10, "max": 3, "icon": icon_coinheal,
+			"desc": "25% por nivel de curar 1-3 al recoger una moneda. Máx 3.",
 			"apply": func(p): p.add_coin_heal()},
-		{"id": "bounce", "name": "Rebote ofensivo: +1 SpinShot", "cost": 15, "max": 3, "icon": icon_bounce,
-			"desc": "Cada SpinShot genera una nueva al impactar a un enemigo. Máx 3.",
+		{"id": "bounce", "name": "Rebote ofensivo", "cost": 15, "max": 3, "icon": icon_bounce,
+			"desc": "Cada SpinShot genera una nueva al impactar. Máx 3.",
 			"apply": func(p): p.add_bounce()},
-		{"id": "split", "name": "División de proyectil (única)", "cost": 18, "max": 1, "icon": icon_split,
-			"desc": "La SpinShot se divide en dos a media trayectoria. Compra única.",
+		{"id": "split", "name": "División de proyectil", "cost": 18, "max": 1, "icon": icon_split,
+			"desc": "La SpinShot se divide en dos a media trayectoria. Única.",
 			"apply": func(p): p.enable_split()},
-		{"id": "lethal", "name": "Giro letal: +1% muerte al girar", "cost": 6, "max": 0, "icon": icon_lethal,
-			"desc": "+1% por compra de matar al enemigo haciéndolo girar. Sin límite.",
+		{"id": "lethal", "name": "Giro letal", "cost": 6, "max": 0, "icon": icon_lethal,
+			"desc": "+1% por compra de matar al enemigo girando. Sin límite.",
 			"apply": func(p): p.add_lethal()},
-		{"id": "autododge", "name": "Esquiva automática +25%", "cost": 12, "max": 3, "icon": icon_autododge,
-			"desc": "25% por nivel de esquivar automáticamente al recibir daño. Máx 3 (75%).",
+		{"id": "autododge", "name": "Esquiva automática", "cost": 12, "max": 3, "icon": icon_autododge,
+			"desc": "25% por nivel de esquivar al recibir daño. Máx 3.",
 			"apply": func(p): p.add_autododge()},
 	]
 
 func _build_ui() -> void:
-	UiTheme.apply_panel(self)
+	# Quitar el panel gris por defecto y poner un fondo oscuro translúcido
+	add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	var bg := ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.04, 0.03, 0.06, 0.62)
+	add_child(bg)
 
-	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 28)
-	margin.add_theme_constant_override("margin_top", 20)
-	margin.add_theme_constant_override("margin_right", 28)
-	margin.add_theme_constant_override("margin_bottom", 22)
-	add_child(margin)
+	# Título, monedas y ROLL sobre Rectangulo_UI_Para_texto
+	_make_text_rect(Vector2(520, 16), Vector2(240, 92), "TIENDA", 30)
+	_coins_label = _make_text_rect(Vector2(40, 16), Vector2(260, 92), "", 22)
+	var rr := _make_button_rect(Vector2(980, 16), Vector2(260, 92), "ROLL", 24, _on_reroll)
+	_reroll_button = rr[0]
+	_reroll_label = rr[1]
 
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 14)
-	margin.add_child(vbox)
+	# 4 tarjetas de ítems
+	_cards.clear()
+	for i in slots:
+		var card = ITEM_CARD.instantiate()
+		add_child(card)
+		card.scale = Vector2(CARD_SCALE, CARD_SCALE)
+		card.position = Vector2(CARD_X0 + i * (CARD_W + CARD_GAP), CARD_Y)
+		card.buy_pressed.connect(_on_buy)
+		_cards.append(card)
 
-	# ----- Barra superior: título · monedas · reroll -----
-	var top := HBoxContainer.new()
-	top.add_theme_constant_override("separation", 16)
-	vbox.add_child(top)
+	# Botón continuar (también sobre Rectangulo)
+	var cont := _make_button_rect(Vector2(520, 632), Vector2(240, 76), "CONTINUAR", 24, _on_continue)
+	cont[0].text = ""   # el texto lo pone la etiqueta del rectángulo
 
-	_title_label = Label.new()
-	_title_label.text = "TIENDA"
-	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	UiTheme.apply_title(_title_label, 30)
-	top.add_child(_title_label)
+# Crea un Control con el sprite Rectangulo de fondo y una etiqueta centrada.
+func _make_text_rect(pos: Vector2, size: Vector2, text: String, font_size: int) -> Label:
+	var holder := Control.new()
+	holder.position = pos
+	holder.size = size
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(holder)
 
-	_coins_label = Label.new()
-	_coins_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_coins_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_coins_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	UiTheme.apply_title(_coins_label, 24)
-	top.add_child(_coins_label)
+	var tex := TextureRect.new()
+	tex.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tex.texture = RECT_TEX
+	tex.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tex.stretch_mode = TextureRect.STRETCH_SCALE
+	tex.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(tex)
 
-	_reroll_button = Button.new() #ROLL boton
-	_reroll_button.custom_minimum_size = Vector2(260, 48)
-	_reroll_button.size_flags_horizontal = Control.SIZE_SHRINK_END
-	UiTheme.apply_button(_reroll_button)
-	_reroll_button.pressed.connect(_on_reroll)
-	top.add_child(_reroll_button)
+	var label := Label.new()
+	label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	label.text = text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", Color(0.98, 0.9, 0.72))
+	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
+	label.add_theme_constant_override("shadow_offset_x", 1)
+	label.add_theme_constant_override("shadow_offset_y", 1)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(label)
+	return label
 
-	# ----- Centro: tarjetas (izquierda) + estadísticas (derecha) -----
-	var mid := HBoxContainer.new()
-	mid.add_theme_constant_override("separation", 80)
-	mid.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.add_child(mid)
+# Igual que el anterior pero con un botón transparente encima. Devuelve [Button, Label].
+func _make_button_rect(pos: Vector2, size: Vector2, text: String, font_size: int, cb: Callable) -> Array:
+	var label := _make_text_rect(pos, size, text, font_size)
+	var holder := label.get_parent()
+	holder.mouse_filter = Control.MOUSE_FILTER_PASS
 
-	_cards_row = HBoxContainer.new()
-	_cards_row.add_theme_constant_override("separation", 40)
-	_cards_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_cards_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	mid.add_child(_cards_row)
-
-	# Columna de estadísticas del personaje (se rellena en _refresh)
-	_stats_holder = VBoxContainer.new()
-	_stats_holder.custom_minimum_size = Vector2(240, 0)
-	_stats_holder.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	mid.add_child(_stats_holder)
-
-	# ----- Botón continuar -----
-	var continue_button := Button.new()
-	continue_button.text = "CONTINUAR"
-	continue_button.custom_minimum_size = Vector2(0, 50)
-	UiTheme.apply_button(continue_button)
-	continue_button.pressed.connect(_on_continue)
-	vbox.add_child(continue_button)
+	var button := Button.new()
+	button.set_anchors_preset(Control.PRESET_FULL_RECT)
+	button.focus_mode = Control.FOCUS_NONE
+	for s in ["normal", "hover", "pressed", "disabled", "focus"]:
+		button.add_theme_stylebox_override(s, StyleBoxEmpty.new())
+	button.pressed.connect(cb)
+	holder.add_child(button)
+	return [button, label]
 
 func open(wave: int = 0) -> void:
 	if player == null or not is_instance_valid(player):
 		var players := get_tree().get_nodes_in_group("player")
 		player = players[0] if players.size() > 0 else null
-	if _title_label != null:
-		_title_label.text = "TIENDA  (Oleada %d)" % wave if wave > 0 else "TIENDA"
-	_roll()        # nueva selección al abrir
+	_roll()
 	visible = true
 	_refresh()
 
 func _is_available(item: Dictionary) -> bool:
-	"""Un ítem está disponible si no ha alcanzado su límite de compras."""
 	var max_buys := int(item.get("max", 0))
 	if max_buys <= 0:
 		return true
@@ -174,15 +186,11 @@ func _available_pool() -> Array:
 	return result
 
 func _roll() -> void:
-	"""Tirada de dados: elige 'slots' mejoras DISPONIBLES y distintas del pool."""
 	var available := _available_pool()
 	available.shuffle()
 	_current = available.slice(0, min(slots, available.size()))
-	_populate_options()
 
 func _prune_and_refill() -> void:
-	"""Quita de la vista los ítems que ya no estén disponibles (compra única o
-	nivel máximo) y rellena los huecos con otras opciones disponibles."""
 	var kept := []
 	for it in _current:
 		if _is_available(it):
@@ -195,104 +203,25 @@ func _prune_and_refill() -> void:
 	while kept.size() < slots and extra.size() > 0:
 		kept.append(extra.pop_back())
 	_current = kept
-	_populate_options()
-
-func _populate_options() -> void:
-	for child in _cards_row.get_children():
-		child.queue_free()
-	_option_buttons.clear()
-
-	for i in _current.size():
-		_cards_row.add_child(_make_card(_current[i], i))
-
-func _make_card(item: Dictionary, index: int) -> Control:
-	# Tarjeta: nombre arriba, imagen grande al centro, descripción completa
-	# debajo, precio y botón de compra al fondo.
-	var card := PanelContainer.new()
-	UiTheme.apply_panel(card)
-	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	card.custom_minimum_size = Vector2(210, 0)
-
-	var pad := MarginContainer.new()
-	pad.add_theme_constant_override("margin_left", 14)
-	pad.add_theme_constant_override("margin_top", 12)
-	pad.add_theme_constant_override("margin_right", 14)
-	pad.add_theme_constant_override("margin_bottom", 12)
-	card.add_child(pad)
-
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 10)
-	pad.add_child(col)
-
-	var name_label := Label.new()
-	name_label.text = String(item.get("name", ""))
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD
-	UiTheme.apply_title(name_label, 19)
-	col.add_child(name_label)
-
-	# Imagen grande, centrada, que crece para ocupar el espacio.
-	# texture_filter NEAREST: el pixel-art se ve grande y nítido al escalar.
-	var icon := TextureRect.new()
-	icon.texture = item.get("icon", null)
-	icon.custom_minimum_size = Vector2(0, 168)
-	icon.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	col.add_child(icon)
-
-	# Descripción completa
-	var desc := Label.new()
-	desc.text = String(item.get("desc", ""))
-	desc.autowrap_mode = TextServer.AUTOWRAP_WORD
-	desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	UiTheme.apply_label(desc)
-	col.add_child(desc)
-
-	# Precio
-	var price := Label.new()
-	price.text = "%d monedas" % int(item.get("cost", 0))
-	price.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UiTheme.apply_title(price, 20)
-	col.add_child(price)
-
-	# Botón comprar
-	var buy := Button.new()
-	buy.text = "COMPRAR"
-	buy.custom_minimum_size = Vector2(0, 44)
-	UiTheme.apply_button(buy)
-	buy.pressed.connect(_on_buy.bind(index))
-	col.add_child(buy)
-	_option_buttons.append(buy)
-
-	return card
 
 func _refresh() -> void:
 	if not visible:
 		return
 	if _coins_label != null:
 		_coins_label.text = "%d monedas" % Game.coins
-	for i in _option_buttons.size():
-		if i >= _current.size():
-			continue
-		var item = _current[i]
-		_option_buttons[i].disabled = Game.coins < int(item["cost"]) or not _is_available(item)
+	if _reroll_label != null:
+		_reroll_label.text = "ROLL (%d)" % reroll_cost
 	if _reroll_button != null:
-		_reroll_button.text = "REROLL (%d)" % reroll_cost
 		_reroll_button.disabled = Game.coins < reroll_cost
-	_refresh_stats()
 
-func _refresh_stats() -> void:
-	if _stats_holder == null:
-		return
-	for c in _stats_holder.get_children():
-		c.queue_free()
-	var sp := StatsPanel.build(player)
-	sp.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_stats_holder.add_child(sp)
+	for i in _cards.size():
+		if i < _current.size():
+			var item = _current[i]
+			var affordable: bool = Game.coins >= int(item["cost"]) and _is_available(item)
+			_cards[i].visible = true
+			_cards[i].setup(item, i, affordable)
+		else:
+			_cards[i].visible = false
 
 func _on_buy(index: int) -> void:
 	if index >= _current.size():
@@ -305,7 +234,6 @@ func _on_buy(index: int) -> void:
 			item["apply"].call(player)
 			if player.has_method("register_item"):
 				player.register_item(item)
-	# Tras comprar, retira los ítems que se hayan agotado y rellena
 	_prune_and_refill()
 	_refresh()
 
