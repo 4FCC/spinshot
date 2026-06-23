@@ -17,6 +17,12 @@ El bucle de oleadas vive en `Scripts/game_mode.gd` (escena reutilizable
    (sprite `Spritesheet_UI_Flat_Animated`, escena `Scenes/SpawnIndicator.tscn`,
    teñido de rojo por código). El tiempo entre grupos es
    `_group_interval()` = `interval` × 4 + `spawn_warning_time`.
+   - **Todos los puntos de aparición se validan sobre el TileMap de césped**
+     (`Ground`): `_is_on_grass()` comprueba que la celda tiene tile. Si el
+     jugador está en un borde/esquina, `_pick_grass_point_near_player()` prueba
+     varios ángulos y reduce el radio hasta hallar césped, y como último recurso
+     `_random_grass_point_far()` elige una celda de césped lejana. Así los
+     enemigos nunca aparecen fuera del mapa.
 4. Al terminar la oleada se limpian los enemigos restantes y:
    - si quedan oleadas, se abre la **tienda** y al continuar empieza la siguiente;
    - si era la **última** oleada (`total_waves`, por defecto **10**), aparece el **jefe**.

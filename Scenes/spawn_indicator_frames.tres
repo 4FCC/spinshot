@@ -2,38 +2,38 @@
 
 [ext_resource type="Texture2D" uid="uid://bdk64t2n6vues" path="res://UI assets/Spritesheet_UI_Flat_Animated.png" id="1_ui"]
 
-[sub_resource type="AtlasTexture" id="s0"]
+[sub_resource type="AtlasTexture" id="r0"]
 atlas = ExtResource("1_ui")
-region = Rect2(0, 96, 32, 32)
+region = Rect2(0, 0, 32, 32)
 
-[sub_resource type="AtlasTexture" id="s1"]
+[sub_resource type="AtlasTexture" id="r1"]
 atlas = ExtResource("1_ui")
-region = Rect2(32, 96, 32, 32)
+region = Rect2(32, 0, 32, 32)
 
-[sub_resource type="AtlasTexture" id="s2"]
+[sub_resource type="AtlasTexture" id="r2"]
 atlas = ExtResource("1_ui")
-region = Rect2(64, 96, 32, 32)
+region = Rect2(64, 0, 32, 32)
 
-[sub_resource type="AtlasTexture" id="s3"]
+[sub_resource type="AtlasTexture" id="r3"]
 atlas = ExtResource("1_ui")
-region = Rect2(96, 96, 32, 32)
+region = Rect2(96, 0, 32, 32)
 
 [resource]
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": SubResource("s0")
+"texture": SubResource("r0")
 },{
 "duration": 1.0,
-"texture": SubResource("s1")
+"texture": SubResource("r1")
 },{
 "duration": 1.0,
-"texture": SubResource("s2")
+"texture": SubResource("r2")
 },{
 "duration": 1.0,
-"texture": SubResource("s3")
+"texture": SubResource("r3")
 }],
 "loop": true,
 "name": &"spawn",
-"speed": 6.0
+"speed": 8.0
 }]
