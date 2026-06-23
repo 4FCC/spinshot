@@ -21,17 +21,17 @@ extends Node
 @export var boss_scene: PackedScene        # Aparece al terminar la última oleada
 
 @export_group("Oleadas")
-@export var spawn_radius: float = 650.0   # Distancia a la que aparecen del jugador
+@export var spawn_radius: float = 480.0   # Distancia a la que aparecen del jugador
 @export var wave_duration: float = 40.0   # Segundos que dura cada oleada
 @export var total_waves: int = 10         # Tras la última oleada aparece el jefe
 
 @export_group("Aparición por grupos")
 @export var spawn_warning_time: float = 1.2   # Aviso visual antes de cada grupo
-@export var large_group_chance: float = 0.35  # Probabilidad de grupo grande
-@export var small_group_min: int = 2
-@export var small_group_max: int = 4
-@export var large_group_min: int = 6
-@export var large_group_max: int = 10
+@export var large_group_chance: float = 0.4   # Probabilidad de grupo grande
+@export var small_group_min: int = 3
+@export var small_group_max: int = 5
+@export var large_group_min: int = 7
+@export var large_group_max: int = 11
 
 @export_group("Modo")
 # Main: debug_mode = false (auto), DEV-ROOM: debug_mode = true (manual + atajos).
@@ -333,7 +333,7 @@ func _spawn_interval() -> float:
 func _group_interval() -> float:
 	# Como ahora aparecen grupos (varios enemigos), se espacian más que el
 	# intervalo de un solo enemigo, y se cuenta también el tiempo de aviso.
-	return _spawn_interval() * 4.0 + spawn_warning_time
+	return _spawn_interval() * 3.0 + spawn_warning_time
 
 func _pick_enemy_scene() -> PackedScene:
 	"""Elige un tipo de enemigo de la oleada actual por peso (ignora nulos)."""
@@ -407,12 +407,18 @@ func _first_tilemap(node: Node) -> TileMapLayer:
 			return r
 	return null
 
+func _is_grass_cell(cell: Vector2i) -> bool:
+	# Hay tile y es del bloque de césped (atlas 0..2, 0..2), no del borde de piedra.
+	if _ground.get_cell_source_id(cell) == -1:
+		return false
+	var a := _ground.get_cell_atlas_coords(cell)
+	return a.x >= 0 and a.x <= 2 and a.y >= 0 and a.y <= 2
+
 func _is_on_grass(world_pos: Vector2) -> bool:
 	# Sin tilemap localizado no se puede validar: se acepta el punto.
 	if _ground == null or not is_instance_valid(_ground):
 		return true
-	var cell := _ground.local_to_map(_ground.to_local(world_pos))
-	return _ground.get_cell_source_id(cell) != -1
+	return _is_grass_cell(_ground.local_to_map(_ground.to_local(world_pos)))
 
 func _pick_grass_point_near_player() -> Vector2:
 	"""Devuelve un punto sobre césped alrededor del jugador. Prueba varios
@@ -450,7 +456,7 @@ func _random_grass_point_far(from: Vector2) -> Vector2:
 		var cx := used.position.x + (randi() % used.size.x)
 		var cy := used.position.y + (randi() % used.size.y)
 		var cell := Vector2i(cx, cy)
-		if _ground.get_cell_source_id(cell) == -1:
+		if not _is_grass_cell(cell):
 			continue
 		var w: Vector2 = _ground.to_global(_ground.map_to_local(cell))
 		fallback = w

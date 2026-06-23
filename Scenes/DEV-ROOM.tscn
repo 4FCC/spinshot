@@ -1,73 +1,59 @@
-[gd_scene format=3 uid="uid://btj32n285qvra"]
+[gd_scene load_steps=8 format=3 uid="uid://btj32n285qvra"]
 
-[ext_resource type="Script" uid="uid://xlyuqnyxcm7e" path="res://Scripts/floor_builder.gd" id="1_dev"]
+[ext_resource type="Script" uid="uid://bfloorbuilder1" path="res://Scripts/floor_builder.gd" id="1_dev"]
 [ext_resource type="TileSet" uid="uid://juga8rjk4vmm" path="res://Scenes/grass_tileset.tres" id="2_tiles"]
 [ext_resource type="PackedScene" uid="uid://bm1uo2pxnjqa3" path="res://Scenes/Player.tscn" id="3_player"]
-[ext_resource type="Texture2D" uid="uid://cikn8oirta2on" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Tree1.png" id="4_tree"]
-[ext_resource type="Texture2D" uid="uid://lavmjk3u5jl" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Decorations/Rocks/Rock1.png" id="5_rock1"]
-[ext_resource type="Texture2D" uid="uid://d2ayd2fhcxm3g" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Decorations/Rocks/Rock2.png" id="6_rock2"]
-[ext_resource type="Texture2D" uid="uid://qgxqg03sl70c" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Decorations/Bushes/Bushe1.png" id="7_bush"]
-[ext_resource type="Texture2D" uid="uid://c16e210mehrka" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Stump 1.png" id="8_stump"]
 [ext_resource type="PackedScene" uid="uid://tuuflvma6emi" path="res://Scenes/GameMode.tscn" id="9_gm"]
-[ext_resource type="Script" uid="uid://ccf101yfvortf" path="res://Scripts/border_trees.gd" id="10_bt"]
-[ext_resource type="Script" uid="uid://cx33b1vu33ogl" path="res://Scripts/decoration_scatter.gd" id="11_ds"]
+[ext_resource type="Script" uid="uid://bcloudborder1" path="res://Scripts/cloud_border.gd" id="5_clouds"]
 
 [sub_resource type="RectangleShape2D" id="rs_wall_h"]
-size = Vector2(2176, 64)
+size = Vector2(2048, 64)
 
 [sub_resource type="RectangleShape2D" id="rs_wall_v"]
-size = Vector2(64, 2176)
+size = Vector2(64, 1280)
 
-[node name="DevRoom" type="Node2D" unique_id=252487460]
+[node name="DevRoom" type="Node2D"]
 script = ExtResource("1_dev")
-width = 32
-height = 32
+width = 30
+height = 18
 
-[node name="Ground" type="TileMapLayer" parent="." unique_id=204293783]
+[node name="Ground" type="TileMapLayer" parent="."]
 tile_set = ExtResource("2_tiles")
 
-[node name="Decorations" type="Node2D" parent="." unique_id=1210584264]
-script = ExtResource("11_ds")
-tree_texture = ExtResource("4_tree")
-rock_textures = Array[Texture2D]([ExtResource("5_rock1"), ExtResource("6_rock2")])
-bush_texture = ExtResource("7_bush")
-stump_texture = ExtResource("8_stump")
+[node name="CloudBorder" type="Node2D" parent="."]
+script = ExtResource("5_clouds")
+area_width = 1920.0
+area_height = 1152.0
 
-[node name="BorderTrees" type="Node2D" parent="." unique_id=1787672336]
-script = ExtResource("10_bt")
-tree_texture = ExtResource("4_tree")
-room_width_px = 2048
-room_height_px = 2048
+[node name="Walls" type="Node2D" parent="."]
 
-[node name="Walls" type="Node2D" parent="." unique_id=165067208]
+[node name="WallTop" type="StaticBody2D" parent="Walls"]
+position = Vector2(960, -32)
 
-[node name="WallTop" type="StaticBody2D" parent="Walls" unique_id=781684210]
-position = Vector2(1024, -32)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallTop" unique_id=1950742441]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallTop"]
 shape = SubResource("rs_wall_h")
 
-[node name="WallBottom" type="StaticBody2D" parent="Walls" unique_id=473515030]
-position = Vector2(1024, 2080)
+[node name="WallBottom" type="StaticBody2D" parent="Walls"]
+position = Vector2(960, 1184)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallBottom" unique_id=1908556109]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallBottom"]
 shape = SubResource("rs_wall_h")
 
-[node name="WallLeft" type="StaticBody2D" parent="Walls" unique_id=1907632666]
-position = Vector2(-32, 1024)
+[node name="WallLeft" type="StaticBody2D" parent="Walls"]
+position = Vector2(-32, 576)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallLeft" unique_id=1777651126]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallLeft"]
 shape = SubResource("rs_wall_v")
 
-[node name="WallRight" type="StaticBody2D" parent="Walls" unique_id=1756076585]
-position = Vector2(2080, 1024)
+[node name="WallRight" type="StaticBody2D" parent="Walls"]
+position = Vector2(1952, 576)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallRight" unique_id=130617678]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallRight"]
 shape = SubResource("rs_wall_v")
 
-[node name="Player" parent="." unique_id=598702551 instance=ExtResource("3_player")]
-position = Vector2(1024, 1024)
+[node name="Player" parent="." instance=ExtResource("3_player")]
+position = Vector2(960, 576)
 
-[node name="GameMode" parent="." unique_id=217773219 instance=ExtResource("9_gm")]
+[node name="GameMode" parent="." instance=ExtResource("9_gm")]
 debug_mode = true
 auto_start_waves = false
