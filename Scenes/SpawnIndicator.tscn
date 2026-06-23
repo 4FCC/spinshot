@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://bspawnindscn1"]
+
+[ext_resource type="Script" uid="uid://bspawnindscr1" path="res://Scripts/spawn_indicator.gd" id="1_ind"]
+[ext_resource type="SpriteFrames" uid="uid://bspawnindfrm0" path="res://Scenes/spawn_indicator_frames.tres" id="2_frames"]
+
+[node name="SpawnIndicator" type="AnimatedSprite2D"]
+texture_filter = 1
+z_index = 40
+sprite_frames = ExtResource("2_frames")
+animation = &"spawn"
+script = ExtResource("1_ind")

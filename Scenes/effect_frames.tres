@@ -53,43 +53,43 @@ region = Rect2(704, 320, 64, 64)
 
 [sub_resource type="AtlasTexture" id="u1"]
 atlas = ExtResource("2_burst")
-region = Rect2(64, 320, 64, 64)
+region = Rect2(64, 128, 64, 64)
 
 [sub_resource type="AtlasTexture" id="u2"]
 atlas = ExtResource("2_burst")
-region = Rect2(128, 320, 64, 64)
+region = Rect2(128, 128, 64, 64)
 
 [sub_resource type="AtlasTexture" id="u3"]
 atlas = ExtResource("2_burst")
-region = Rect2(192, 320, 64, 64)
+region = Rect2(192, 128, 64, 64)
 
 [sub_resource type="AtlasTexture" id="u4"]
 atlas = ExtResource("2_burst")
-region = Rect2(256, 320, 64, 64)
+region = Rect2(256, 128, 64, 64)
 
 [sub_resource type="AtlasTexture" id="u5"]
 atlas = ExtResource("2_burst")
-region = Rect2(320, 320, 64, 64)
+region = Rect2(320, 128, 64, 64)
 
 [sub_resource type="AtlasTexture" id="u6"]
 atlas = ExtResource("2_burst")
-region = Rect2(384, 320, 64, 64)
+region = Rect2(384, 128, 64, 64)
 
 [sub_resource type="AtlasTexture" id="u7"]
 atlas = ExtResource("2_burst")
-region = Rect2(448, 320, 64, 64)
+region = Rect2(448, 128, 64, 64)
 
 [sub_resource type="AtlasTexture" id="u8"]
 atlas = ExtResource("2_burst")
-region = Rect2(512, 320, 64, 64)
+region = Rect2(512, 128, 64, 64)
 
 [sub_resource type="AtlasTexture" id="u9"]
 atlas = ExtResource("2_burst")
-region = Rect2(576, 320, 64, 64)
+region = Rect2(576, 128, 64, 64)
 
 [sub_resource type="AtlasTexture" id="u10"]
 atlas = ExtResource("2_burst")
-region = Rect2(640, 320, 64, 64)
+region = Rect2(640, 128, 64, 64)
 
 [resource]
 animations = [{

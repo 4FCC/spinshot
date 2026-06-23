@@ -1,0 +1,39 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://bspawnindfrm0"]
+
+[ext_resource type="Texture2D" uid="uid://bdk64t2n6vues" path="res://UI assets/Spritesheet_UI_Flat_Animated.png" id="1_ui"]
+
+[sub_resource type="AtlasTexture" id="s0"]
+atlas = ExtResource("1_ui")
+region = Rect2(0, 96, 32, 32)
+
+[sub_resource type="AtlasTexture" id="s1"]
+atlas = ExtResource("1_ui")
+region = Rect2(32, 96, 32, 32)
+
+[sub_resource type="AtlasTexture" id="s2"]
+atlas = ExtResource("1_ui")
+region = Rect2(64, 96, 32, 32)
+
+[sub_resource type="AtlasTexture" id="s3"]
+atlas = ExtResource("1_ui")
+region = Rect2(96, 96, 32, 32)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("s0")
+},{
+"duration": 1.0,
+"texture": SubResource("s1")
+},{
+"duration": 1.0,
+"texture": SubResource("s2")
+},{
+"duration": 1.0,
+"texture": SubResource("s3")
+}],
+"loop": true,
+"name": &"spawn",
+"speed": 6.0
+}]
