@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://cypb1hwhhix31"]
+[gd_scene format=3 uid="uid://cypb1hwhhix31"]
 
 [ext_resource type="Script" uid="uid://b2u4d1us7us3a" path="res://Scripts/spin_bullet.gd" id="1_dymbd"]
 [ext_resource type="SpriteFrames" uid="uid://bspinbullfrm0" path="res://Scenes/spin_bullet_frames.tres" id="2_frames"]
