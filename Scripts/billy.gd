@@ -451,6 +451,11 @@ func set_hud_visible(value: bool) -> void:
 # =============================================================================
 # MEJORAS (usadas por la tienda)
 # =============================================================================
+func full_heal() -> void:
+	"""Cura al jugador al máximo (curación automática entre rondas)."""
+	vida = vida_max
+	_update_health_ui()
+
 func upgrade_max_health(amount: int) -> void:
 	vida_max += amount
 	vida = clamp(vida + amount, 0, vida_max)  # también cura
