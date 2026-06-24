@@ -9,10 +9,17 @@ extends Area2D
 @export var description: String = "ILOVEBROTATO"
 
 func _ready() -> void:
+	add_to_group("coin")
 	body_entered.connect(_on_body_entered)
 
 func set_value(v: int) -> void:
 	value = v
+
+func collect() -> void:
+	"""Recolección automática (p. ej. al terminar la ronda): suma su valor y
+	desaparece, sin requerir contacto con el jugador."""
+	Game.add_coins(value)
+	queue_free()
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player"):
