@@ -41,4 +41,5 @@ func setup(item: Dictionary, idx: int, affordable: bool) -> void:
 	life_label.text = ("+%d" % life) if life > 0 else ""
 
 	buy_button.disabled = not affordable
-	modulate = Color.WHITE if affordable else Color(0.6, 0.6, 0.6, 1.0)
+	# Atenuar un poco si no se puede pagar, pero sin perder legibilidad del texto.
+	modulate = Color.WHITE if affordable else Color(0.82, 0.82, 0.82, 1.0)
