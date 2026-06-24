@@ -432,7 +432,7 @@ func _update_walk_animation():
 # =============================================================================
 func _update_health_ui():
 	health_bar.value = vida
-	health_label.text = "Vida: %d/%d" % [vida, vida_max]
+	health_label.text = tr("Health: %d/%d") % [vida, vida_max]
 
 func _update_dodge_ui():
 	if dodge_cooldown == null:
@@ -441,13 +441,13 @@ func _update_dodge_ui():
 	if dodge_cooldown.is_stopped():
 		# Esquive listo (barra azul llena)
 		dodge_bar.value = dodge_bar.max_value
-		dodge_label.text = "Esquive: LISTO"
+		dodge_label.text = tr("Dodge: READY")
 		dodge_bar.modulate = Color.WHITE
 	else:
 		# Mostrar el progreso de recarga del esquive (algo atenuada)
 		var ratio = 1.0 - (dodge_cooldown.time_left / dodge_cooldown.wait_time)
 		dodge_bar.value = ratio * dodge_bar.max_value
-		dodge_label.text = "Esquive: %.1fs" % dodge_cooldown.time_left
+		dodge_label.text = tr("Dodge: %.1fs") % dodge_cooldown.time_left
 		dodge_bar.modulate = Color(0.75, 0.75, 0.8)
 
 # =============================================================================

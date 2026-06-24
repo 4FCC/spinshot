@@ -1,0 +1,135 @@
+extends Node
+
+# =============================================================================
+# I18N — Sistema de localización (inglés por defecto + español)
+# =============================================================================
+# El texto FUENTE en el código está en inglés y actúa como clave de traducción.
+# Aquí se registra la traducción al español y se expone el cambio de idioma.
+#
+# Uso:
+#   - Textos estáticos: pon el texto en inglés en `text` del Control; Godot lo
+#     auto-traduce al cambiar el idioma.
+#   - Textos con formato: usa `tr("Coins: %d") % total` y refresca al recibir
+#     la señal `language_changed`.
+
+signal language_changed(locale: String)
+
+const DEFAULT_LOCALE := "en"
+const LOCALES := ["en", "es"]
+
+# Mapa texto-en-inglés -> español. Las claves deben coincidir EXACTAMENTE con el
+# texto fuente usado en el código.
+const ES := {
+	# --- HUD ---
+	"Coins: %d": "Monedas: %d",
+	"Wave: -": "Oleada: -",
+	"Wave %d / %d": "Oleada %d / %d",
+	"Time: %d s": "Tiempo: %d s",
+	"Health: %d/%d": "Vida: %d/%d",
+	"Dodge: READY": "Esquive: LISTO",
+	"Dodge: %.1fs": "Esquive: %.1fs",
+	# --- Info / avisos ---
+	"Wave %d in progress": "Oleada %d en curso",
+	"Wave %d in progress  —  N: end": "Oleada %d en curso  —  N: terminar",
+	"DEV-ROOM:  M = next wave  ·  O = shop  ·  B = boss": "DEV-ROOM:  M = siguiente oleada  ·  O = tienda  ·  B = jefe",
+	"DEV-ROOM:  M = wave · N = end · B = boss · 1-5 = enemies · O = shop · C = +100 · G = god": "DEV-ROOM:  M = oleada · N = terminar · B = jefe · 1-5 = enemigos · O = tienda · C = +100 · G = god",
+	"Buy upgrades and get ready for the BOSS": "Compra mejoras y prepárate para el JEFE",
+	"FINAL BOSS!": "¡JEFE FINAL!",
+	"God mode: %s": "Modo dios: %s",
+	"Press to start": "Pulsa para empezar",
+	"Wave %d cleared!": "¡Oleada %d superada!",
+	"\nThe boss approaches...": "\nEl jefe se aproxima...",
+	# --- Pantallas ---
+	"PLAY": "JUGAR",
+	"VICTORY!": "¡VICTORIA!",
+	"You cleared all the waves.": "Has superado todas las oleadas.",
+	"Play again": "Jugar de nuevo",
+	"YOU DIED": "HAS MUERTO",
+	"You were defeated.": "Te han derrotado.",
+	"Retry": "Reintentar",
+	# --- Menú ESC ---
+	"Controls": "Controles",
+	"Language": "Idioma",
+	"Resolution": "Resolución",
+	"Sound": "Sonido",
+	"Credits": "Créditos",
+	"Exit": "Salida",
+	"Back": "Volver",
+	# --- Controles ---
+	"CONTROLS": "CONTROLES",
+	"WASD / Arrows: move\nSpace: dodge\nRight click: blue SpinShot\nLeft click: orange SpinShot\nE: inventory\nESC: options\nF11: fullscreen": "WASD / Flechas: mover\nEspacio: esquivar\nClic der.: SpinShot azul\nClic izq.: SpinShot naranja\nE: inventario\nESC: opciones\nF11: pantalla completa",
+	# --- Resolución ---
+	"RESOLUTION": "RESOLUCIÓN",
+	"Fullscreen": "Pantalla completa",
+	# --- Idioma ---
+	"LANGUAGE": "IDIOMA",
+	# --- Inventario ---
+	"Inventory": "Inventario",
+	"(You haven't bought any item yet)": "(Aún no has comprado ningún ítem)",
+	"Qty/Level: %d": "Cantidad/Nivel: %d",
+	# --- Tienda ---
+	"SHOP": "TIENDA",
+	"%d coins": "%d monedas",
+	"ROLL": "ROLL",
+	"ROLL (%d)": "ROLL (%d)",
+	"CONTINUE": "CONTINUAR",
+	# --- Estadísticas ---
+	"Player": "Jugador",
+	"Health": "Vida",
+	"Speed": "Velocidad",
+	"Bullet dmg": "Daño bala",
+	"Fire rate": "Cadencia",
+	"Dodge": "Esquive",
+	"Steal": "Robo",
+	"Bounce": "Rebote",
+	"Split": "División",
+	"Lethal": "Letal",
+	"Evade": "Evasión",
+	"Yes": "Sí",
+	"Lv %d": "Nv %d",
+	# --- Ítems de la tienda (nombre y descripción) ---
+	"Max health +5": "Vida máxima +5",
+	"Raises max health by 5 and heals that amount.": "Aumenta la vida máxima en 5 y cura esa cantidad.",
+	"Max health +10": "Vida máxima +10",
+	"Raises max health by 10 and heals that amount.": "Aumenta la vida máxima en 10 y cura esa cantidad.",
+	"Bullet damage +1": "Daño de bala +1",
+	"+1 damage to each Spin-Bullet.": "+1 de daño a cada Spin-Bullet.",
+	"Bullet damage +2": "Daño de bala +2",
+	"+2 damage to each Spin-Bullet.": "+2 de daño a cada Spin-Bullet.",
+	"Speed +40": "Velocidad +40",
+	"+40 movement speed.": "+40 de velocidad de movimiento.",
+	"Fire rate +15%": "Cadencia +15%",
+	"Reduces time between shots by 15%.": "Reduce el tiempo entre disparos un 15%.",
+	"Lifesteal": "Robo de vida",
+	"Per level, 25% chance to heal 1-3 when collecting a coin. Max 3.": "25% por nivel de curar 1-3 al recoger una moneda. Máx 3.",
+	"Offensive bounce": "Rebote ofensivo",
+	"Each SpinShot spawns a new one on hit. Max 3.": "Cada SpinShot genera una nueva al impactar. Máx 3.",
+	"Projectile split": "División de proyectil",
+	"The SpinShot splits in two mid-path. Unique.": "La SpinShot se divide en dos a media trayectoria. Única.",
+	"Lethal spin": "Giro letal",
+	"+1% per purchase to kill the enemy by spinning. No limit.": "+1% por compra de matar al enemigo girando. Sin límite.",
+	"Auto-dodge": "Esquiva automática",
+	"Per level, 25% chance to dodge when hit. Max 3.": "25% por nivel de esquivar al recibir daño. Máx 3.",
+}
+
+func _ready() -> void:
+	var t := Translation.new()
+	t.locale = "es"
+	for k in ES:
+		t.add_message(k, ES[k])
+	TranslationServer.add_translation(t)
+	# Idioma por defecto: inglés.
+	TranslationServer.set_locale(DEFAULT_LOCALE)
+
+func set_language(locale: String) -> void:
+	if not LOCALES.has(locale):
+		return
+	TranslationServer.set_locale(locale)
+	language_changed.emit(locale)
+
+func current() -> String:
+	return TranslationServer.get_locale()
+
+# Traducción utilizable desde cualquier contexto (incluido RefCounted).
+func t(key: String) -> String:
+	return TranslationServer.translate(key)
