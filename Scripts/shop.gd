@@ -30,11 +30,11 @@ const COIN_TEX := preload("res://Items assets/COIN_SPRITE.png")
 
 # Disposición de las 4 tarjetas (espacio base 1280x720).
 # CARD_SCALE al máximo que permite encajar 4 tarjetas a lo ancho de 1280.
-const CARD_SCALE := 0.76
-const CARD_W := 400.0 * CARD_SCALE   # ancho mostrado de cada tarjeta (304)
-const CARD_GAP := 16.0
-const CARD_X0 := 8.0
-const CARD_Y := 140.0
+const CARD_SCALE := 0.78
+const CARD_W := 400.0 * CARD_SCALE   # ancho mostrado de cada tarjeta (312)
+const CARD_GAP := 6.0
+const CARD_X0 := 7.0
+const CARD_Y := 165.0
 
 var player: Node2D = null
 var _pool: Array = []
@@ -56,22 +56,22 @@ func _build_pool() -> void:
 	# "max" = compras máximas (0 = ilimitado). "dmg"/"life" = stats que muestra la tarjeta.
 	# "name"/"desc" están en inglés (texto fuente) y se auto-traducen en la UI.
 	_pool = [
-		{"id": "health5", "name": "Max health +5", "cost": 5, "max": 0, "icon": icon_health,
+		{"id": "health5", "name": "Minor Health Potion", "cost": 5, "max": 0, "icon": icon_health,
 			"desc": "Raises max health by 5 and heals that amount.", "life": 5,
 			"apply": func(p): p.upgrade_max_health(5)},
-		{"id": "health10", "name": "Max health +10", "cost": 9, "max": 0, "icon": icon_extra1,
+		{"id": "health10", "name": "Greater Health Potion", "cost": 9, "max": 0, "icon": icon_extra1,
 			"desc": "Raises max health by 10 and heals that amount.", "life": 10,
 			"apply": func(p): p.upgrade_max_health(10)},
-		{"id": "dmg1", "name": "Bullet damage +1", "cost": 8, "max": 0, "icon": icon_damage,
+		{"id": "dmg1", "name": "Apprentice Wand", "cost": 8, "max": 0, "icon": icon_damage,
 			"desc": "+1 damage to each Spin-Bullet.", "dmg": 1,
 			"apply": func(p): p.upgrade_bullet_damage(1)},
-		{"id": "dmg2", "name": "Bullet damage +2", "cost": 14, "max": 0, "icon": icon_extra2,
+		{"id": "dmg2", "name": "Arcane Tome", "cost": 14, "max": 0, "icon": icon_extra2,
 			"desc": "+2 damage to each Spin-Bullet.", "dmg": 2,
 			"apply": func(p): p.upgrade_bullet_damage(2)},
-		{"id": "speed", "name": "Speed +40", "cost": 6, "max": 0, "icon": icon_speed,
+		{"id": "speed", "name": "Beach Sandals", "cost": 6, "max": 0, "icon": icon_speed,
 			"desc": "+40 movement speed.",
 			"apply": func(p): p.upgrade_speed(40.0)},
-		{"id": "firerate", "name": "Fire rate +15%", "cost": 7, "max": 0, "icon": icon_firerate,
+		{"id": "firerate", "name": "Quick Trigger", "cost": 7, "max": 0, "icon": icon_firerate,
 			"desc": "Reduces time between shots by 15%.",
 			"apply": func(p): p.upgrade_fire_rate(0.85)},
 		{"id": "coinheal", "name": "Lifesteal", "cost": 10, "max": 3, "icon": icon_coinheal,

@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://bm1uo2pxnjqa3"]
+[gd_scene load_steps=11 format=3 uid="uid://bm1uo2pxnjqa3"]
 
 [ext_resource type="Script" uid="uid://cg80n10n5s5jj" path="res://Scripts/billy.gd" id="1_billy"]
 [ext_resource type="SpriteFrames" uid="uid://bcojp2o2gqra3" path="res://Scenes/player_frames.tres" id="2_frames"]
@@ -9,13 +9,21 @@
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
 radius = 19.416489
 
+[sub_resource type="AtlasTexture" id="frame_red"]
+atlas = ExtResource("4_bars")
+region = Rect2(6, 131, 38, 11)
+
+[sub_resource type="AtlasTexture" id="frame_blue"]
+atlas = ExtResource("4_bars")
+region = Rect2(6, 147, 38, 11)
+
 [sub_resource type="AtlasTexture" id="bar_red"]
 atlas = ExtResource("4_bars")
-region = Rect2(57, 131, 32, 11)
+region = Rect2(57, 133, 32, 5)
 
 [sub_resource type="AtlasTexture" id="bar_blue"]
 atlas = ExtResource("4_bars")
-region = Rect2(57, 147, 32, 11)
+region = Rect2(57, 149, 32, 5)
 
 [node name="Billy" type="CharacterBody2D" unique_id=1791078965]
 collision_layer = 1
@@ -54,9 +62,10 @@ max_value = 20.0
 value = 20.0
 nine_patch_stretch = true
 stretch_margin_left = 6
-stretch_margin_top = 4
+stretch_margin_top = 3
 stretch_margin_right = 6
-stretch_margin_bottom = 4
+stretch_margin_bottom = 3
+texture_under = SubResource("frame_red")
 texture_progress = SubResource("bar_red")
 
 [node name="HealthLabel" type="Label" parent="HUD/Root/HealthBar" unique_id=1191809279]
@@ -66,7 +75,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "Health: 20/20"
+text = "20"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -79,21 +88,11 @@ offset_bottom = 82.0
 value = 100.0
 nine_patch_stretch = true
 stretch_margin_left = 6
-stretch_margin_top = 4
+stretch_margin_top = 3
 stretch_margin_right = 6
-stretch_margin_bottom = 4
+stretch_margin_bottom = 3
+texture_under = SubResource("frame_blue")
 texture_progress = SubResource("bar_blue")
-
-[node name="DodgeLabel" type="Label" parent="HUD/Root/DodgeBar" unique_id=1698532853]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Dodge: READY"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [node name="Coins" type="HBoxContainer" parent="HUD/Root" unique_id=1785184110]
 layout_mode = 0

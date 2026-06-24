@@ -30,6 +30,7 @@ window/stretch/aspect="expand"
 [gui]
 
 theme/custom_font="res://Fuentes/Pixel-Operator/PixelOperator.ttf"
+theme/default_font_size=18
 
 [input]
 

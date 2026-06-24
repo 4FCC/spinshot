@@ -39,6 +39,7 @@ extends Node
 @export var auto_start_waves: bool = true  # Encadena las oleadas automáticamente (Main)
 
 @onready var ui: CanvasLayer = $UI
+@onready var wave_title: Label = $UI/WaveTitle
 @onready var wave_label: Label = $UI/WaveLabel
 @onready var timer_label: Label = $UI/TimerLabel
 @onready var info_label: Label = $UI/InfoLabel
@@ -115,6 +116,7 @@ func _ready() -> void:
 	_show_start()
 
 func _style_labels() -> void:
+	UiTheme.apply_label(wave_title)
 	UiTheme.apply_label(wave_label)
 	UiTheme.apply_label(info_label)
 	UiTheme.apply_title(timer_label, 32)
@@ -1082,6 +1084,7 @@ func _apply_overlay_state() -> void:
 func _set_gameplay_ui_visible(v: bool) -> void:
 	"""Muestra/oculta el HUD de la partida (vida, esquive, monedas, oleada,
 	tiempo, info) para que no estorbe al abrir el inventario o una pantalla."""
+	wave_title.visible = v
 	wave_label.visible = v
 	timer_label.visible = v
 	info_label.visible = v
@@ -1162,10 +1165,11 @@ func _make_inventory_slot(data: Dictionary) -> Control:
 # UI
 # =============================================================================
 func _update_wave_label() -> void:
+	# El título "Wave" (auto-traducido) va aparte, encima; aquí solo el contador.
 	if wave_number == 0:
-		wave_label.text = tr("Wave: -")
+		wave_label.text = "-"
 	else:
-		wave_label.text = tr("Wave %d / %d") % [wave_number, total_waves]
+		wave_label.text = "%d / %d" % [wave_number, total_waves]
 
 func _update_timer_label() -> void:
 	timer_label.text = tr("Time: %d s") % ceili(maxf(time_left, 0.0))

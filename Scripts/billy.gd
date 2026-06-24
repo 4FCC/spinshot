@@ -29,7 +29,6 @@ const _CAMERA_TARGET_HEIGHT := 768.0
 @onready var health_bar: TextureProgressBar = $HUD/Root/HealthBar
 @onready var health_label: Label = $HUD/Root/HealthBar/HealthLabel
 @onready var dodge_bar: TextureProgressBar = $HUD/Root/DodgeBar
-@onready var dodge_label: Label = $HUD/Root/DodgeBar/DodgeLabel
 @onready var coins_label: Label = $HUD/Root/Coins/CoinsLabel
 
 # =============================================================================
@@ -123,7 +122,6 @@ func _style_hud() -> void:
 	# Las barras usan los sprites (04.png) definidos en la escena.
 	# Aquí solo damos color/legibilidad al texto que va encima.
 	UiTheme.apply_label(health_label)
-	UiTheme.apply_label(dodge_label)
 	UiTheme.apply_label(coins_label)
 
 func _update_coins_ui(total: int) -> void:
@@ -438,22 +436,20 @@ func _update_walk_animation():
 # =============================================================================
 func _update_health_ui():
 	health_bar.value = vida
-	health_label.text = tr("Health: %d/%d") % [vida, vida_max]
+	# Solo la cantidad de vida actual.
+	health_label.text = str(vida)
 
 func _update_dodge_ui():
 	if dodge_cooldown == null:
 		return
 
+	# La barra de esquive no muestra texto; solo se llena/atenúa.
 	if dodge_cooldown.is_stopped():
-		# Esquive listo (barra azul llena)
 		dodge_bar.value = dodge_bar.max_value
-		dodge_label.text = tr("Dodge: READY")
 		dodge_bar.modulate = Color.WHITE
 	else:
-		# Mostrar el progreso de recarga del esquive (algo atenuada)
 		var ratio = 1.0 - (dodge_cooldown.time_left / dodge_cooldown.wait_time)
 		dodge_bar.value = ratio * dodge_bar.max_value
-		dodge_label.text = tr("Dodge: %.1fs") % dodge_cooldown.time_left
 		dodge_bar.modulate = Color(0.75, 0.75, 0.8)
 
 # =============================================================================
