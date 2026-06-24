@@ -664,13 +664,12 @@ func _build_message_screen(title_text: String, body_text: String, button_text: S
 
 	# Título en la placa superior del sprite
 	var title := Label.new()
-	title.position = Vector2(146, 54)
-	title.size = Vector2(108, 46)
+	title.position = Vector2(130, 54)
+	title.size = Vector2(140, 46)
 	title.text = title_text
-	title.clip_text = true
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_font_size_override("font_size", 12)
 	title.add_theme_color_override("font_color", Color(0.22, 0.13, 0.06))
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(title)
@@ -780,7 +779,7 @@ func _build_inventory() -> void:
 	inv_title.text = "Inventory"
 	inv_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	inv_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	inv_title.add_theme_font_size_override("font_size", 18)
+	inv_title.add_theme_font_size_override("font_size", 16)
 	inv_title.add_theme_color_override("font_color", Color(0.25, 0.16, 0.08))
 	inv_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	inv.add_child(inv_title)
@@ -894,13 +893,12 @@ func _build_controls_box() -> void:
 	box.add_child(bg)
 
 	var title := Label.new()
-	title.position = Vector2(146, 54)
-	title.size = Vector2(108, 46)
+	title.position = Vector2(130, 54)
+	title.size = Vector2(140, 46)
 	title.text = "CONTROLS"
-	title.clip_text = true
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 15)
+	title.add_theme_font_size_override("font_size", 12)
 	title.add_theme_color_override("font_color", Color(0.22, 0.13, 0.06))
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(title)
@@ -950,13 +948,12 @@ func _make_overlay_box(title_text: String) -> Array:
 	box.add_child(bg)
 
 	var title := Label.new()
-	title.position = Vector2(146, 54)
-	title.size = Vector2(108, 46)
+	title.position = Vector2(130, 54)
+	title.size = Vector2(140, 46)
 	title.text = title_text
-	title.clip_text = true
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 15)
+	title.add_theme_font_size_override("font_size", 12)
 	title.add_theme_color_override("font_color", Color(0.22, 0.13, 0.06))
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(title)
