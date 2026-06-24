@@ -46,24 +46,24 @@ static func build(player) -> Control:
 	root.add_child(vb)
 
 	if player == null or not is_instance_valid(player):
-		_row(vb, "Jugador", "—")
+		_row(vb, "Player", "—")
 		return root
 
-	_row(vb, "Vida", "%d / %d" % [player.vida, player.vida_max])
-	_row(vb, "Velocidad", "%d" % roundi(player.speed))
-	_row(vb, "Daño bala", "%d" % player.bullet_damage)
-	_row(vb, "Cadencia", "%.2fs" % player.shoot_cooldown_time)
-	_row(vb, "Esquive", "%.2fs" % player.dodge_cooldown_time)
+	_row(vb, "Health", "%d / %d" % [player.vida, player.vida_max])
+	_row(vb, "Speed", "%d" % roundi(player.speed))
+	_row(vb, "Bullet dmg", "%d" % player.bullet_damage)
+	_row(vb, "Fire rate", "%.2fs" % player.shoot_cooldown_time)
+	_row(vb, "Dodge", "%.2fs" % player.dodge_cooldown_time)
 	if player.coin_heal_level > 0:
-		_row(vb, "Robo vida", "Nv %d" % player.coin_heal_level)
+		_row(vb, "Steal", TranslationServer.translate("Lv %d") % player.coin_heal_level)
 	if player.bounce_level > 0:
-		_row(vb, "Rebote", "+%d" % player.bounce_level)
+		_row(vb, "Bounce", "+%d" % player.bounce_level)
 	if player.has_split:
-		_row(vb, "División", "Sí")
+		_row(vb, "Split", TranslationServer.translate("Yes"))
 	if player.lethal_level > 0:
-		_row(vb, "Giro letal", "%d%%" % player.lethal_level)
+		_row(vb, "Lethal", "%d%%" % player.lethal_level)
 	if player.autododge_level > 0:
-		_row(vb, "Esq. auto", "%d%%" % (player.autododge_level * 25))
+		_row(vb, "Evade", "%d%%" % (player.autododge_level * 25))
 
 	return root
 

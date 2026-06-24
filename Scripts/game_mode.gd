@@ -72,6 +72,12 @@ var _inv_stats_holder: Control = null
 var _options_panel: Control = null
 var _options_open: bool = false
 var _controls_box: Control = null
+var _resolution_box: Control = null
+var _language_box: Control = null
+
+# Estado del texto contextual (info_label), para re-traducir al cambiar idioma
+var _info_key: String = ""
+var _info_args: Array = []
 
 const UI_INVENTORY_TEX := preload("res://UI assets/UI_Inventario_E.png")
 const UI_ESC_TEX := preload("res://UI assets/UI_ESC.png")
@@ -105,6 +111,8 @@ func _ready() -> void:
 	_update_wave_label()
 	timer_label.text = ""
 	info_label.text = ""
+
+	I18n.language_changed.connect(_on_language_changed)
 
 	call_deferred("_connect_player")
 	_show_start()
@@ -224,7 +232,7 @@ func _toggle_god_mode() -> void:
 	if player == null:
 		return
 	player.debug_invincible = not player.debug_invincible
-	info_label.text = "God mode: %s" % ("ON" if player.debug_invincible else "OFF")
+	_set_info("God mode: %s", ["ON" if player.debug_invincible else "OFF"])
 
 # =============================================================================
 # OLEADAS
@@ -236,23 +244,29 @@ func _start_wave() -> void:
 	_spawn_accum = 0.0
 	_update_wave_label()
 	_update_timer_label()
-	info_label.text = "Oleada %d en curso%s" % [wave_number, ("  —  N: terminar" if debug_mode else "")]
+	if debug_mode:
+		_set_info("Wave %d in progress  —  N: end", [wave_number])
+	else:
+		_set_info("Wave %d in progress", [wave_number])
 
 func _end_wave() -> void:
 	wave_active = false
 	time_left = 0.0
 	timer_label.text = ""
-	info_label.text = ""
+	_clear_info()
 	_clear_enemies()
 
 	# En DEV-ROOM no se encadena nada automáticamente: el jugador usa los atajos.
 	if debug_mode:
-		info_label.text = "DEV-ROOM:  M = siguiente oleada  ·  O = tienda  ·  B = jefe"
+		_set_info("DEV-ROOM:  M = next wave  ·  O = shop  ·  B = boss")
 		return
 
 	# Aviso de oleada superada (~2s, centrado y grande) antes de mostrar la tienda.
 	var is_final_wave := wave_number >= total_waves
-	_show_announce("¡Oleada %d superada!%s" % [wave_number, ("\nEl jefe se aproxima..." if is_final_wave else "")])
+	var announce := tr("Wave %d cleared!") % wave_number
+	if is_final_wave:
+		announce += tr("\nThe boss approaches...")
+	_show_announce(announce)
 	await get_tree().create_timer(2.0).timeout
 	if not is_instance_valid(self):
 		return
@@ -266,7 +280,7 @@ func _end_wave() -> void:
 	# Main: tienda entre oleadas; tras la última, al salir aparece el jefe.
 	if is_final_wave:
 		_boss_pending = true
-		info_label.text = "Compra mejoras y prepárate para el JEFE"
+		_set_info("Buy upgrades and get ready for the BOSS")
 	_enter_shop()
 
 func _show_announce(text: String) -> void:
@@ -304,7 +318,7 @@ func _on_shop_continue() -> void:
 		# Main: empieza automáticamente la siguiente oleada
 		_start_wave()
 	elif debug_mode:
-		info_label.text = "DEV-ROOM:  M = siguiente oleada  ·  O = tienda  ·  B = jefe"
+		_set_info("DEV-ROOM:  M = next wave  ·  O = shop  ·  B = boss")
 
 # =============================================================================
 # TABLA DE OLEADAS
@@ -535,7 +549,7 @@ func _spawn_boss() -> void:
 
 	wave_active = false
 	timer_label.text = ""
-	info_label.text = "¡JEFE FINAL!"
+	_set_info("FINAL BOSS!")
 
 func _on_boss_defeated() -> void:
 	_boss = null
@@ -548,10 +562,10 @@ func _build_screens() -> void:
 	# Inicio: solo el sprite Rectangulo con el texto JUGAR (UI antigua eliminada).
 	_start_screen = _build_start_screen()
 	# Victoria y muerte: caja del sprite UI_stat con el mensaje y un botón.
-	_victory_screen = _build_message_screen("¡VICTORIA!",
-		"Has superado todas las oleadas.", "Jugar de nuevo", _on_restart_pressed)
-	_death_screen = _build_message_screen("HAS MUERTO",
-		"Te han derrotado.", "Reintentar", _on_restart_pressed)
+	_victory_screen = _build_message_screen("VICTORY!",
+		"You cleared all the waves.", "Play again", _on_restart_pressed)
+	_death_screen = _build_message_screen("YOU DIED",
+		"You were defeated.", "Retry", _on_restart_pressed)
 
 func _dim_screen() -> Control:
 	"""Crea una pantalla a rejilla completa con un fondo oscuro translúcido."""
@@ -620,7 +634,7 @@ func _build_start_screen() -> Control:
 	UiTheme.apply_title(title, 64)
 	vbox.add_child(title)
 
-	var play := _make_rect_button("JUGAR", Vector2(260, 96), 30, _on_start_pressed)
+	var play := _make_rect_button("PLAY", Vector2(260, 96), 30, _on_start_pressed)
 	play.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	vbox.add_child(play)
 
@@ -711,11 +725,11 @@ func _hide_screens() -> void:
 func _on_start_pressed() -> void:
 	_hide_screens()
 	if debug_mode:
-		info_label.text = "DEV-ROOM:  M = oleada · N = terminar · B = jefe · 1-5 = enemigos · O = tienda · C = +100 · G = god"
+		_set_info("DEV-ROOM:  M = wave · N = end · B = boss · 1-5 = enemies · O = shop · C = +100 · G = god")
 	elif auto_start_waves:
 		_start_wave()   # Main: las oleadas empiezan automáticamente
 	else:
-		info_label.text = "Pulsa para empezar"
+		_set_info("Press to start")
 
 func _on_restart_pressed() -> void:
 	get_tree().paused = false
@@ -763,7 +777,7 @@ func _build_inventory() -> void:
 	var inv_title := Label.new()
 	inv_title.position = Vector2(185, 52)
 	inv_title.size = Vector2(130, 40)
-	inv_title.text = "Inventario"
+	inv_title.text = "Inventory"
 	inv_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	inv_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	inv_title.add_theme_font_size_override("font_size", 18)
@@ -823,14 +837,16 @@ func _build_options() -> void:
 	var w := 104.0
 	var h := 38.0
 	_make_esc_button(panel, Vector2(148, 62), Vector2(w, h), "SpinShot", func(): _on_opt_placeholder("SpinShot"))
-	_make_esc_button(panel, Vector2(col_l, 148), Vector2(w, h), "Controles", _on_opt_controls)
-	_make_esc_button(panel, Vector2(col_r, 148), Vector2(w, h), "Idioma", func(): _on_opt_placeholder("Idioma"))
-	_make_esc_button(panel, Vector2(col_l, 202), Vector2(w, h), "Resolución", func(): _on_opt_placeholder("Resolución"))
-	_make_esc_button(panel, Vector2(col_r, 202), Vector2(w, h), "Sonido", func(): _on_opt_placeholder("Sonido"))
-	_make_esc_button(panel, Vector2(col_l, 256), Vector2(w, h), "Créditos", func(): _on_opt_placeholder("Créditos"))
-	_make_esc_button(panel, Vector2(col_r, 256), Vector2(w, h), "Salida", _on_opt_exit)
+	_make_esc_button(panel, Vector2(col_l, 148), Vector2(w, h), "Controls", _on_opt_controls)
+	_make_esc_button(panel, Vector2(col_r, 148), Vector2(w, h), "Language", _on_opt_language)
+	_make_esc_button(panel, Vector2(col_l, 202), Vector2(w, h), "Resolution", _on_opt_resolution)
+	_make_esc_button(panel, Vector2(col_r, 202), Vector2(w, h), "Sound", func(): _on_opt_placeholder("Sound"))
+	_make_esc_button(panel, Vector2(col_l, 256), Vector2(w, h), "Credits", func(): _on_opt_placeholder("Credits"))
+	_make_esc_button(panel, Vector2(col_r, 256), Vector2(w, h), "Exit", _on_opt_exit)
 
 	_build_controls_box()
+	_build_resolution_box()
+	_build_language_box()
 	ui.add_child(_options_panel)
 
 func _make_esc_button(parent: Control, pos: Vector2, size: Vector2, text: String, cb: Callable) -> void:
@@ -880,7 +896,7 @@ func _build_controls_box() -> void:
 	var title := Label.new()
 	title.position = Vector2(146, 54)
 	title.size = Vector2(108, 46)
-	title.text = "CONTROLES"
+	title.text = "CONTROLS"
 	title.clip_text = true
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -892,19 +908,134 @@ func _build_controls_box() -> void:
 	var body := Label.new()
 	body.position = Vector2(84, 128)
 	body.size = Vector2(232, 132)
-	body.text = "WASD / Flechas: mover\nEspacio: esquivar\nClic der.: SpinShot azul\nClic izq.: SpinShot naranja\nE: inventario\nESC: opciones\nF11: pantalla completa"
+	body.text = "WASD / Arrows: move\nSpace: dodge\nRight click: blue SpinShot\nLeft click: orange SpinShot\nE: inventory\nESC: options\nF11: fullscreen"
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.add_theme_font_size_override("font_size", 12)
 	body.add_theme_color_override("font_color", Color(0.24, 0.15, 0.07))
 	body.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(body)
 
-	var back := _make_rect_button("Volver", Vector2(170, 60), 16, func(): _controls_box.visible = false)
+	var back := _make_rect_button("Back", Vector2(170, 60), 16, func(): _controls_box.visible = false)
 	back.position = Vector2(115, 274)
 	box.add_child(back)
 
+# Caja superpuesta (sprite UI_stat) con título; devuelve [overlay, box, vbox].
+# El vbox interior sirve para apilar botones de opciones.
+func _make_overlay_box(title_text: String) -> Array:
+	var overlay := Control.new()
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.visible = false
+	_options_panel.add_child(overlay)
+
+	var dim := ColorRect.new()
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.color = Color(0, 0, 0, 0.5)
+	overlay.add_child(dim)
+
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+
+	var box := Control.new()
+	box.custom_minimum_size = Vector2(400, 400)
+	center.add_child(box)
+
+	var bg := TextureRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.texture = UI_STAT_TEX
+	bg.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(bg)
+
+	var title := Label.new()
+	title.position = Vector2(146, 54)
+	title.size = Vector2(108, 46)
+	title.text = title_text
+	title.clip_text = true
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 15)
+	title.add_theme_color_override("font_color", Color(0.22, 0.13, 0.06))
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(title)
+
+	var vbox := VBoxContainer.new()
+	vbox.position = Vector2(100, 118)
+	vbox.size = Vector2(200, 224)
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 6)
+	box.add_child(vbox)
+
+	return [overlay, box, vbox]
+
+func _build_resolution_box() -> void:
+	var parts := _make_overlay_box("RESOLUTION")
+	_resolution_box = parts[0]
+	var vbox: VBoxContainer = parts[2]
+
+	var sizes := [Vector2i(1280, 720), Vector2i(1366, 768), Vector2i(1600, 900), Vector2i(1920, 1080)]
+	for s in sizes:
+		var label := "%d x %d" % [s.x, s.y]
+		var b := _make_rect_button(label, Vector2(196, 30), 13, _apply_resolution.bind(s))
+		b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		vbox.add_child(b)
+
+	var fs := _make_rect_button("Fullscreen", Vector2(196, 30), 13, _apply_fullscreen)
+	fs.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	vbox.add_child(fs)
+
+	var back := _make_rect_button("Back", Vector2(196, 30), 13, func(): _resolution_box.visible = false)
+	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	vbox.add_child(back)
+
+func _build_language_box() -> void:
+	var parts := _make_overlay_box("LANGUAGE")
+	_language_box = parts[0]
+	var vbox: VBoxContainer = parts[2]
+
+	var en := _make_rect_button("English", Vector2(196, 34), 15, func(): _set_language("en"))
+	en.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	vbox.add_child(en)
+
+	var es := _make_rect_button("Español", Vector2(196, 34), 15, func(): _set_language("es"))
+	es.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	vbox.add_child(es)
+
+	var back := _make_rect_button("Back", Vector2(196, 34), 15, func(): _language_box.visible = false)
+	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	vbox.add_child(back)
+
+func _set_language(locale: String) -> void:
+	I18n.set_language(locale)
+	if _language_box != null:
+		_language_box.visible = false
+
+func _apply_resolution(size: Vector2i) -> void:
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	DisplayServer.window_set_size(size)
+	# Centrar la ventana en la pantalla actual
+	var screen := DisplayServer.window_get_current_screen()
+	var sp := DisplayServer.screen_get_size(screen)
+	var pos := DisplayServer.screen_get_position(screen) + (sp - size) / 2
+	DisplayServer.window_set_position(pos)
+	if _resolution_box != null:
+		_resolution_box.visible = false
+
+func _apply_fullscreen() -> void:
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	if _resolution_box != null:
+		_resolution_box.visible = false
+
 func _on_opt_controls() -> void:
 	_controls_box.visible = true
+
+func _on_opt_resolution() -> void:
+	_resolution_box.visible = true
+
+func _on_opt_language() -> void:
+	_language_box.visible = true
 
 func _on_opt_exit() -> void:
 	get_tree().quit()
@@ -935,6 +1066,10 @@ func _set_options(open: bool) -> void:
 		_inventory_panel.visible = false
 	else:
 		_controls_box.visible = false
+		if _resolution_box != null:
+			_resolution_box.visible = false
+		if _language_box != null:
+			_language_box.visible = false
 	_options_open = open
 	_options_panel.visible = open
 	_apply_overlay_state()
@@ -976,7 +1111,7 @@ func _refresh_inventory() -> void:
 
 	if inv.is_empty():
 		var empty := Label.new()
-		empty.text = "(Aún no has comprado ningún ítem)"
+		empty.text = "(You haven't bought any item yet)"
 		UiTheme.apply_label(empty)
 		_inventory_grid.add_child(empty)
 		return
@@ -988,10 +1123,10 @@ func _make_inventory_slot(data: Dictionary) -> Control:
 	var slot := Panel.new()
 	slot.custom_minimum_size = Vector2(80, 80)
 	UiTheme.apply_slot(slot)
-	slot.tooltip_text = "%s\n\n%s\n\nCantidad/Nivel: %d" % [
-		String(data.get("name", "")),
-		String(data.get("desc", "")),
-		int(data.get("count", 1)),
+	slot.tooltip_text = "%s\n\n%s\n\n%s" % [
+		tr(String(data.get("name", ""))),
+		tr(String(data.get("desc", ""))),
+		tr("Qty/Level: %d") % int(data.get("count", 1)),
 	]
 
 	var icon := TextureRect.new()
@@ -1028,13 +1163,42 @@ func _make_inventory_slot(data: Dictionary) -> Control:
 # UI
 # =============================================================================
 func _on_coins_changed(total: int) -> void:
-	coins_label.text = "Monedas: %d" % total
+	coins_label.text = tr("Coins: %d") % total
 
 func _update_wave_label() -> void:
 	if wave_number == 0:
-		wave_label.text = "Oleada: -"
+		wave_label.text = tr("Wave: -")
 	else:
-		wave_label.text = "Oleada %d / %d" % [wave_number, total_waves]
+		wave_label.text = tr("Wave %d / %d") % [wave_number, total_waves]
 
 func _update_timer_label() -> void:
-	timer_label.text = "Tiempo: %d s" % ceili(maxf(time_left, 0.0))
+	timer_label.text = tr("Time: %d s") % ceili(maxf(time_left, 0.0))
+
+# --- Texto contextual de info_label (se re-traduce al cambiar de idioma) ---
+func _set_info(key: String, args: Array = []) -> void:
+	_info_key = key
+	_info_args = args
+	_refresh_info()
+
+func _clear_info() -> void:
+	_info_key = ""
+	_info_args = []
+	info_label.text = ""
+
+func _refresh_info() -> void:
+	if _info_key == "":
+		info_label.text = ""
+	elif _info_args.is_empty():
+		info_label.text = tr(_info_key)
+	else:
+		info_label.text = tr(_info_key) % _info_args
+
+func _on_language_changed(_locale: String) -> void:
+	# Refrescar los textos con formato (los estáticos se auto-traducen solos).
+	_on_coins_changed(Game.coins)
+	_update_wave_label()
+	if wave_active:
+		_update_timer_label()
+	_refresh_info()
+	if _inventory_open:
+		_refresh_inventory()

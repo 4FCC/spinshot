@@ -48,42 +48,45 @@ func _ready() -> void:
 	_build_pool()
 	_build_ui()
 	Game.coins_changed.connect(func(_t): _refresh())
+	# Al cambiar de idioma, refrescar los textos con formato (monedas, ROLL).
+	I18n.language_changed.connect(func(_l): _refresh())
 
 func _build_pool() -> void:
 	# "max" = compras máximas (0 = ilimitado). "dmg"/"life" = stats que muestra la tarjeta.
+	# "name"/"desc" están en inglés (texto fuente) y se auto-traducen en la UI.
 	_pool = [
-		{"id": "health5", "name": "Vida máxima +5", "cost": 5, "max": 0, "icon": icon_health,
-			"desc": "Aumenta la vida máxima en 5 y cura esa cantidad.", "life": 5,
+		{"id": "health5", "name": "Max health +5", "cost": 5, "max": 0, "icon": icon_health,
+			"desc": "Raises max health by 5 and heals that amount.", "life": 5,
 			"apply": func(p): p.upgrade_max_health(5)},
-		{"id": "health10", "name": "Vida máxima +10", "cost": 9, "max": 0, "icon": icon_extra1,
-			"desc": "Aumenta la vida máxima en 10 y cura esa cantidad.", "life": 10,
+		{"id": "health10", "name": "Max health +10", "cost": 9, "max": 0, "icon": icon_extra1,
+			"desc": "Raises max health by 10 and heals that amount.", "life": 10,
 			"apply": func(p): p.upgrade_max_health(10)},
-		{"id": "dmg1", "name": "Daño de bala +1", "cost": 8, "max": 0, "icon": icon_damage,
-			"desc": "+1 de daño a cada Spin-Bullet.", "dmg": 1,
+		{"id": "dmg1", "name": "Bullet damage +1", "cost": 8, "max": 0, "icon": icon_damage,
+			"desc": "+1 damage to each Spin-Bullet.", "dmg": 1,
 			"apply": func(p): p.upgrade_bullet_damage(1)},
-		{"id": "dmg2", "name": "Daño de bala +2", "cost": 14, "max": 0, "icon": icon_extra2,
-			"desc": "+2 de daño a cada Spin-Bullet.", "dmg": 2,
+		{"id": "dmg2", "name": "Bullet damage +2", "cost": 14, "max": 0, "icon": icon_extra2,
+			"desc": "+2 damage to each Spin-Bullet.", "dmg": 2,
 			"apply": func(p): p.upgrade_bullet_damage(2)},
-		{"id": "speed", "name": "Velocidad +40", "cost": 6, "max": 0, "icon": icon_speed,
-			"desc": "+40 de velocidad de movimiento.",
+		{"id": "speed", "name": "Speed +40", "cost": 6, "max": 0, "icon": icon_speed,
+			"desc": "+40 movement speed.",
 			"apply": func(p): p.upgrade_speed(40.0)},
-		{"id": "firerate", "name": "Cadencia +15%", "cost": 7, "max": 0, "icon": icon_firerate,
-			"desc": "Reduce el tiempo entre disparos un 15%.",
+		{"id": "firerate", "name": "Fire rate +15%", "cost": 7, "max": 0, "icon": icon_firerate,
+			"desc": "Reduces time between shots by 15%.",
 			"apply": func(p): p.upgrade_fire_rate(0.85)},
-		{"id": "coinheal", "name": "Robo de vida", "cost": 10, "max": 3, "icon": icon_coinheal,
-			"desc": "25% por nivel de curar 1-3 al recoger una moneda. Máx 3.",
+		{"id": "coinheal", "name": "Lifesteal", "cost": 10, "max": 3, "icon": icon_coinheal,
+			"desc": "Per level, 25% chance to heal 1-3 when collecting a coin. Max 3.",
 			"apply": func(p): p.add_coin_heal()},
-		{"id": "bounce", "name": "Rebote ofensivo", "cost": 15, "max": 3, "icon": icon_bounce,
-			"desc": "Cada SpinShot genera una nueva al impactar. Máx 3.",
+		{"id": "bounce", "name": "Offensive bounce", "cost": 15, "max": 3, "icon": icon_bounce,
+			"desc": "Each SpinShot spawns a new one on hit. Max 3.",
 			"apply": func(p): p.add_bounce()},
-		{"id": "split", "name": "División de proyectil", "cost": 18, "max": 1, "icon": icon_split,
-			"desc": "La SpinShot se divide en dos a media trayectoria. Única.",
+		{"id": "split", "name": "Projectile split", "cost": 18, "max": 1, "icon": icon_split,
+			"desc": "The SpinShot splits in two mid-path. Unique.",
 			"apply": func(p): p.enable_split()},
-		{"id": "lethal", "name": "Giro letal", "cost": 6, "max": 0, "icon": icon_lethal,
-			"desc": "+1% por compra de matar al enemigo girando. Sin límite.",
+		{"id": "lethal", "name": "Lethal spin", "cost": 6, "max": 0, "icon": icon_lethal,
+			"desc": "+1% per purchase to kill the enemy by spinning. No limit.",
 			"apply": func(p): p.add_lethal()},
-		{"id": "autododge", "name": "Esquiva automática", "cost": 12, "max": 3, "icon": icon_autododge,
-			"desc": "25% por nivel de esquivar al recibir daño. Máx 3.",
+		{"id": "autododge", "name": "Auto-dodge", "cost": 12, "max": 3, "icon": icon_autododge,
+			"desc": "Per level, 25% chance to dodge when hit. Max 3.",
 			"apply": func(p): p.add_autododge()},
 	]
 
@@ -96,7 +99,7 @@ func _build_ui() -> void:
 	add_child(bg)
 
 	# Título, monedas y ROLL sobre Rectangulo_UI_Para_texto
-	_make_text_rect(Vector2(520, 16), Vector2(240, 92), "TIENDA", 30)
+	_make_text_rect(Vector2(520, 16), Vector2(240, 92), "SHOP", 30)
 	_coins_label = _make_text_rect(Vector2(40, 16), Vector2(260, 92), "", 22)
 	var rr := _make_button_rect(Vector2(980, 16), Vector2(260, 92), "ROLL", 24, _on_reroll)
 	_reroll_button = rr[0]
@@ -113,7 +116,7 @@ func _build_ui() -> void:
 		_cards.append(card)
 
 	# Botón continuar (también sobre Rectangulo)
-	var cont := _make_button_rect(Vector2(520, 632), Vector2(240, 76), "CONTINUAR", 24, _on_continue)
+	var cont := _make_button_rect(Vector2(520, 632), Vector2(240, 76), "CONTINUE", 24, _on_continue)
 	cont[0].text = ""   # el texto lo pone la etiqueta del rectángulo
 
 # Crea un Control con el sprite Rectangulo de fondo y una etiqueta centrada.
@@ -194,9 +197,9 @@ func _refresh() -> void:
 	if not visible:
 		return
 	if _coins_label != null:
-		_coins_label.text = "%d monedas" % Game.coins
+		_coins_label.text = tr("%d coins") % Game.coins
 	if _reroll_label != null:
-		_reroll_label.text = "ROLL (%d)" % reroll_cost
+		_reroll_label.text = tr("ROLL (%d)") % reroll_cost
 	if _reroll_button != null:
 		_reroll_button.disabled = Game.coins < reroll_cost
 
