@@ -29,7 +29,7 @@ window/stretch/aspect="expand"
 
 [gui]
 
-theme/custom_font="res://Fuentes/04b_11/04B_11__.TTF"
+theme/custom_font="res://Fuentes/Pixel-Operator/PixelOperator.ttf"
 
 [input]
 

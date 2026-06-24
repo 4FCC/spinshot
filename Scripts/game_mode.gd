@@ -39,7 +39,6 @@ extends Node
 @export var auto_start_waves: bool = true  # Encadena las oleadas automáticamente (Main)
 
 @onready var ui: CanvasLayer = $UI
-@onready var coins_label: Label = $UI/CoinsLabel
 @onready var wave_label: Label = $UI/WaveLabel
 @onready var timer_label: Label = $UI/TimerLabel
 @onready var info_label: Label = $UI/InfoLabel
@@ -98,8 +97,6 @@ func _ready() -> void:
 
 	_build_waves()
 	Game.reset()
-	Game.coins_changed.connect(_on_coins_changed)
-	_on_coins_changed(Game.coins)
 
 	shop.continue_pressed.connect(_on_shop_continue)
 	shop.visible = false
@@ -118,7 +115,6 @@ func _ready() -> void:
 	_show_start()
 
 func _style_labels() -> void:
-	UiTheme.apply_label(coins_label)
 	UiTheme.apply_label(wave_label)
 	UiTheme.apply_label(info_label)
 	UiTheme.apply_title(timer_label, 32)
@@ -255,6 +251,8 @@ func _end_wave() -> void:
 	timer_label.text = ""
 	_clear_info()
 	_clear_enemies()
+	# Recoger automáticamente las monedas que queden en el suelo al acabar la ronda
+	_collect_all_coins()
 
 	# En DEV-ROOM no se encadena nada automáticamente: el jugador usa los atajos.
 	if debug_mode:
@@ -524,6 +522,11 @@ func _clear_enemies() -> void:
 	for ind in get_tree().get_nodes_in_group("spawn_indicator"):
 		ind.queue_free()
 
+func _collect_all_coins() -> void:
+	for c in get_tree().get_nodes_in_group("coin"):
+		if c.has_method("collect"):
+			c.collect()
+
 #=============================================================================
 # JEFE
 #=============================================================================
@@ -669,7 +672,7 @@ func _build_message_screen(title_text: String, body_text: String, button_text: S
 	title.text = title_text
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 12)
+	title.add_theme_font_size_override("font_size", 18)
 	title.add_theme_color_override("font_color", Color(0.22, 0.13, 0.06))
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(title)
@@ -779,7 +782,7 @@ func _build_inventory() -> void:
 	inv_title.text = "Inventory"
 	inv_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	inv_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	inv_title.add_theme_font_size_override("font_size", 16)
+	inv_title.add_theme_font_size_override("font_size", 18)
 	inv_title.add_theme_color_override("font_color", Color(0.25, 0.16, 0.08))
 	inv_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	inv.add_child(inv_title)
@@ -898,7 +901,7 @@ func _build_controls_box() -> void:
 	title.text = "CONTROLS"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 12)
+	title.add_theme_font_size_override("font_size", 18)
 	title.add_theme_color_override("font_color", Color(0.22, 0.13, 0.06))
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(title)
@@ -953,7 +956,7 @@ func _make_overlay_box(title_text: String) -> Array:
 	title.text = title_text
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 12)
+	title.add_theme_font_size_override("font_size", 18)
 	title.add_theme_color_override("font_color", Color(0.22, 0.13, 0.06))
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(title)
@@ -1079,7 +1082,6 @@ func _apply_overlay_state() -> void:
 func _set_gameplay_ui_visible(v: bool) -> void:
 	"""Muestra/oculta el HUD de la partida (vida, esquive, monedas, oleada,
 	tiempo, info) para que no estorbe al abrir el inventario o una pantalla."""
-	coins_label.visible = v
 	wave_label.visible = v
 	timer_label.visible = v
 	info_label.visible = v
@@ -1159,9 +1161,6 @@ func _make_inventory_slot(data: Dictionary) -> Control:
 # =============================================================================
 # UI
 # =============================================================================
-func _on_coins_changed(total: int) -> void:
-	coins_label.text = tr("Coins: %d") % total
-
 func _update_wave_label() -> void:
 	if wave_number == 0:
 		wave_label.text = tr("Wave: -")
@@ -1192,7 +1191,6 @@ func _refresh_info() -> void:
 
 func _on_language_changed(_locale: String) -> void:
 	# Refrescar los textos con formato (los estáticos se auto-traducen solos).
-	_on_coins_changed(Game.coins)
 	_update_wave_label()
 	if wave_active:
 		_update_timer_label()

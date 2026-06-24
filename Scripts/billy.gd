@@ -30,6 +30,7 @@ const _CAMERA_TARGET_HEIGHT := 768.0
 @onready var health_label: Label = $HUD/Root/HealthBar/HealthLabel
 @onready var dodge_bar: TextureProgressBar = $HUD/Root/DodgeBar
 @onready var dodge_label: Label = $HUD/Root/DodgeBar/DodgeLabel
+@onready var coins_label: Label = $HUD/Root/Coins/CoinsLabel
 
 # =============================================================================
 # PROPIEDADES CONFIGURABLES
@@ -114,14 +115,19 @@ func _ready():
 	_update_camera_zoom()
 	get_viewport().size_changed.connect(_update_camera_zoom)
 	_style_hud()
+	# Contador de monedas (sprite + cantidad) bajo la barra de esquive
+	Game.coins_changed.connect(_update_coins_ui)
+	_update_coins_ui(Game.coins)
 
 func _style_hud() -> void:
-	# Las barras usan los sprites (04.png + Rectangulo) definidos en la escena.
+	# Las barras usan los sprites (04.png) definidos en la escena.
 	# Aquí solo damos color/legibilidad al texto que va encima.
 	UiTheme.apply_label(health_label)
 	UiTheme.apply_label(dodge_label)
-	if has_node("HUD/Root/Hint"):
-		UiTheme.apply_label($HUD/Root/Hint)
+	UiTheme.apply_label(coins_label)
+
+func _update_coins_ui(total: int) -> void:
+	coins_label.text = str(total)
 
 func _update_camera_zoom() -> void:
 	var vp_h := get_viewport().get_visible_rect().size.y

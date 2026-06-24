@@ -28,12 +28,13 @@ const ITEM_CARD := preload("res://Scenes/ItemCard.tscn")
 const RECT_TEX := preload("res://UI assets/Rectangulo_UI_Para_texto.png")
 const COIN_TEX := preload("res://Items assets/COIN_SPRITE.png")
 
-# Disposición de las 4 tarjetas (espacio base 1280x720)
-const CARD_SCALE := 0.66
-const CARD_W := 400.0 * CARD_SCALE   # ancho mostrado de cada tarjeta
-const CARD_GAP := 32.0
-const CARD_X0 := 56.0
-const CARD_Y := 150.0
+# Disposición de las 4 tarjetas (espacio base 1280x720).
+# CARD_SCALE al máximo que permite encajar 4 tarjetas a lo ancho de 1280.
+const CARD_SCALE := 0.76
+const CARD_W := 400.0 * CARD_SCALE   # ancho mostrado de cada tarjeta (304)
+const CARD_GAP := 16.0
+const CARD_X0 := 8.0
+const CARD_Y := 140.0
 
 var player: Node2D = null
 var _pool: Array = []
