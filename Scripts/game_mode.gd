@@ -51,6 +51,9 @@ extends Node
 @onready var info_label: Label = $UI/InfoLabel
 @onready var announce_label: Label = $UI/AnnounceLabel
 @onready var shop = $UI/Shop
+@onready var _music_base: AudioStreamPlayer = $MusicBase
+@onready var _music_boss1: AudioStreamPlayer = $MusicBoss1
+@onready var _music_boss2: AudioStreamPlayer = $MusicBoss2
 
 var player: Node2D = null
 var wave_number: int = 0
@@ -291,6 +294,7 @@ func _start_miniboss_wave() -> void:
 	time_left = 0.0
 	timer_label.text = ""          # sin temporizador en la oleada 10
 	_set_info("Defeat the Gran Capitán!")
+	_play_music(_music_boss1)
 	_spawn_miniboss()
 
 func _spawn_miniboss() -> void:
@@ -310,6 +314,7 @@ func _spawn_miniboss() -> void:
 func _on_miniboss_defeated() -> void:
 	_miniboss = null
 	_miniboss_active = false
+	_play_music(_music_base)
 	# Tratar como fin de la oleada final: limpia, tienda y luego el jefe final.
 	_end_wave()
 
@@ -628,9 +633,11 @@ func _spawn_boss() -> void:
 	wave_active = false
 	timer_label.text = ""
 	_set_info("FINAL BOSS!")
+	_play_music(_music_boss2)
 
 func _on_boss_defeated() -> void:
 	_boss = null
+	_stop_all_music()
 	_show_victory()
 
 # =============================================================================
@@ -801,6 +808,7 @@ func _hide_screens() -> void:
 
 func _on_start_pressed() -> void:
 	_hide_screens()
+	_play_music(_music_base)
 	if debug_mode:
 		_set_info("DEV-ROOM:  M=wave N=end B=boss · 1-5 dummies · 6-9 variants/miniboss · O=shop C=+100 G=god")
 	elif auto_start_waves:
@@ -813,6 +821,7 @@ func _on_restart_pressed() -> void:
 	get_tree().reload_current_scene()
 
 func _on_player_died() -> void:
+	_stop_all_music()
 	_show_death()
 
 # =============================================================================
@@ -1274,3 +1283,18 @@ func _on_language_changed(_locale: String) -> void:
 	_refresh_info()
 	if _inventory_open:
 		_refresh_inventory()
+
+# =============================================================================
+# MÚSICA
+# =============================================================================
+func _play_music(player: AudioStreamPlayer) -> void:
+	for p in [_music_base, _music_boss1, _music_boss2]:
+		if p != player and p.playing:
+			p.stop()
+	if not player.playing:
+		player.play()
+
+func _stop_all_music() -> void:
+	_music_base.stop()
+	_music_boss1.stop()
+	_music_boss2.stop()

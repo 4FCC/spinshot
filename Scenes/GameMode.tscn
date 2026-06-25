@@ -28,6 +28,9 @@
 [ext_resource type="Texture2D" uid="uid://dccadhhqupjq1" path="res://Items assets/Viking_helmet.png" id="26_h3"]
 [ext_resource type="Texture2D" uid="uid://bs3r0i8ynrls4" path="res://Items assets/CapitanNORMAL_Helmet.png" id="27_h4"]
 [ext_resource type="Texture2D" uid="uid://56njdtuiit8c" path="res://Items assets/Capitan_Helmet.png" id="28_h5"]
+[ext_resource type="AudioStream" uid="uid://cmusic1maksym" path="res://soundtrack/maksymmalko-medieval-irish-celtic-ireland-music-311693.mp3" id="30_maksy"]
+[ext_resource type="AudioStream" uid="uid://cmusic2oblix0" path="res://soundtrack/ob-lix-khutulun-fantasy-amp-battle-background-music-115812.mp3" id="31_oblix"]
+[ext_resource type="AudioStream" uid="uid://cmusic3junip0" path="res://soundtrack/junipersona-to-the-death-159171.mp3" id="32_juni"]
 
 [node name="GameMode" type="Node" unique_id=551392244]
 script = ExtResource("1_gm")
@@ -120,3 +123,15 @@ icon_soldier_helmet = ExtResource("25_h2")
 icon_viking_helmet = ExtResource("26_h3")
 icon_capitan_helmet = ExtResource("27_h4")
 icon_grancapitan_helmet = ExtResource("28_h5")
+
+[node name="MusicBase" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("30_maksy")
+volume_db = -6.0
+
+[node name="MusicBoss1" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("31_oblix")
+volume_db = -6.0
+
+[node name="MusicBoss2" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("32_juni")
+volume_db = -6.0
