@@ -59,7 +59,7 @@ Para compensar el poder de los nuevos cascos, las estadísticas base se subieron
 
 | Enemigo | Vida | Daño contacto |
 |---------|------|----------------|
-| Minion | 6 → **8** | 2 → **3** |
+| Minion | 6 → **5** (más débil) | 2 |
 | BigMinion | 12 → **16** | 4 → **5** |
 | ChargerMinion | 14 → **18** | 4 → **5** |
 | Bigminion_capitan | 26 → **34** | 6 → **7** |

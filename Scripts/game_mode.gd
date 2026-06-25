@@ -393,14 +393,18 @@ func _on_shop_continue() -> void:
 # con pesos: [escena, peso]. El spawner elige al azar según esos pesos. Para
 # modificar o añadir oleadas, edita _build_waves() (ver docs/oleadas.md).
 func _build_waves() -> void:
+	# Introducción progresiva de cada tipo de enemigo (ver docs/oleadas.md):
+	#   R1 minions · R2 +bigminion · R3 +bulletminion · R4 +support
+	#   R5 +charger (peso bajo: pocos a la vez) · R6 +variantes (sad/gótica)
+	#   R7 +capitán · R8-R9 mezcla completa · R10 minijefe (este pool no se usa).
 	_waves = [
 		{"interval": 0.8, "pool": [[minion_scene, 1]]},
-		{"interval": 0.8, "pool": [[minion_scene, 3], [charger_scene, 1]]},
-		{"interval": 0.9, "pool": [[minion_scene, 2], [bigminion_scene, 1]]},
-		{"interval": 0.9, "pool": [[minion_scene, 2], [charger_scene, 2]]},
-		{"interval": 1.0, "pool": [[bigminion_scene, 2], [bulletminion_scene, 1]]},
-		{"interval": 0.9, "pool": [[minion_scene, 2], [charger_scene, 2], [support_scene, 1]]},
-		{"interval": 1.0, "pool": [[bulletminion_scene, 2], [bigminion_scene, 1], [support_scene, 1], [gotica_scene, 1]]},
+		{"interval": 0.8, "pool": [[minion_scene, 3], [bigminion_scene, 1]]},
+		{"interval": 0.9, "pool": [[minion_scene, 3], [bigminion_scene, 1], [bulletminion_scene, 1]]},
+		{"interval": 0.9, "pool": [[minion_scene, 3], [bigminion_scene, 1], [bulletminion_scene, 1], [support_scene, 1]]},
+		{"interval": 1.0, "pool": [[minion_scene, 3], [bigminion_scene, 2], [bulletminion_scene, 1], [support_scene, 1], [charger_scene, 1]]},
+		{"interval": 1.0, "pool": [[minion_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 1], [support_scene, 1], [charger_scene, 1], [sad_scene, 1], [gotica_scene, 1]]},
+		{"interval": 1.0, "pool": [[minion_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 1], [support_scene, 1], [charger_scene, 1], [sad_scene, 1], [gotica_scene, 1], [capitan_scene, 1]]},
 		{"interval": 0.9, "pool": [[charger_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 1], [capitan_scene, 1]]},
 		{"interval": 0.9, "pool": [[minion_scene, 2], [charger_scene, 2], [bulletminion_scene, 1], [bigminion_scene, 1], [support_scene, 1], [gotica_scene, 1], [capitan_scene, 1]]},
 		{"interval": 0.8, "pool": [[minion_scene, 2], [charger_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 2], [support_scene, 1]]},
