@@ -24,28 +24,22 @@ func _ready() -> void:
 	_heal_timer = heal_interval
 
 func _update_ai(delta: float) -> void:
-	if player == null:
-		velocity = Vector2.ZERO
-		return
-
-	var ppos := player.global_position
-	var away := (global_position - ppos)
-	away = away.normalized() if away.length() > 0.0 else Vector2.RIGHT
-	var dist := global_position.distance_to(ppos)
-
-	var target: Vector2
-	var ally := _nearest_ally()
-	if dist < preferred_distance:
-		# Demasiado cerca del jugador: retroceder
-		target = global_position + away * 120.0
-	elif ally != null:
-		# Esconderse en el lado del aliado más alejado del jugador
-		target = ally.global_position + away * 80.0
+	# El Apoyo ya NO depende del jugador: busca el GRUPO de enemigos (grande o
+	# pequeño) y se queda dentro de él para curar/potenciar. Navega evitando los
+	# bordes para no quedarse pegado a las paredes.
+	var cluster := _best_cluster()
+	if cluster == _NO_CLUSTER:
+		# Sin otros enemigos: frenar suavemente (no vagar contra las paredes).
+		velocity = _avoid_bounds(velocity.move_toward(Vector2.ZERO, get_speed()))
 	else:
-		target = global_position + away * 60.0
-
-	var move := target - global_position
-	velocity = move.normalized() * move_speed if move.length() > 10.0 else Vector2.ZERO
+		var to: Vector2 = cluster - global_position
+		var d := to.length()
+		# Mantenerse DENTRO del grupo (a media distancia de curación) sin pegarse.
+		var keep := heal_radius * 0.45
+		if d > keep:
+			velocity = _avoid_bounds(to.normalized() * get_speed())
+		else:
+			velocity = _avoid_bounds(velocity.move_toward(Vector2.ZERO, get_speed()))
 
 	# Aura de daño: refresca el +daño en todos los aliados dentro del radio cada
 	# frame. Al salir del rango deja de refrescarse y la bonificación caduca.
@@ -57,17 +51,31 @@ func _update_ai(delta: float) -> void:
 		_heal_timer = heal_interval
 		_heal_allies()
 
-func _nearest_ally() -> Node2D:
-	var best: Node2D = null
-	var best_d := INF
-	for e in get_tree().get_nodes_in_group("enemy"):
+const _NO_CLUSTER := Vector2(INF, INF)
+
+func _best_cluster() -> Vector2:
+	"""Centroide del grupo de enemigos MÁS DENSO (el que tiene más vecinos en
+	'heal_radius'). Así el Apoyo gravita hacia los grupos grandes y, si solo hay
+	uno pequeño o suelto, va igualmente hacia él. Devuelve _NO_CLUSTER si no hay
+	otros enemigos a los que apoyar."""
+	var enemies := get_tree().get_nodes_in_group("enemy")
+	var best_center := _NO_CLUSTER
+	var best_count := 0
+	for e in enemies:
 		if e == self or not is_instance_valid(e):
 			continue
-		var d: float = global_position.distance_to(e.global_position)
-		if d < best_d:
-			best_d = d
-			best = e
-	return best
+		var sum: Vector2 = e.global_position
+		var n := 1
+		for o in enemies:
+			if o == self or o == e or not is_instance_valid(o):
+				continue
+			if e.global_position.distance_to(o.global_position) <= heal_radius:
+				sum += o.global_position
+				n += 1
+		if n > best_count:
+			best_count = n
+			best_center = sum / float(n)
+	return best_center
 
 func _apply_damage_aura() -> void:
 	if damage_buff <= 0:

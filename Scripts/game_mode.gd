@@ -393,10 +393,13 @@ func _on_shop_continue() -> void:
 # con pesos: [escena, peso]. El spawner elige al azar según esos pesos. Para
 # modificar o añadir oleadas, edita _build_waves() (ver docs/oleadas.md).
 func _build_waves() -> void:
-	# Introducción progresiva de cada tipo de enemigo (ver docs/oleadas.md):
+	# Introducción progresiva de enemigos (ver docs/oleadas.md). En CADA oleada
+	# aparecen minions + el resto del repertorio acumulado; las oleadas "sin
+	# cambios" (8, 9) NO añaden un tipo nuevo: repiten el repertorio de la 7 con
+	# más intensidad.
 	#   R1 minions · R2 +bigminion · R3 +bulletminion · R4 +support
 	#   R5 +charger (peso bajo: pocos a la vez) · R6 +variantes (sad/gótica)
-	#   R7 +capitán · R8-R9 mezcla completa · R10 minijefe (este pool no se usa).
+	#   R7 +capitán · R8-R9 mismo repertorio (más intenso) · R10 minijefe.
 	_waves = [
 		{"interval": 0.8, "pool": [[minion_scene, 1]]},
 		{"interval": 0.8, "pool": [[minion_scene, 5], [bigminion_scene, 1]]},
@@ -405,9 +408,9 @@ func _build_waves() -> void:
 		{"interval": 1.0, "pool": [[minion_scene, 5], [bigminion_scene, 2], [bulletminion_scene, 1], [support_scene, 1], [charger_scene, 1]]},
 		{"interval": 1.0, "pool": [[minion_scene, 4], [bigminion_scene, 2], [bulletminion_scene, 1], [support_scene, 1], [charger_scene, 1], [sad_scene, 1], [gotica_scene, 1]]},
 		{"interval": 1.0, "pool": [[minion_scene, 4], [bigminion_scene, 2], [bulletminion_scene, 1], [support_scene, 1], [charger_scene, 1], [sad_scene, 1], [gotica_scene, 1], [capitan_scene, 1]]},
-		{"interval": 0.9, "pool": [[charger_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 1], [capitan_scene, 1]]},
-		{"interval": 0.9, "pool": [[minion_scene, 4], [charger_scene, 2], [bulletminion_scene, 1], [bigminion_scene, 1], [support_scene, 1], [gotica_scene, 1], [capitan_scene, 1]]},
-		{"interval": 0.8, "pool": [[minion_scene, 4], [charger_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 2], [support_scene, 1]]},
+		{"interval": 0.9, "pool": [[minion_scene, 4], [bigminion_scene, 2], [bulletminion_scene, 1], [support_scene, 1], [charger_scene, 2], [sad_scene, 1], [gotica_scene, 1], [capitan_scene, 1]]},
+		{"interval": 0.9, "pool": [[minion_scene, 4], [bigminion_scene, 3], [bulletminion_scene, 2], [support_scene, 1], [charger_scene, 2], [sad_scene, 1], [gotica_scene, 1], [capitan_scene, 2]]},
+		{"interval": 0.8, "pool": [[minion_scene, 4], [bigminion_scene, 3], [bulletminion_scene, 2], [support_scene, 1], [charger_scene, 2], [sad_scene, 1], [gotica_scene, 1], [capitan_scene, 2]]},
 	]
 
 func _spawn_interval() -> float:
