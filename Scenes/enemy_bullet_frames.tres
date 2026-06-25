@@ -1,4 +1,4 @@
-[gd_resource type="SpriteFrames" load_steps=10 format=3 uid="uid://benemybullfr0"]
+[gd_resource type="SpriteFrames" format=3 uid="uid://benemybullfr0"]
 
 [ext_resource type="Texture2D" uid="uid://ddrjvtygwlfbc" path="res://ASSET_SPINBULLET/Bullet 24x24 Free  Part 1B.png" id="1_sheet"]
 
@@ -39,25 +39,25 @@ animations = [{
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("g0")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("g1")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("g2")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("g3")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("g4")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("g5")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("g6")
-},{
+}, {
 "duration": 1.0,
 "texture": SubResource("g7")
 }],
