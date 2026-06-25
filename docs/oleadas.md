@@ -89,11 +89,16 @@ en las oleadas siguientes):
 | 4 | Minion ×5, BigMinion ×1, BulletMinion ×1, Apoyo ×1 | +Apoyo |
 | 5 | Minion ×5, BigMinion ×2, BulletMinion ×1, Apoyo ×1, Cargador ×1 | +Cargador (peso bajo: pocos a la vez) |
 | 6 | Minion ×4, BigMinion ×2, BulletMinion ×1, Apoyo ×1, Cargador ×1, Sad ×1, Gótica ×1 | +variantes de BulletMinion (Sad/Gótica) |
-| 7 | … + Bigminion_capitan ×1 | +Capitán |
-| 8 | Cargador ×2, BigMinion ×2, BulletMinion ×1, Capitán ×1 | (sin cambios) |
-| 9 | Mezcla de todos (Minion ×4) | (sin cambios) |
+| 7 | … + Bigminion_capitan ×1 (repertorio completo) | +Capitán |
+| 8 | Mismo repertorio que la 7 (Cargador ×2) | sin enemigo nuevo, más intenso |
+| 9 | Mismo repertorio (BigMinion ×3, BulletMinion ×2, Capitán ×2) | sin enemigo nuevo, más intenso |
 | 10 | **Minijefe** (Bigminion_gran_capitan) → luego **Jefe** | oleada sin temporizador |
 
+> **En todas las oleadas aparecen Minions + el resto del repertorio acumulado**
+> (la única excepción es la oleada 1, solo Minions, y la 10, que es el minijefe).
+> Las oleadas marcadas "sin enemigo nuevo" (8 y 9) **no introducen un tipo
+> nuevo**: repiten el repertorio de la oleada 7 con más cantidad/intensidad.
+>
 > El **Minion** lleva un peso alto en cada oleada para que sea el enemigo más
 > frecuente, **sin reducir** el peso de los demás tipos (solo cambia su
 > proporción relativa).
@@ -123,6 +128,12 @@ en las oleadas siguientes):
 
 No ataca al jugador; potencia a los aliados dentro de `heal_radius`:
 
+- **Movimiento (independiente del jugador):** busca el **grupo de enemigos más
+  denso** (`_best_cluster()` = centroide del enemigo con más vecinos en
+  `heal_radius`) y se mantiene **dentro** de él (a `heal_radius * 0.45`) para
+  curar/potenciar, sin importar si el jugador está cerca o lejos. Navega con
+  `_avoid_bounds()` para no quedarse pegado a las paredes. Si no hay otros
+  enemigos, frena en el sitio.
 - **Curación** periódica (`heal_amount` cada `heal_interval`).
 - **Aura de daño**: otorga `+damage_buff` al daño por contacto de los aliados en
   rango. Se **refresca cada frame** mientras estén dentro del radio y **caduca**

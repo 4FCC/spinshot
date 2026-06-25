@@ -11,7 +11,7 @@ intermitente al recibir daño, `enemy._flash`).
 | Minion | `enemy.gd` | `Minion.png` | Persigue al jugador (aparece en todas las rondas). |
 | BigMinion | `big_minion.gd` | `BigMinion.png` | Robusto. Recibe **buff de daño y velocidad** dentro del aura del Bigminion_capitan (grupo `bigminion`). |
 | BulletMinion | `bullet_minion.gd` | `Sprite_BulletMinion_var1.png` | Dispara `HomingBullet` (orbe verde) con **parpadeo rojo de aviso**; cada cierto tiempo lanza un **patrón circular** de balas que NO siguen al jugador. |
-| SupportMinion | `support_minion.gd` | `SupportMinion.png` | Cura y da +daño a aliados. Al usar su habilidad muestra el **efecto de corazones** (`SupportMinion_effet`) sobre los aliados y parpadea en **rosa**. |
+| SupportMinion | `support_minion.gd` | `SupportMinion.png` | Cura y da +daño a aliados. **Sigue al grupo de enemigos más denso** (no al jugador) y se queda dentro de él; navega evitando paredes. Al usar su habilidad muestra el **efecto de corazones** (`SupportMinion_effet`) sobre los aliados y parpadea en **rosa**. |
 | ChargerMinion | `charger_minion.gd` | `ChargerMinion.png` | Embiste; durante la carga **empuja** a otros enemigos que se cruzan. |
 
 ## Variantes
