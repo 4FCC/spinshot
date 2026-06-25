@@ -78,18 +78,25 @@ así que el juego no falla si falta una escena.
 
 Composición actual (resumen):
 
-| Oleada | Enemigos (pesos) |
-|-------:|------------------|
-| 1 | Minion |
-| 2 | Minion ×3, Cargador ×1 |
-| 3 | Minion ×2, BigMinion ×1 |
-| 4 | Minion ×2, Cargador ×2 |
-| 5 | BigMinion ×2, BulletMinion ×1 |
-| 6 | Minion ×2, Cargador ×2, Apoyo ×1 |
-| 7 | BulletMinion ×2, BigMinion ×1, Apoyo ×1 |
-| 8 | Cargador ×2, BigMinion ×2, BulletMinion ×1 |
-| 9 | Mezcla de todos |
-| 10 | Mezcla intensa de todos → luego **Jefe** |
+Cada tipo se **introduce de forma progresiva** (una vez que aparece, se mantiene
+en las oleadas siguientes):
+
+| Oleada | Enemigos (pesos) | Novedad |
+|-------:|------------------|---------|
+| 1 | Minion ×1 | — |
+| 2 | Minion ×3, BigMinion ×1 | +BigMinion (sin Cargador) |
+| 3 | Minion ×3, BigMinion ×1, BulletMinion ×1 | +BulletMinion |
+| 4 | Minion ×3, BigMinion ×1, BulletMinion ×1, Apoyo ×1 | +Apoyo |
+| 5 | Minion ×3, BigMinion ×2, BulletMinion ×1, Apoyo ×1, Cargador ×1 | +Cargador (peso bajo: pocos a la vez) |
+| 6 | Minion ×2, BigMinion ×2, BulletMinion ×1, Apoyo ×1, Cargador ×1, Sad ×1, Gótica ×1 | +variantes de BulletMinion (Sad/Gótica) |
+| 7 | … + Bigminion_capitan ×1 | +Capitán |
+| 8 | Cargador ×2, BigMinion ×2, BulletMinion ×1, Capitán ×1 | (sin cambios) |
+| 9 | Mezcla de todos | (sin cambios) |
+| 10 | **Minijefe** (Bigminion_gran_capitan) → luego **Jefe** | oleada sin temporizador |
+
+> El **Cargador** se introduce tarde (oleada 5) y con **peso bajo** para que solo
+> aparezcan unos pocos a la vez: antes saturaba la oleada 2 y la hacía
+> injusta. La **oleada 10** invoca al minijefe (su `pool` no se usa).
 
 ## Cómo modificar o agregar oleadas
 
