@@ -24,6 +24,7 @@ run_sheet = ExtResource("3_run")
 run_frames = 6
 frame_size = 64
 sprite_scale = 1.45
+separation_radius = 64.0
 bigminion_scene = ExtResource("4_big")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]

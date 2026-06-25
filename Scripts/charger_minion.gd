@@ -7,11 +7,11 @@ extends Enemy
 # en línea recta a gran velocidad. Su amenaza viene de la velocidad + daño.
 
 @export_group("Carga")
-@export var charge_interval: float = 3.0   # Tiempo entre cargas
-@export var windup_time: float = 0.5       # Aviso antes de cargar (telegrafía)
-@export var charge_time: float = 0.4       # Duración de la carga
-@export var charge_speed: float = 750.0    # Velocidad durante la carga
-@export var charge_range: float = 420.0    # Distancia a la que decide cargar
+@export var charge_interval: float = 2.2   # Tiempo entre cargas
+@export var windup_time: float = 0.45      # Aviso antes de cargar (telegrafía)
+@export var charge_time: float = 0.45      # Duración de la carga
+@export var charge_speed: float = 820.0    # Velocidad durante la carga
+@export var charge_range: float = 600.0    # Distancia a la que decide cargar
 
 enum ChargePhase { CHASE, WINDUP, CHARGE }
 var _phase: int = ChargePhase.CHASE
@@ -21,7 +21,7 @@ var _charge_dir: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	super._ready()
-	_cooldown = charge_interval
+	_cooldown = 1.0   # primera embestida poco después de aparecer
 
 func _update_ai(delta: float) -> void:
 	if player == null:
@@ -38,9 +38,9 @@ func _update_ai(delta: float) -> void:
 			else:
 				velocity = Vector2.ZERO
 			_cooldown -= delta
-			# Cuando toca y el jugador está en rango, empieza el aviso de carga
-			# (los maniquíes de prueba nunca embisten)
-			if not passive and _cooldown <= 0.0 and to_player.length() <= charge_range:
+			# Cuando el jugador está en rango y acaba el enfriamiento, embiste.
+			# (los maniquíes de prueba también embisten, pero sin causar daño)
+			if _cooldown <= 0.0 and to_player.length() <= charge_range:
 				_phase = ChargePhase.WINDUP
 				_phase_timer = windup_time
 
@@ -51,6 +51,8 @@ func _update_ai(delta: float) -> void:
 			_phase_timer -= delta
 			if _phase_timer <= 0.0:
 				_charge_dir = to_player.normalized()
+				if _charge_dir == Vector2.ZERO:
+					_charge_dir = Vector2.RIGHT
 				_phase = ChargePhase.CHARGE
 				_phase_timer = charge_time
 				sprite.modulate = Color.WHITE

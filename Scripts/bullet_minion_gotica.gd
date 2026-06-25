@@ -18,9 +18,8 @@ extends Enemy
 @export_group("Teletransporte")
 @export var teleport_cooldown: float = 3.0
 
-# Límites del área jugable (para no teletransportarse fuera del mapa).
-const ARENA_MIN := Vector2(96, 96)
-const ARENA_MAX := Vector2(1824, 1056)
+# Límites del área jugable (ARENA_MIN/ARENA_MAX se heredan de enemy.gd).
+const EFFECT_SCENE := preload("res://Scenes/Effect.tscn")
 
 var _tp_timer: float = 0.0
 
@@ -49,8 +48,12 @@ func _update_ai(delta: float) -> void:
 		velocity = -dir * get_speed()
 	else:
 		velocity = dir.rotated(PI / 2.0) * get_speed() * 0.4
+	velocity = _avoid_bounds(velocity)
 
 func _teleport_and_attack() -> void:
+	# Humo en el punto de partida (cubre el cuerpo del enemigo).
+	_spawn_smoke(global_position)
+
 	# Reaparecer a distancia segura del jugador, en un punto dentro del mapa.
 	var ang := randf() * TAU
 	var pos: Vector2 = player.global_position + Vector2.RIGHT.rotated(ang) * safe_distance
@@ -58,6 +61,9 @@ func _teleport_and_attack() -> void:
 	pos.y = clampf(pos.y, ARENA_MIN.y, ARENA_MAX.y)
 	global_position = pos
 	velocity = Vector2.ZERO
+
+	# Humo en el punto de llegada.
+	_spawn_smoke(global_position)
 
 	# Destello de teletransporte.
 	sprite.modulate = Color(0.7, 0.4, 1.0)
@@ -67,6 +73,20 @@ func _teleport_and_attack() -> void:
 	# 2 patrones: un círculo y un triángulo (ninguno sigue al jugador).
 	_fire_pattern(ring_count, 0.0)
 	_fire_pattern(3, deg_to_rad(30.0))
+
+func _spawn_smoke(pos: Vector2) -> void:
+	"""Nube de humo (25.png) escalada para cubrir el cuerpo del enemigo."""
+	var host := get_parent()
+	if host == null:
+		return
+	var fx = EFFECT_SCENE.instantiate()
+	host.add_child(fx)
+	fx.global_position = pos
+	# El cuerpo ocupa ~64*sprite_scale px; el fotograma de humo es de 64 px.
+	var cover := (64.0 * sprite_scale) / 64.0 * 2.2
+	fx.scale = Vector2(cover, cover)
+	fx.z_index = 30
+	fx.play_effect("dust")
 
 func _fire_pattern(count: int, offset: float) -> void:
 	if projectile_scene == null or count <= 0:

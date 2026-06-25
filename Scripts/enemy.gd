@@ -32,6 +32,14 @@ extends CharacterBody2D
 @export var anim_fps: float = 10.0
 @export var sprite_scale: float = 0.6
 
+@export_group("Separación / límites")
+@export var separation_radius: float = 44.0   # distancia para no encimarse con otros
+@export var separation_force: float = 90.0    # fuerza de repulsión suave entre enemigos
+
+# Límites del área jugable (césped 1920x1152) con margen interior.
+const ARENA_MIN := Vector2(70, 70)
+const ARENA_MAX := Vector2(1850, 1082)
+
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var hitbox: Area2D = $Hitbox
 
@@ -125,6 +133,8 @@ func _physics_process(delta: float) -> void:
 		player = _find_player()
 
 	_update_ai(delta)
+	# Repulsión suave para no encimarse con otros enemigos (antisuperposición).
+	velocity += _separation()
 	# Aplicar empuje externo (decae con el tiempo) sobre la velocidad calculada.
 	if _push_vel.length() > 1.0:
 		velocity += _push_vel
@@ -134,6 +144,37 @@ func _physics_process(delta: float) -> void:
 
 	if melee_enabled:
 		_try_melee()
+
+func _separation() -> Vector2:
+	"""Suma de repulsiones de los enemigos cercanos (antisuperposición suave)."""
+	var push := Vector2.ZERO
+	var r := separation_radius
+	if r <= 0.0:
+		return push
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if e == self or not is_instance_valid(e):
+			continue
+		var off: Vector2 = global_position - e.global_position
+		var d := off.length()
+		if d > 0.01 and d < r:
+			push += (off / d) * (1.0 - d / r)
+	return push * separation_force
+
+func _avoid_bounds(vel: Vector2) -> Vector2:
+	"""Evita que los enemigos evasivos se peguen a las paredes o salgan del mapa:
+	si se dirigen a un borde estando cerca, redirigen ese eje hacia adentro
+	(corren bordeando el mapa, aunque tengan que cruzar cerca del jugador)."""
+	var p := global_position
+	var m := 140.0
+	if p.x < ARENA_MIN.x + m and vel.x < 0.0:
+		vel.x = absf(vel.x)
+	elif p.x > ARENA_MAX.x - m and vel.x > 0.0:
+		vel.x = -absf(vel.x)
+	if p.y < ARENA_MIN.y + m and vel.y < 0.0:
+		vel.y = absf(vel.y)
+	elif p.y > ARENA_MAX.y - m and vel.y > 0.0:
+		vel.y = -absf(vel.y)
+	return vel
 
 func _update_ai(_delta: float) -> void:
 	if player == null:

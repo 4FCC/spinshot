@@ -99,7 +99,8 @@ func _spawn_hearts(node: Node2D) -> void:
 		return
 	var fx = EFFECT_SCENE.instantiate()
 	node.add_child(fx)
-	fx.position = Vector2(0, -12)
+	fx.position = Vector2(0, -20)
+	fx.scale = Vector2(2.6, 2.6)   # mucho más grande para que destaque
 	fx.z_index = 60
 	fx.play_effect("hearts")
 

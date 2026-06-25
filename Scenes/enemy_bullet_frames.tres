@@ -1,0 +1,67 @@
+[gd_resource type="SpriteFrames" load_steps=10 format=3 uid="uid://benemybullfr0"]
+
+[ext_resource type="Texture2D" uid="uid://ddrjvtygwlfbc" path="res://ASSET_SPINBULLET/Bullet 24x24 Free  Part 1B.png" id="1_sheet"]
+
+[sub_resource type="AtlasTexture" id="g0"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 120, 24, 24)
+
+[sub_resource type="AtlasTexture" id="g1"]
+atlas = ExtResource("1_sheet")
+region = Rect2(24, 120, 24, 24)
+
+[sub_resource type="AtlasTexture" id="g2"]
+atlas = ExtResource("1_sheet")
+region = Rect2(48, 120, 24, 24)
+
+[sub_resource type="AtlasTexture" id="g3"]
+atlas = ExtResource("1_sheet")
+region = Rect2(72, 120, 24, 24)
+
+[sub_resource type="AtlasTexture" id="g4"]
+atlas = ExtResource("1_sheet")
+region = Rect2(96, 120, 24, 24)
+
+[sub_resource type="AtlasTexture" id="g5"]
+atlas = ExtResource("1_sheet")
+region = Rect2(120, 120, 24, 24)
+
+[sub_resource type="AtlasTexture" id="g6"]
+atlas = ExtResource("1_sheet")
+region = Rect2(144, 120, 24, 24)
+
+[sub_resource type="AtlasTexture" id="g7"]
+atlas = ExtResource("1_sheet")
+region = Rect2(168, 120, 24, 24)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("g0")
+},{
+"duration": 1.0,
+"texture": SubResource("g1")
+},{
+"duration": 1.0,
+"texture": SubResource("g2")
+},{
+"duration": 1.0,
+"texture": SubResource("g3")
+},{
+"duration": 1.0,
+"texture": SubResource("g4")
+},{
+"duration": 1.0,
+"texture": SubResource("g5")
+},{
+"duration": 1.0,
+"texture": SubResource("g6")
+},{
+"duration": 1.0,
+"texture": SubResource("g7")
+}],
+"loop": true,
+"name": &"spin",
+"speed": 14.0
+}]

@@ -6,10 +6,10 @@
 [ext_resource type="PackedScene" uid="uid://choming000001" path="res://Scenes/HomingBullet.tscn" id="5_proj"]
 
 [sub_resource type="CircleShape2D" id="body_shape"]
-radius = 20.0
+radius = 24.0
 
 [sub_resource type="CircleShape2D" id="hit_shape"]
-radius = 25.0
+radius = 31.0
 
 [node name="BulletMinion" type="CharacterBody2D" unique_id=970553008]
 collision_layer = 2
@@ -25,7 +25,8 @@ coin_value = 2
 run_sheet = ExtResource("3_run")
 run_frames = 6
 frame_size = 64
-sprite_scale = 1.0
+sprite_scale = 1.3
+separation_radius = 52.0
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=606431507]
 texture_filter = 1
