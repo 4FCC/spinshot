@@ -90,7 +90,7 @@ func _build_pool() -> void:
 			"desc": "Per level, 25% chance to heal 1-3 when collecting a coin. Max 3.",
 			"apply": func(p): p.add_coin_heal()},
 		{"id": "bounce", "name": "Offensive bounce", "cost": 15, "max": 3, "icon": icon_bounce,
-			"desc": "Each SpinShot spawns a new one on hit. Max 3.",
+			"desc": "On hit, releases SpinShots that chain to OTHER enemies. Max 3.",
 			"apply": func(p): p.add_bounce()},
 		{"id": "split", "name": "Projectile split", "cost": 18, "max": 1, "icon": icon_split,
 			"desc": "The SpinShot splits in two mid-path. Unique.",

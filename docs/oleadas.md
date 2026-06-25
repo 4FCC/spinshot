@@ -84,15 +84,19 @@ en las oleadas siguientes):
 | Oleada | Enemigos (pesos) | Novedad |
 |-------:|------------------|---------|
 | 1 | Minion ×1 | — |
-| 2 | Minion ×3, BigMinion ×1 | +BigMinion (sin Cargador) |
-| 3 | Minion ×3, BigMinion ×1, BulletMinion ×1 | +BulletMinion |
-| 4 | Minion ×3, BigMinion ×1, BulletMinion ×1, Apoyo ×1 | +Apoyo |
-| 5 | Minion ×3, BigMinion ×2, BulletMinion ×1, Apoyo ×1, Cargador ×1 | +Cargador (peso bajo: pocos a la vez) |
-| 6 | Minion ×2, BigMinion ×2, BulletMinion ×1, Apoyo ×1, Cargador ×1, Sad ×1, Gótica ×1 | +variantes de BulletMinion (Sad/Gótica) |
+| 2 | Minion ×5, BigMinion ×1 | +BigMinion (sin Cargador) |
+| 3 | Minion ×5, BigMinion ×1, BulletMinion ×1 | +BulletMinion |
+| 4 | Minion ×5, BigMinion ×1, BulletMinion ×1, Apoyo ×1 | +Apoyo |
+| 5 | Minion ×5, BigMinion ×2, BulletMinion ×1, Apoyo ×1, Cargador ×1 | +Cargador (peso bajo: pocos a la vez) |
+| 6 | Minion ×4, BigMinion ×2, BulletMinion ×1, Apoyo ×1, Cargador ×1, Sad ×1, Gótica ×1 | +variantes de BulletMinion (Sad/Gótica) |
 | 7 | … + Bigminion_capitan ×1 | +Capitán |
 | 8 | Cargador ×2, BigMinion ×2, BulletMinion ×1, Capitán ×1 | (sin cambios) |
-| 9 | Mezcla de todos | (sin cambios) |
+| 9 | Mezcla de todos (Minion ×4) | (sin cambios) |
 | 10 | **Minijefe** (Bigminion_gran_capitan) → luego **Jefe** | oleada sin temporizador |
+
+> El **Minion** lleva un peso alto en cada oleada para que sea el enemigo más
+> frecuente, **sin reducir** el peso de los demás tipos (solo cambia su
+> proporción relativa).
 
 > El **Cargador** se introduce tarde (oleada 5) y con **peso bajo** para que solo
 > aparezcan unos pocos a la vez: antes saturaba la oleada 2 y la hacía

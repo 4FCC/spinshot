@@ -105,7 +105,7 @@ const ES := {
 	"Lifesteal": "Robo de vida",
 	"Per level, 25% chance to heal 1-3 when collecting a coin. Max 3.": "25% por nivel de curar 1-3 al recoger una moneda. Máx 3.",
 	"Offensive bounce": "Rebote ofensivo",
-	"Each SpinShot spawns a new one on hit. Max 3.": "Cada SpinShot genera una nueva al impactar. Máx 3.",
+	"On hit, releases SpinShots that chain to OTHER enemies. Max 3.": "Al impactar, suelta SpinShots que rebotan en cadena hacia OTROS enemigos. Máx 3.",
 	"Projectile split": "División de proyectil",
 	"The SpinShot splits in two mid-path. Unique.": "La SpinShot se divide en dos a media trayectoria. Única.",
 	"Lethal spin": "Giro letal",

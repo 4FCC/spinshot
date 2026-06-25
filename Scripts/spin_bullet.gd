@@ -42,6 +42,9 @@ var has_split: bool = false     # Se divide en dos a mitad de trayectoria
 var lethal_chance: float = 0.0  # Probabilidad de aplicar "giro letal" al impactar
 var bullet_scene: PackedScene = null   # Escena para auto-replicarse (rebote/división)
 var _did_split: bool = false
+# Enemigo que ENGENDRÓ esta SpinShot de rebote: lo ignora para que la reacción
+# en cadena golpee a OTROS enemigos y no se quede rebotando sobre el mismo.
+var _ignore_enemy: Node = null
 
 const EFFECT_SCENE := preload("res://Scenes/Effect.tscn")
 
@@ -133,13 +136,18 @@ func _process(delta: float) -> void:
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemy") and body.has_method("take_damage"):
+		# Ignorar al enemigo que engendró este rebote: así la cadena alcanza a
+		# OTROS enemigos en lugar de regresar al de origen. La bala NO se destruye
+		# (sigue orbitando hacia afuera buscando otro objetivo).
+		if body == _ignore_enemy:
+			return
 		# Los enemigos reciben daño desde el primer instante de la trayectoria.
 		# Giro letal: probabilidad de matar al girar (reemplaza el daño normal)
 		if lethal_chance > 0.0 and randf() < lethal_chance and body.has_method("apply_lethal_spin"):
 			body.apply_lethal_spin()
 		else:
 			body.take_damage(damage)
-		_spawn_bounce(global_position)
+		_spawn_bounce(global_position, body)
 		queue_free()
 	elif body.is_in_group("player") and body.has_method("take_damage"):
 		# Gracia inicial solo para el jugador (la bala nace sobre él al disparar).
@@ -172,9 +180,12 @@ func _make_child():
 	b.bullet_scene = bullet_scene
 	return b
 
-func _spawn_bounce(pos: Vector2) -> void:
+func _spawn_bounce(pos: Vector2, source: Node = null) -> void:
 	"""Rebote ofensivo: genera 'bounce_count' SpinShots nuevas en el impacto.
-	No vuelven a rebotar (evita bucles), pero sí pueden dividirse."""
+	Reacción en CADENA: las nuevas balas ignoran al enemigo que las generó
+	('source') y llevan un presupuesto de rebote DECRECIENTE (bounce_count - 1),
+	de modo que golpean a otros enemigos y generan más, pero la cadena termina
+	(no se dispara hasta el infinito)."""
 	if bounce_count <= 0 or bullet_scene == null:
 		return
 	var host := get_parent()
@@ -184,7 +195,8 @@ func _spawn_bounce(pos: Vector2) -> void:
 	_spawn_effect("burst", pos, 1.1)
 	for i in bounce_count:
 		var b = _make_child()
-		b.bounce_count = 0
+		b.bounce_count = bounce_count - 1   # presupuesto decreciente: cadena finita
+		b._ignore_enemy = source            # no vuelve a golpear al de origen
 		host.add_child(b)
 		var ang := TAU * float(i) / float(bounce_count) + randf() * 0.6
 		b.setup_world(pos, Vector2.RIGHT.rotated(ang), pattern_mode)
