@@ -11,7 +11,7 @@ extends CharacterBody2D
 # de sprites asignadas, para no depender de un SpriteFrames por enemigo.
 
 @export_group("Estadísticas")
-@export var max_health: int = 6
+@export var max_health: int = 4
 @export var contact_damage: int = 2
 @export var move_speed: float = 120.0
 @export var attack_cooldown: float = 0.8
