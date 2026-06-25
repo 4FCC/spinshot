@@ -1,11 +1,15 @@
-[gd_scene load_steps=9 format=3 uid="uid://cboss000000001"]
+[gd_scene load_steps=13 format=3 uid="uid://cboss000000001"]
 
 [ext_resource type="Script" uid="uid://bboss00000001" path="res://mecanicas de jefe/boss.gd" id="1_boss"]
-[ext_resource type="Texture2D" uid="uid://b0dcgjmedsplm" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Idle.png" id="2_idle"]
-[ext_resource type="Texture2D" uid="uid://i3a8t10sj4ga" path="res://Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Run.png" id="3_run"]
-[ext_resource type="PackedScene" uid="uid://ccoin00000001" path="res://Scenes/Coin.tscn" id="4_coin"]
-[ext_resource type="PackedScene" uid="uid://cminion000001" path="res://Scenes/Minion.tscn" id="5_minion"]
-[ext_resource type="PackedScene" uid="uid://cbossbullet001" path="res://mecanicas de jefe/BossBullet.tscn" id="6_bullet"]
+[ext_resource type="Texture2D" path="res://boss/boss1.png" id="2_b1"]
+[ext_resource type="Texture2D" path="res://boss/boss2.png" id="3_b2"]
+[ext_resource type="Texture2D" path="res://boss/boss3.png" id="4_b3"]
+[ext_resource type="Texture2D" path="res://boss/boss4.png" id="5_b4"]
+[ext_resource type="Texture2D" path="res://boss/boss5.png" id="6_b5"]
+[ext_resource type="Texture2D" path="res://boss/boss6.png" id="7_b6"]
+[ext_resource type="PackedScene" uid="uid://ccoin00000001" path="res://Scenes/Coin.tscn" id="8_coin"]
+[ext_resource type="PackedScene" uid="uid://cminion000001" path="res://Scenes/Minion.tscn" id="9_minion"]
+[ext_resource type="PackedScene" uid="uid://cbossbullet001" path="res://mecanicas de jefe/BossBullet.tscn" id="10_bullet"]
 
 [sub_resource type="CircleShape2D" id="body_shape"]
 radius = 46.0
@@ -17,11 +21,12 @@ radius = 64.0
 collision_layer = 2
 collision_mask = 4
 script = ExtResource("1_boss")
-coin_scene = ExtResource("4_coin")
-minion_scene = ExtResource("5_minion")
-bullet_scene = ExtResource("6_bullet")
-idle_sheet = ExtResource("2_idle")
-run_sheet = ExtResource("3_run")
+coin_scene = ExtResource("8_coin")
+minion_scene = ExtResource("9_minion")
+bullet_scene = ExtResource("10_bullet")
+frames_idle = Array[Texture2D]([ExtResource("2_b1"), ExtResource("3_b2"), ExtResource("6_b5")])
+frames_run = Array[Texture2D]([ExtResource("2_b1"), ExtResource("3_b2"), ExtResource("4_b3")])
+frames_attack = Array[Texture2D]([ExtResource("6_b5"), ExtResource("7_b6"), ExtResource("6_b5"), ExtResource("7_b6"), ExtResource("6_b5"), ExtResource("7_b6")])
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 scale = Vector2(1.6, 1.6)

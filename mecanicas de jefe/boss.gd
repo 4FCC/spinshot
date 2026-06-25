@@ -44,12 +44,16 @@ enum S { FOLLOW, ATTACK, TELEPORT, SPAWN, RANGED, DEAD }
 @export var bullet_scene: PackedScene
 
 @export_group("Visual")
-@export var idle_sheet: Texture2D
-@export var run_sheet: Texture2D
-@export var idle_frames: int = 8
-@export var run_frames: int = 6
-@export var frame_size: int = 192
+@export var frames_idle: Array[Texture2D] = []
+@export var frames_run: Array[Texture2D] = []
+@export var frames_attack: Array[Texture2D] = []
+@export var anim_fps_idle: float = 6.0
+@export var anim_fps_run: float = 9.0
+@export var anim_fps_attack: float = 12.0
 @export var sprite_scale: float = 1.6
+@export var shadow_rx: float = 68.0
+@export var shadow_ry: float = 28.0
+@export var shadow_offset_y: float = 90.0
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var hitbox: Area2D = $Hitbox
@@ -58,16 +62,20 @@ enum S { FOLLOW, ATTACK, TELEPORT, SPAWN, RANGED, DEAD }
 var health: int
 var player: Node2D = null
 var state: int = S.FOLLOW
-var _t: float = 0.0           # temporizador del estado actual
-var _acted: bool = false      # si el efecto del estado ya se ejecutó
+var _t: float = 0.0
+var _acted: bool = false
 var _decide_cd: float = 0.0
 var _contact_cd: float = 0.0
+var _idle_time: float = 0.0
+var _base_sprite_scale: Vector2 = Vector2.ONE
 
 func _ready() -> void:
 	add_to_group("enemy")
 	add_to_group("boss")
 	health = max_health
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
+	_base_sprite_scale = sprite.scale
+	_add_shadow()
 	_build_frames()
 	sprite.play("idle")
 	player = _find_player()
@@ -75,6 +83,18 @@ func _ready() -> void:
 	bar.value = health
 	_decide_cd = decide_interval
 	state = S.FOLLOW
+
+func _add_shadow() -> void:
+	var pts := PackedVector2Array()
+	for i in 20:
+		var a := i * TAU / 20.0
+		pts.append(Vector2(cos(a) * shadow_rx, sin(a) * shadow_ry))
+	var shadow := Polygon2D.new()
+	shadow.polygon = pts
+	shadow.color = Color(0, 0, 0, 0.35)
+	shadow.position = Vector2(0, shadow_offset_y)
+	add_child(shadow)
+	move_child(shadow, 0)
 
 # =============================================================================
 # CICLO PRINCIPAL
@@ -102,6 +122,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_update_facing()
 	_contact_check()
+	_animate_alive(delta)
 
 func _phase() -> int:
 	var f := float(health) / float(max_health)
@@ -123,7 +144,6 @@ func _state_follow(delta: float) -> void:
 		return
 	var to_player := player.global_position - global_position
 	velocity = to_player.normalized() * move_speed * _speed_mult()
-	sprite.play("run")
 
 	if to_player.length() <= attack_range:
 		_enter(S.ATTACK)
@@ -281,6 +301,32 @@ func _contact_check() -> void:
 			_contact_cd = contact_cooldown
 			break
 
+func _animate_alive(delta: float) -> void:
+	match state:
+		S.FOLLOW:
+			var spd := velocity.length()
+			if spd > 10.0:
+				_idle_time = 0.0
+				sprite.play("run")
+				sprite.speed_scale = clampf(spd / move_speed, 0.8, 1.4)
+				sprite.position.y = move_toward(sprite.position.y, 0.0, 220.0 * delta)
+			else:
+				sprite.play("idle")
+				sprite.speed_scale = 0.65
+				_idle_time += delta * 1.6
+				sprite.position.y = sin(_idle_time) * 3.5
+		S.ATTACK:
+			sprite.play("attack")
+			_idle_time += delta * 1.6
+			sprite.position.y = sin(_idle_time) * 3.5
+		S.TELEPORT:
+			_idle_time = 0.0
+		_:  # SPAWN, RANGED
+			sprite.play("idle")
+			sprite.speed_scale = 0.65
+			_idle_time += delta * 1.6
+			sprite.position.y = sin(_idle_time) * 3.5
+
 func _update_facing() -> void:
 	if player != null and is_instance_valid(player):
 		sprite.flip_h = player.global_position.x < global_position.x
@@ -313,6 +359,8 @@ func _hit_flash() -> void:
 func _die() -> void:
 	state = S.DEAD
 	velocity = Vector2.ZERO
+	sprite.position.y = 0.0
+	sprite.speed_scale = 1.0
 	bar.visible = false
 	_drop_coins()
 	died.emit()
@@ -333,23 +381,22 @@ func _drop_coins() -> void:
 # ANIMACIONES (construidas en runtime desde las hojas)
 # =============================================================================
 func _build_frames() -> void:
-	if sprite.sprite_frames != null:
-		return
-	var frames := SpriteFrames.new()
-	if frames.has_animation("default"):
-		frames.remove_animation("default")
-	_add_animation(frames, "idle", idle_sheet, idle_frames)
-	_add_animation(frames, "run", run_sheet, run_frames)
-	sprite.sprite_frames = frames
+	var sf := SpriteFrames.new()
+	if sf.has_animation("default"):
+		sf.remove_animation("default")
+	var idle_src   := frames_idle   if not frames_idle.is_empty()   else frames_run
+	var run_src    := frames_run    if not frames_run.is_empty()    else frames_idle
+	var attack_src := frames_attack if not frames_attack.is_empty() else frames_idle
+	_add_anim(sf, "idle",   idle_src,   anim_fps_idle)
+	_add_anim(sf, "run",    run_src,    anim_fps_run)
+	_add_anim(sf, "attack", attack_src, anim_fps_attack)
+	sprite.sprite_frames = sf
 
-func _add_animation(frames: SpriteFrames, anim_name: String, sheet: Texture2D, count: int) -> void:
-	if sheet == null or count <= 0:
+func _add_anim(sf: SpriteFrames, anim_name: String, textures: Array[Texture2D], fps: float) -> void:
+	if textures.is_empty():
 		return
-	frames.add_animation(anim_name)
-	frames.set_animation_loop(anim_name, true)
-	frames.set_animation_speed(anim_name, 10.0)
-	for i in count:
-		var atlas := AtlasTexture.new()
-		atlas.atlas = sheet
-		atlas.region = Rect2(i * frame_size, 0, frame_size, frame_size)
-		frames.add_frame(anim_name, atlas)
+	sf.add_animation(anim_name)
+	sf.set_animation_loop(anim_name, true)
+	sf.set_animation_speed(anim_name, fps)
+	for tex in textures:
+		sf.add_frame(anim_name, tex)

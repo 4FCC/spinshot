@@ -31,6 +31,11 @@ collision_mask = 6
 script = ExtResource("1_billy")
 spin_bullet_scene = ExtResource("3_bullet")
 
+[node name="Shadow" type="Polygon2D" parent="." unique_id=1791078966]
+position = Vector2(0, 26)
+color = Color(0, 0, 0, 0.35)
+polygon = PackedVector2Array(24, 0, 22.83, 3.09, 19.42, 5.878, 14.11, 8.09, 7.416, 9.511, 0, 10, -7.416, 9.511, -14.11, 8.09, -19.42, 5.878, -22.83, 3.09, -24, 0, -22.83, -3.09, -19.42, -5.878, -14.11, -8.09, -7.416, -9.511, 0, -10, 7.416, -9.511, 14.11, -8.09, 19.42, -5.878, 22.83, -3.09)
+
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1609067095]
 texture_filter = 1
 scale = Vector2(1.2, 1.2)

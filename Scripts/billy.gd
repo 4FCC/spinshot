@@ -45,6 +45,14 @@ const _CAMERA_TARGET_HEIGHT := 768.0
 @export var dodge_duration: float = 0.4      # Cuánto dura el esquive
 @export var dodge_cooldown_time: float = 1.0 # Tiempo hasta poder esquivar de nuevo
 @export var dodge_spin_turns: float = 1.0    # Vueltas completas que gira el sprite
+@export var dodge_stretch_amount: float = 0.3
+
+@export_group("Animación")
+@export var idle_speed_scale: float = 0.55
+@export var idle_bob_amplitude: float = 2.5
+@export var idle_bob_speed: float = 2.2
+@export var run_speed_scale_min: float = 0.85
+@export var run_speed_scale_max: float = 1.5
 
 @export_group("Daño")
 @export var invulnerability_duration: float = 0.9
@@ -65,6 +73,8 @@ var is_frozen: bool = false   # Congelado mientras la tienda está abierta
 # Dirección y giro acumulado del esquive (para la animación de girar)
 var dodge_direction: Vector2 = Vector2.ZERO
 var dodge_elapsed: float = 0.0
+var _base_sprite_scale: Vector2 = Vector2.ONE
+var _idle_time: float = 0.0
 
 # Timers
 var dodge_timer: Timer        # Duración del esquive
@@ -108,6 +118,7 @@ func _ready():
 	health_bar.max_value = vida_max
 	_update_health_ui()
 	_update_dodge_ui()
+	_base_sprite_scale = sprite.scale
 	sprite.play("idle")
 	camera.position_smoothing_enabled = true
 	camera.position_smoothing_speed = 6.0
@@ -235,7 +246,7 @@ func _physics_process(delta):
 	if is_frozen:
 		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
 		move_and_slide()
-		_update_walk_animation()
+		_update_walk_animation(delta)
 		_update_dodge_ui()
 		return
 
@@ -255,9 +266,9 @@ func _physics_process(delta):
 # =============================================================================
 # ESTADO: MOVIMIENTO
 # =============================================================================
-func move_state(_delta):
-	_read_movement_input(_delta)
-	_update_walk_animation()
+func move_state(delta):
+	_read_movement_input(delta)
+	_update_walk_animation(delta)
 
 	# Iniciar esquive: requiere dirección y que el cooldown haya terminado
 	if Input.is_action_just_pressed("dodge") and dodge_cooldown.is_stopped():
@@ -290,20 +301,26 @@ func start_dodge():
 
 	dodge_timer.start()
 	dodge_cooldown.start()
+	sprite.play("run")
+	sprite.speed_scale = 2.2
+	_spawn_dust(1.3)
 
 func dodge_state(delta):
-	# Mantener el impulso del esquive
 	velocity = dodge_direction * dodge_speed
 	move_and_slide()
 
-	# GIRAR: el sprite rota proporcionalmente a lo que dura el esquive
 	dodge_elapsed += delta
 	var t = clampf(dodge_elapsed / dodge_duration, 0.0, 1.0)
-	sprite.rotation = t * TAU * dodge_spin_turns
+	var eased_t = t * t * (3.0 - 2.0 * t)
+	sprite.rotation = eased_t * TAU * dodge_spin_turns
+	var stretch = sin(t * PI) * dodge_stretch_amount
+	sprite.scale = _base_sprite_scale * Vector2(1.0 + stretch, 1.0 - stretch)
 
 func _on_dodge_timer_timeout():
 	is_invulnerable = false
 	sprite.rotation = 0.0
+	sprite.scale = _base_sprite_scale
+	sprite.speed_scale = 1.0
 	velocity = Vector2.ZERO
 	if current_state == State.DODGE:
 		current_state = State.MOVE
@@ -322,7 +339,7 @@ func take_damage(amount: int):
 	# Esquiva automática (ítem): probabilidad de esquivar el golpe por completo.
 	# Suelta una nube de polvo para indicarlo visualmente.
 	if autododge_level > 0 and randf() < 0.25 * autododge_level:
-		_spawn_autododge_dust()
+		_spawn_dust(1.6)
 		start_dodge()
 		return
 
@@ -340,8 +357,7 @@ func take_damage(amount: int):
 	is_invulnerable = true
 	damage_timer.start()
 
-func _spawn_autododge_dust() -> void:
-	"""Nube de polvo de la esquiva automática (efecto del spritesheet 25)."""
+func _spawn_dust(dust_scale: float = 1.6) -> void:
 	var host := get_tree().current_scene
 	if host == null:
 		host = get_parent()
@@ -350,13 +366,12 @@ func _spawn_autododge_dust() -> void:
 	var fx = EFFECT_SCENE.instantiate()
 	host.add_child(fx)
 	fx.global_position = global_position
-	fx.scale = Vector2(1.6, 1.6)
+	fx.scale = Vector2(dust_scale, dust_scale)
 	fx.play_effect("dust")
 
-func taking_damage_state(_delta):
-	# Se puede seguir moviendo mientras dura la invulnerabilidad
-	_read_movement_input(_delta)
-	_update_walk_animation()
+func taking_damage_state(delta):
+	_read_movement_input(delta)
+	_update_walk_animation(delta)
 
 	# También se puede esquivar para escapar
 	if Input.is_action_just_pressed("dodge") and dodge_cooldown.is_stopped():
@@ -379,6 +394,10 @@ func _die():
 	current_state = State.DEAD
 	velocity = Vector2.ZERO
 	sprite.modulate = Color(0.5, 0.5, 0.5)
+	sprite.rotation = 0.0
+	sprite.scale = _base_sprite_scale
+	sprite.speed_scale = 1.0
+	sprite.position.y = 0.0
 	sprite.play("idle")
 	died.emit()
 
@@ -421,15 +440,22 @@ func _shoot_spin_bullet(pattern: int = 0):
 # =============================================================================
 # ANIMACIONES DEL PERSONAJE
 # =============================================================================
-func _update_walk_animation():
-	"""Alterna entre correr/idle y voltea el sprite según la dirección horizontal."""
+func _update_walk_animation(delta: float) -> void:
 	if input_direction.x != 0.0:
 		sprite.flip_h = input_direction.x < 0.0
 
-	if velocity.length() > 1.0:
+	var speed_ratio := velocity.length() / speed
+
+	if speed_ratio > 0.03:
 		sprite.play("run")
+		sprite.speed_scale = lerpf(run_speed_scale_min, run_speed_scale_max, clampf(speed_ratio, 0.0, 1.0))
+		_idle_time = 0.0
+		sprite.position.y = move_toward(sprite.position.y, 0.0, 300.0 * delta)
 	else:
 		sprite.play("idle")
+		sprite.speed_scale = idle_speed_scale
+		_idle_time += delta * idle_bob_speed
+		sprite.position.y = sin(_idle_time) * idle_bob_amplitude
 
 # =============================================================================
 # ACTUALIZACIÓN DEL HUD

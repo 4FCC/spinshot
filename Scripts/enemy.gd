@@ -60,6 +60,7 @@ var _buff_timer: float = 0.0
 var _push_vel: Vector2 = Vector2.ZERO
 
 var _flash_tween: Tween = null
+var _idle_time: float = 0.0
 
 const LETHAL_SPIN_SPEED := 18.0   # rad/s mientras gira hasta morir
 
@@ -67,12 +68,25 @@ func _ready() -> void:
 	add_to_group("enemy")
 	health = max_health
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
-	# Construir las animaciones desde la hoja de "correr" (los nuevos sprites solo
-	# tienen animación de correr). Si hay run_sheet, se reconstruye siempre.
+	_add_shadow()
 	if run_sheet != null or sprite.sprite_frames == null:
 		_build_frames()
 	sprite.play("idle")
 	player = _find_player()
+
+func _add_shadow() -> void:
+	var rx := frame_size * sprite_scale * 0.30
+	var ry := rx * 0.44
+	var pts := PackedVector2Array()
+	for i in 16:
+		var a := i * TAU / 16.0
+		pts.append(Vector2(cos(a) * rx, sin(a) * ry))
+	var shadow := Polygon2D.new()
+	shadow.polygon = pts
+	shadow.color = Color(0, 0, 0, 0.3)
+	shadow.position = Vector2(0, frame_size * sprite_scale * 0.47)
+	add_child(shadow)
+	move_child(shadow, 0)
 
 func _find_player() -> Node2D:
 	var players = get_tree().get_nodes_in_group("player")
@@ -133,14 +147,12 @@ func _physics_process(delta: float) -> void:
 		player = _find_player()
 
 	_update_ai(delta)
-	# Repulsión suave para no encimarse con otros enemigos (antisuperposición).
 	velocity += _separation()
-	# Aplicar empuje externo (decae con el tiempo) sobre la velocidad calculada.
 	if _push_vel.length() > 1.0:
 		velocity += _push_vel
 		_push_vel = _push_vel.move_toward(Vector2.ZERO, 1600.0 * delta)
 	move_and_slide()
-	_update_animation()
+	_update_animation(delta)
 
 	if melee_enabled:
 		_try_melee()
@@ -204,13 +216,20 @@ func _try_melee() -> void:
 			_attack_timer = attack_cooldown
 			break
 
-func _update_animation() -> void:
+func _update_animation(delta: float) -> void:
+	var spd := velocity.length()
 	if velocity.x != 0.0:
 		sprite.flip_h = velocity.x < 0.0
-	if velocity.length() > 5.0:
+	if spd > 5.0:
 		sprite.play("run")
+		sprite.speed_scale = clampf(spd / move_speed, 0.7, 1.6)
+		_idle_time = 0.0
+		sprite.position.y = move_toward(sprite.position.y, 0.0, 180.0 * delta)
 	else:
 		sprite.play("idle")
+		sprite.speed_scale = 0.65
+		_idle_time += delta * 1.9
+		sprite.position.y = sin(_idle_time) * 2.2
 
 # =============================================================================
 # VIDA Y MUERTE

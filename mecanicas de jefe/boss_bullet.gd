@@ -17,7 +17,6 @@ func _ready() -> void:
 func setup(dir: Vector2, dmg: int) -> void:
 	direction = dir.normalized()
 	damage = dmg
-	rotation = direction.angle()
 
 func _physics_process(delta: float) -> void:
 	_t += delta
