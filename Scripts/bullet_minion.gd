@@ -41,14 +41,13 @@ func _update_ai(delta: float) -> void:
 	var dist := to_player.length()
 	var dir := to_player.normalized()
 
-	# Mantener la distancia preferida (acercarse / alejarse / orbitar).
+	# Mantener la distancia preferida con navegación segura (igual que el Support).
 	if dist < preferred_distance - distance_margin:
-		velocity = -dir * get_speed()
+		velocity = _evasive_velocity(get_speed())          # huye sin salirse del mapa
 	elif dist > preferred_distance + distance_margin:
 		velocity = dir * get_speed()
 	else:
-		velocity = dir.rotated(PI / 2.0) * get_speed() * 0.5
-	velocity = _avoid_bounds(velocity)   # no quedarse pegado a las paredes
+		velocity = _avoid_bounds(dir.rotated(PI / 2.0) * get_speed() * 0.5)
 
 	if passive:
 		return   # maniquí de pruebas: no dispara

@@ -20,6 +20,8 @@ extends Enemy
 @export var eat_chance: float = 0.25     # 1/4 de eliminar cada SpinShot que toca
 @export var rage_threshold: int = 6      # balas a comer antes de soltar el patrón
 
+const EFFECT_SCENE := preload("res://Scenes/Effect.tscn")
+
 # Marca de "invocado por el minijefe" (efecto visual distinto).
 var is_summon: bool = false
 
@@ -40,12 +42,11 @@ func _update_ai(delta: float) -> void:
 	var dir := to_player.normalized()
 	# Mantener la distancia con el jugador (evasivo).
 	if dist < preferred_distance - distance_margin:
-		velocity = -dir * get_speed()
+		velocity = _evasive_velocity(get_speed())
 	elif dist > preferred_distance + distance_margin:
 		velocity = dir * get_speed()
 	else:
-		velocity = dir.rotated(PI / 2.0) * get_speed() * 0.5
-	velocity = _avoid_bounds(velocity)
+		velocity = _avoid_bounds(dir.rotated(PI / 2.0) * get_speed() * 0.5)
 
 	if not passive:
 		_update_shield()
@@ -62,10 +63,26 @@ func _update_shield() -> void:
 		_seen[id] = true   # cada SpinShot solo se evalúa una vez
 		if randf() < eat_chance:
 			b.queue_free()
+			_spawn_smoke()   # feedback visual al eliminar la SpinShot
 			_eaten += 1
 			if _eaten >= rage_threshold:
 				_release_ring(_eaten)
 				_eaten = 0
+
+func _spawn_smoke() -> void:
+	"""Humo (mismo efecto que la gótica) pero con un TINTE distinto, al eliminar
+	una SpinShot del jugador."""
+	var host := get_parent()
+	if host == null:
+		return
+	var fx = EFFECT_SCENE.instantiate()
+	host.add_child(fx)
+	fx.global_position = global_position
+	var cover := (64.0 * sprite_scale) / 64.0 * 2.0
+	fx.scale = Vector2(cover, cover)
+	fx.modulate = Color(0.5, 0.9, 1.0)   # tinte cian (distinto al humo de la gótica)
+	fx.z_index = 30
+	fx.play_effect("dust")
 
 func _release_ring(count: int) -> void:
 	if projectile_scene == null or count <= 0:

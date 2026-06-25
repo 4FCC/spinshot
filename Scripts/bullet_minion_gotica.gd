@@ -40,15 +40,14 @@ func _update_ai(delta: float) -> void:
 		_teleport_and_attack()
 		return
 
-	# Evadir: mantenerse a distancia segura del jugador.
+	# Evadir: mantenerse a distancia segura del jugador (navegación segura).
 	var to_player := player.global_position - global_position
 	var dist := to_player.length()
 	var dir := to_player.normalized()
 	if dist < safe_distance:
-		velocity = -dir * get_speed()
+		velocity = _evasive_velocity(get_speed())
 	else:
-		velocity = dir.rotated(PI / 2.0) * get_speed() * 0.4
-	velocity = _avoid_bounds(velocity)
+		velocity = _avoid_bounds(dir.rotated(PI / 2.0) * get_speed() * 0.4)
 
 func _teleport_and_attack() -> void:
 	# Humo en el punto de partida (cubre el cuerpo del enemigo).

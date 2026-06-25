@@ -1,21 +1,37 @@
 extends Node
 
 # =============================================================================
-# GAME — Singleton (autoload) con el estado global simple del juego
+# GAME — Singleton (autoload) con el estado global del juego
 # =============================================================================
-# Por ahora gestiona la economía (monedas). Centralizar aquí permite que la
-# moneda, la tienda y la UI hablen entre sí sin acoplarse directamente.
+# Gestiona la economía (monedas), los DESBLOQUEOS persistentes entre partidas
+# (cascos que se ganan al derrotar ciertos enemigos) y un ayudante para mostrar
+# el indicador de aparición antes de invocar enemigos/aliados.
 
 signal coins_changed(total: int)
 
+const SAVE_PATH := "user://spinshot_save.cfg"
+const SPAWN_INDICATOR := preload("res://Scenes/SpawnIndicator.tscn")
+
+# Colores del indicador: rojo = enemigos, azul = aliados.
+const INDICATOR_ENEMY := Color(1.0, 0.22, 0.2, 0.95)
+const INDICATOR_ALLY := Color(0.3, 0.55, 1.0, 0.95)
+
 var coins: int = 0
 
+# Desbloqueos persistentes (id -> true). Se guardan en disco.
+var unlocks: Dictionary = {}
+
+func _ready() -> void:
+	_load()
+
+# =============================================================================
+# ECONOMÍA
+# =============================================================================
 func add_coins(amount: int) -> void:
 	coins += amount
 	coins_changed.emit(coins)
 
 func spend(amount: int) -> bool:
-	"""Intenta gastar monedas. Devuelve true si había suficientes."""
 	if coins >= amount:
 		coins -= amount
 		coins_changed.emit(coins)
@@ -23,5 +39,51 @@ func spend(amount: int) -> bool:
 	return false
 
 func reset() -> void:
+	# Reinicia SOLO el estado de partida (las monedas). Los desbloqueos persisten.
 	coins = 0
 	coins_changed.emit(coins)
+
+# =============================================================================
+# DESBLOQUEOS PERSISTENTES
+# =============================================================================
+func is_unlocked(id: String) -> bool:
+	return unlocks.get(id, false)
+
+func unlock(id: String) -> void:
+	if unlocks.get(id, false):
+		return
+	unlocks[id] = true
+	_save()
+
+func _load() -> void:
+	var cfg := ConfigFile.new()
+	if cfg.load(SAVE_PATH) != OK:
+		return
+	for key in cfg.get_section_keys("unlocks"):
+		unlocks[key] = bool(cfg.get_value("unlocks", key, false))
+
+func _save() -> void:
+	var cfg := ConfigFile.new()
+	for key in unlocks.keys():
+		cfg.set_value("unlocks", key, unlocks[key])
+	cfg.save(SAVE_PATH)
+
+# =============================================================================
+# INDICADOR DE INVOCACIÓN (reutiliza el sprite del Gamemode)
+# =============================================================================
+func telegraph_spawn(host: Node, pos: Vector2, color: Color, ind_scale: float, delay: float, cb: Callable) -> void:
+	"""Muestra el indicador en 'pos' durante 'delay' s y luego ejecuta 'cb'
+	(que instancia el enemigo/aliado). Lo usan jefes, capitanes y el casco de
+	gran capitán. El color distingue enemigos (rojo) de aliados (azul)."""
+	if host == null or not is_instance_valid(host):
+		if cb.is_valid():
+			cb.call()
+		return
+	var ind = SPAWN_INDICATOR.instantiate()
+	host.add_child(ind)
+	ind.setup(pos, color, ind_scale)
+	await get_tree().create_timer(delay).timeout
+	if is_instance_valid(ind):
+		ind.queue_free()
+	if cb.is_valid():
+		cb.call()
