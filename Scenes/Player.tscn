@@ -1,13 +1,17 @@
-[gd_scene load_steps=11 format=3 uid="uid://bm1uo2pxnjqa3"]
+[gd_scene load_steps=13 format=3 uid="uid://bm1uo2pxnjqa3"]
 
 [ext_resource type="Script" uid="uid://cg80n10n5s5jj" path="res://Scripts/billy.gd" id="1_billy"]
 [ext_resource type="SpriteFrames" uid="uid://bcojp2o2gqra3" path="res://Scenes/player_frames.tres" id="2_frames"]
 [ext_resource type="PackedScene" uid="uid://cypb1hwhhix31" path="res://Scenes/spin-bullet.tscn" id="3_bullet"]
 [ext_resource type="Texture2D" uid="uid://c3urphiy1otuv" path="res://UI assets/04.png" id="4_bars"]
 [ext_resource type="Texture2D" uid="uid://bhmt5ldnfy3t5" path="res://Items assets/COIN_SPRITE.png" id="5_coin"]
+[ext_resource type="PackedScene" uid="uid://cbigcapitanscn" path="res://Scenes/BigminionCapitan.tscn" id="6_ally"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
 radius = 19.416489
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_push"]
+radius = 44.0
 
 [sub_resource type="AtlasTexture" id="frame_red"]
 atlas = ExtResource("4_bars")
@@ -30,6 +34,7 @@ collision_layer = 1
 collision_mask = 6
 script = ExtResource("1_billy")
 spin_bullet_scene = ExtResource("3_bullet")
+ally_capitan_scene = ExtResource("6_ally")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1609067095]
 texture_filter = 1
@@ -40,6 +45,15 @@ autoplay = "idle"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=151422167]
 shape = SubResource("CircleShape2D_1")
+
+[node name="PushArea" type="Area2D" parent="." unique_id=69759001]
+collision_layer = 0
+collision_mask = 2
+monitoring = true
+monitorable = false
+
+[node name="PushShape" type="CollisionShape2D" parent="PushArea" unique_id=69759002]
+shape = SubResource("CircleShape2D_push")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=69759984]
 

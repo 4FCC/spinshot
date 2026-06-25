@@ -21,6 +21,13 @@ signal continue_pressed
 @export var icon_lethal: Texture2D
 @export var icon_autododge: Texture2D
 
+@export_group("Cascos")
+@export var icon_basic_helmet: Texture2D
+@export var icon_soldier_helmet: Texture2D
+@export var icon_viking_helmet: Texture2D
+@export var icon_capitan_helmet: Texture2D
+@export var icon_grancapitan_helmet: Texture2D
+
 @export var slots: int = 4          # Cuántas tarjetas se muestran a la vez
 @export var reroll_cost: int = 3    # Coste de la tirada (ROLL)
 
@@ -69,11 +76,16 @@ func _build_pool() -> void:
 			"desc": "+2 damage to each Spin-Bullet.", "dmg": 4,
 			"apply": func(p): p.upgrade_bullet_damage(2)},
 		{"id": "speed", "name": "Beach Sandals", "cost": 6, "max": 0, "icon": icon_speed,
-			"desc": "+40 movement speed.",
-			"apply": func(p): p.upgrade_speed(40.0)},
+			"desc": "+40 movement speed and reduces dodge cooldown.",
+			"apply": func(p):
+				p.upgrade_speed(40.0)
+				p.reduce_dodge_cooldown(0.1)},
 		{"id": "firerate", "name": "Quick Trigger", "cost": 7, "max": 0, "icon": icon_firerate,
-			"desc": "Reduces time between shots by 15%.",
-			"apply": func(p): p.upgrade_fire_rate(0.85)},
+			"desc": "Reduces time between shots by 15%; also +move speed and dodge distance.",
+			"apply": func(p):
+				p.upgrade_fire_rate(0.85)
+				p.upgrade_speed(10.0)
+				p.increase_dodge_distance(40.0)},
 		{"id": "coinheal", "name": "Lifesteal", "cost": 10, "max": 3, "icon": icon_coinheal,
 			"desc": "Per level, 25% chance to heal 1-3 when collecting a coin. Max 3.",
 			"apply": func(p): p.add_coin_heal()},
@@ -89,6 +101,22 @@ func _build_pool() -> void:
 		{"id": "autododge", "name": "Auto-dodge", "cost": 12, "max": 3, "icon": icon_autododge,
 			"desc": "Per level, 25% chance to dodge when hit. Max 3.",
 			"apply": func(p): p.add_autododge()},
+		# --- Cascos ---
+		{"id": "basic_helmet", "name": "Minion Helmet", "cost": 8, "max": 0, "icon": icon_basic_helmet,
+			"desc": "-1 max health, +2 damage; longer dodge and shorter dodge cooldown.", "dmg": 2,
+			"apply": func(p): p.add_basic_helmet()},
+		{"id": "soldier_helmet", "name": "Knight Helmet", "cost": 11, "max": 0, "icon": icon_soldier_helmet,
+			"desc": "+5 max health, +3 damage; -20 speed and longer dodge cooldown.", "life": 5, "dmg": 3,
+			"apply": func(p): p.add_soldier_helmet()},
+		{"id": "viking_helmet", "name": "Viking Helmet", "cost": 13, "max": 0, "icon": icon_viking_helmet,
+			"desc": "-3 health, +5 damage; +10% chance to knock back touching enemies (max 50%). Past the cap: +1 health, +3 damage.", "dmg": 5,
+			"apply": func(p): p.add_viking_helmet()},
+		{"id": "capitan_helmet", "name": "Captain Helmet", "cost": 22, "max": 1, "unlock": "capitan_helmet", "icon": icon_capitan_helmet,
+			"desc": "+10 max health, +5 damage; frenzy (speed + damage) when below 50% health. Unlocked by defeating a Bigminion Capitán.", "life": 10, "dmg": 5,
+			"apply": func(p): p.add_capitan_helmet()},
+		{"id": "grancapitan_helmet", "name": "Grand Captain Helmet", "cost": 30, "max": 1, "unlock": "grancapitan_helmet", "icon": icon_grancapitan_helmet,
+			"desc": "+15 max health, +10 damage; summons 4 allied Capitanes. Unlocked by defeating the Gran Capitán.", "life": 15, "dmg": 10,
+			"apply": func(p): p.add_grancapitan_helmet()},
 	]
 
 func _build_ui() -> void:
@@ -175,6 +203,10 @@ func open(wave: int = 0) -> void:
 	_refresh()
 
 func _is_available(item: Dictionary) -> bool:
+	# Cascos desbloqueables: solo aparecen si el desbloqueo persistente está activo.
+	var req := String(item.get("unlock", ""))
+	if req != "" and not Game.is_unlocked(req):
+		return false
 	var max_buys := int(item.get("max", 0))
 	if max_buys <= 0:
 		return true

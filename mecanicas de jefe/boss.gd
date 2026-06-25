@@ -220,9 +220,12 @@ func _spawn_minions() -> void:
 	if host == null:
 		host = get_parent()
 	for i in spawn_count:
-		var m = minion_scene.instantiate()
-		host.add_child(m)
-		m.global_position = global_position + Vector2.RIGHT.rotated(randf() * TAU) * 80.0
+		var pos: Vector2 = global_position + Vector2.RIGHT.rotated(randf() * TAU) * 80.0
+		# Indicador rojo antes de instanciar a los minions invocados.
+		Game.telegraph_spawn(host, pos, Game.INDICATOR_ENEMY, 1.9, 0.6, func():
+			var m = minion_scene.instantiate()
+			host.add_child(m)
+			m.global_position = pos)
 
 func _state_ranged(delta: float) -> void:
 	velocity = Vector2.ZERO

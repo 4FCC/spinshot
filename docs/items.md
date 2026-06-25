@@ -47,6 +47,52 @@ Las SpinShots llevan estas habilidades como variables (`bounce_count`,
 copia al crear cada bala. Como las balas se replican a sí mismas, la habilidad
 de división también afecta a las creadas por el rebote.
 
+## Cascos (sistema de ítems con desbloqueos persistentes)
+
+Los **cascos** son una familia de ítems de la tienda con efectos que **se
+acumulan** con el resto de mejoras (ver "QA: acumulación" más abajo). Su lógica
+vive en `billy.gd` (sección "CASCOS").
+
+| Casco | Efecto | Notas |
+|-------|--------|-------|
+| Casco de minion (`basic_helmet`) | −1 vida máx., +2 daño; +distancia de esquive y −enfriamiento de esquive | Siempre disponible |
+| Casco de caballero (`soldier_helmet`) | +5 vida máx., +3 daño; −20 velocidad y +enfriamiento de esquive | Siempre disponible |
+| Casco vikingo (`viking_helmet`) | −3 vida, +5 daño; +10% de **empujar** a los enemigos que tocan el `PushArea` del jugador. Acumulable hasta 50%. Pasado el tope: +1 vida y +3 daño por compra | El empuje usa `body.push()` (como el Cargador) |
+| Casco de capitán (`capitan_helmet`) | +10 vida máx., +5 daño; **frenesí** (+velocidad y +daño) cuando la vida baja del 50% | **Desbloqueable** al derrotar a un `Bigminion_capitan`. Compra única (`max:1`) |
+| Casco de gran capitán (`grancapitan_helmet`) | +15 vida máx., +10 daño; **invoca 4 `Bigminion_capitan` ALIADOS** | **Desbloqueable** al derrotar al minijefe `Bigminion_gran_capitan`. Compra única (`max:1`) |
+
+### Desbloqueos persistentes
+
+- Los desbloqueos se guardan en disco con el autoload `Game`
+  (`Scripts/game.gd`) en `user://spinshot_save.cfg` (sección `[unlocks]`).
+- `Game.unlock(id)` marca el desbloqueo (lo llaman `bigminion_capitan._die()` y
+  `miniboss._die()`); `Game.is_unlocked(id)` lo consulta.
+- `Game.reset()` (al empezar partida) **NO** borra los desbloqueos: una vez
+  ganados, están disponibles en **todas** las partidas futuras.
+- En la tienda, un ítem con el campo `"unlock": "<id>"` solo aparece si ese
+  desbloqueo está activo (`shop._is_available`). Con `"max":1` solo puede
+  comprarse **una vez por partida**.
+
+### Aliados del casco de gran capitán
+
+`billy._summon_ally_capitanes()` instancia 4 `BigminionCapitan` con
+`is_ally = true`. En ese modo el capitán: sale del grupo `enemy` y entra en
+`ally`, su `collision_layer = 0`, se tiñe de **azul**, persigue y golpea a los
+**enemigos** (no al jugador) y **no** puede invocar Bigminión. El indicador de
+aparición se muestra en **azul** (`Game.INDICATOR_ALLY`) para distinguir las
+invocaciones aliadas de las enemigas (rojo, `Game.INDICATOR_ENEMY`).
+
+### QA: acumulación de efectos (sin sobrescribir)
+
+Los efectos de cascos e ítems **se suman** y no se pisan entre sí:
+
+- Las mejoras (vida, daño, velocidad, dash) modifican **campos base** de forma
+  aditiva (`modify_max_health`, `bullet_damage += …`, etc.).
+- El **frenesí** del casco de capitán es un **multiplicador/bonus aparte**
+  (`_frenzy_speed_mult`, `_frenzy_damage_bonus`) que se aplica en el punto de
+  uso (movimiento y disparo), por lo que convive con los ítems de velocidad y
+  cadencia sin sobrescribir sus valores base.
+
 ## Límites de compra (campo `max`) e inventario
 
 Cada ítem del pool tiene un campo `"max"` (número máximo de compras; **0 = ilimitado**):
@@ -84,6 +130,14 @@ Los `apply` llaman a métodos de `billy.gd`. Los actuales:
 | `enable_split()` | Activa la división de proyectil. |
 | `add_lethal()` | +1% de giro letal (ilimitado). |
 | `add_autododge()` | +1 nivel de esquiva automática (máx 3). |
+| `modify_max_health(n)` | Suma/resta vida máxima (al subir cura; al bajar no, mín 1). |
+| `reduce_dodge_cooldown(s)` / `increase_dodge_cooldown(s)` | Ajustan el enfriamiento del esquive (mín 0.2 s). |
+| `increase_dodge_distance(n)` | +`n` a la velocidad del dash (más "distancia" de esquive). |
+| `add_basic_helmet()` / `add_soldier_helmet()` / `add_viking_helmet()` / `add_capitan_helmet()` / `add_grancapitan_helmet()` | Aplican los cascos (ver tabla de cascos). |
+
+> Los ítems **Chanclas** (`speed`) ahora también **reducen** el enfriamiento de
+> esquive, y el **Gatillo veloz** (`firerate`) además da algo de velocidad y
+> distancia de esquive.
 
 ## Cómo agregar un ítem nuevo
 
