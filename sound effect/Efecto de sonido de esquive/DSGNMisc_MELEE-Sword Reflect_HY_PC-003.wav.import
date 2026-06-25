@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://ycsi417f4oht"
+path="res://.godot/imported/DSGNMisc_MELEE-Sword Reflect_HY_PC-003.wav-e6ab75809cb2497ed81934a107e8fc38.sample"
+
+[deps]
+
+source_file="res://sound effect/Efecto de sonido de esquive/DSGNMisc_MELEE-Sword Reflect_HY_PC-003.wav"
+dest_files=["res://.godot/imported/DSGNMisc_MELEE-Sword Reflect_HY_PC-003.wav-e6ab75809cb2497ed81934a107e8fc38.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

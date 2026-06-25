@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://x4fit66gow8k"
+path="res://.godot/imported/ElevenLabs_Lanzar_dados_en_un_juego_de_mesa,_ambiente_inmersivo.mp3-b4e3644c6050c14a6023d5b77867ce12.mp3str"
+
+[deps]
+
+source_file="res://sound effect/Sonido de boton roll/ElevenLabs_Lanzar_dados_en_un_juego_de_mesa,_ambiente_inmersivo.mp3"
+dest_files=["res://.godot/imported/ElevenLabs_Lanzar_dados_en_un_juego_de_mesa,_ambiente_inmersivo.mp3-b4e3644c6050c14a6023d5b77867ce12.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

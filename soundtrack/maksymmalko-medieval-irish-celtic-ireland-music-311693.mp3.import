@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://cmusic1maksym"
-path="res://.godot/imported/maksymmalko-medieval-irish-celtic-ireland-music-311693.mp3-placeholder.mp3"
+path="res://.godot/imported/maksymmalko-medieval-irish-celtic-ireland-music-311693.mp3-3960bc403e41bc46699f8f25d5918655.mp3str"
 
 [deps]
 
 source_file="res://soundtrack/maksymmalko-medieval-irish-celtic-ireland-music-311693.mp3"
-dest_files=["res://.godot/imported/maksymmalko-medieval-irish-celtic-ireland-music-311693.mp3-placeholder.mp3"]
+dest_files=["res://.godot/imported/maksymmalko-medieval-irish-celtic-ireland-music-311693.mp3-3960bc403e41bc46699f8f25d5918655.mp3str"]
 
 [params]
 

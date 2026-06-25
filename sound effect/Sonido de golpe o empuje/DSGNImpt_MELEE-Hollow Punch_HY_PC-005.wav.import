@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://c3u5dg3tym60j"
+path="res://.godot/imported/DSGNImpt_MELEE-Hollow Punch_HY_PC-005.wav-9347210de1c266b764d8473b0c23654d.sample"
+
+[deps]
+
+source_file="res://sound effect/Sonido de golpe o empuje/DSGNImpt_MELEE-Hollow Punch_HY_PC-005.wav"
+dest_files=["res://.godot/imported/DSGNImpt_MELEE-Hollow Punch_HY_PC-005.wav-9347210de1c266b764d8473b0c23654d.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

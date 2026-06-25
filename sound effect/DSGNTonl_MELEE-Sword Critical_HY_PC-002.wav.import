@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dcqydjaajseyv"
+path="res://.godot/imported/DSGNTonl_MELEE-Sword Critical_HY_PC-002.wav-7b6a143a0c30ba74dea1d3e3e4342669.sample"
+
+[deps]
+
+source_file="res://sound effect/DSGNTonl_MELEE-Sword Critical_HY_PC-002.wav"
+dest_files=["res://.godot/imported/DSGNTonl_MELEE-Sword Critical_HY_PC-002.wav-7b6a143a0c30ba74dea1d3e3e4342669.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

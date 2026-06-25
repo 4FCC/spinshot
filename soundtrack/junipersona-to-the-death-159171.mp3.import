@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://cmusic3junip0"
-path="res://.godot/imported/junipersona-to-the-death-159171.mp3-placeholder.mp3"
+path="res://.godot/imported/junipersona-to-the-death-159171.mp3-9fef0c5f96c680ae82e493ce65c1cea7.mp3str"
 
 [deps]
 
 source_file="res://soundtrack/junipersona-to-the-death-159171.mp3"
-dest_files=["res://.godot/imported/junipersona-to-the-death-159171.mp3-placeholder.mp3"]
+dest_files=["res://.godot/imported/junipersona-to-the-death-159171.mp3-9fef0c5f96c680ae82e493ce65c1cea7.mp3str"]
 
 [params]
 
