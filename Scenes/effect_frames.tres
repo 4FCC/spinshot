@@ -1,47 +1,8 @@
-[gd_resource type="SpriteFrames" format=3 uid="uid://beffectfrm00"]
+[gd_resource type="SpriteFrames" load_steps=34 format=3 uid="uid://beffectfrm00"]
 
 [ext_resource type="Texture2D" uid="uid://kv6g6752q232" path="res://asset_particulas_efectos/25.png" id="1_dust"]
 [ext_resource type="Texture2D" uid="uid://crd2dpypnj6e3" path="res://asset_particulas_efectos/486.png" id="2_burst"]
-
-[sub_resource type="AtlasTexture" id="u1"]
-atlas = ExtResource("2_burst")
-region = Rect2(64, 128, 64, 64)
-
-[sub_resource type="AtlasTexture" id="u2"]
-atlas = ExtResource("2_burst")
-region = Rect2(128, 128, 64, 64)
-
-[sub_resource type="AtlasTexture" id="u3"]
-atlas = ExtResource("2_burst")
-region = Rect2(192, 128, 64, 64)
-
-[sub_resource type="AtlasTexture" id="u4"]
-atlas = ExtResource("2_burst")
-region = Rect2(256, 128, 64, 64)
-
-[sub_resource type="AtlasTexture" id="u5"]
-atlas = ExtResource("2_burst")
-region = Rect2(320, 128, 64, 64)
-
-[sub_resource type="AtlasTexture" id="u6"]
-atlas = ExtResource("2_burst")
-region = Rect2(384, 128, 64, 64)
-
-[sub_resource type="AtlasTexture" id="u7"]
-atlas = ExtResource("2_burst")
-region = Rect2(448, 128, 64, 64)
-
-[sub_resource type="AtlasTexture" id="u8"]
-atlas = ExtResource("2_burst")
-region = Rect2(512, 128, 64, 64)
-
-[sub_resource type="AtlasTexture" id="u9"]
-atlas = ExtResource("2_burst")
-region = Rect2(576, 128, 64, 64)
-
-[sub_resource type="AtlasTexture" id="u10"]
-atlas = ExtResource("2_burst")
-region = Rect2(640, 128, 64, 64)
+[ext_resource type="Texture2D" uid="uid://fm8fkuk3u4g7" path="res://Sprites_Minions/SupportMinion_effet_Attack-Sheet.png" id="3_hearts"]
 
 [sub_resource type="AtlasTexture" id="d0"]
 atlas = ExtResource("1_dust")
@@ -91,36 +52,149 @@ region = Rect2(640, 320, 64, 64)
 atlas = ExtResource("1_dust")
 region = Rect2(704, 320, 64, 64)
 
+[sub_resource type="AtlasTexture" id="u1"]
+atlas = ExtResource("2_burst")
+region = Rect2(64, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="u2"]
+atlas = ExtResource("2_burst")
+region = Rect2(128, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="u3"]
+atlas = ExtResource("2_burst")
+region = Rect2(192, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="u4"]
+atlas = ExtResource("2_burst")
+region = Rect2(256, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="u5"]
+atlas = ExtResource("2_burst")
+region = Rect2(320, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="u6"]
+atlas = ExtResource("2_burst")
+region = Rect2(384, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="u7"]
+atlas = ExtResource("2_burst")
+region = Rect2(448, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="u8"]
+atlas = ExtResource("2_burst")
+region = Rect2(512, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="u9"]
+atlas = ExtResource("2_burst")
+region = Rect2(576, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="u10"]
+atlas = ExtResource("2_burst")
+region = Rect2(640, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="h0"]
+atlas = ExtResource("3_hearts")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="h1"]
+atlas = ExtResource("3_hearts")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="h2"]
+atlas = ExtResource("3_hearts")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="h3"]
+atlas = ExtResource("3_hearts")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="h4"]
+atlas = ExtResource("3_hearts")
+region = Rect2(256, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="h5"]
+atlas = ExtResource("3_hearts")
+region = Rect2(320, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="h6"]
+atlas = ExtResource("3_hearts")
+region = Rect2(384, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="h7"]
+atlas = ExtResource("3_hearts")
+region = Rect2(448, 0, 64, 64)
+
 [resource]
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": SubResource("u1")
+"texture": SubResource("d0")
+},{
+"duration": 1.0,
+"texture": SubResource("d1")
+},{
+"duration": 1.0,
+"texture": SubResource("d2")
+},{
+"duration": 1.0,
+"texture": SubResource("d3")
+},{
+"duration": 1.0,
+"texture": SubResource("d4")
+},{
+"duration": 1.0,
+"texture": SubResource("d5")
+},{
+"duration": 1.0,
+"texture": SubResource("d6")
+},{
+"duration": 1.0,
+"texture": SubResource("d7")
+},{
+"duration": 1.0,
+"texture": SubResource("d8")
+},{
+"duration": 1.0,
+"texture": SubResource("d9")
+},{
+"duration": 1.0,
+"texture": SubResource("d10")
+},{
+"duration": 1.0,
+"texture": SubResource("d11")
+}],
+"loop": false,
+"name": &"dust",
+"speed": 18.0
 }, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("u1")
+},{
 "duration": 1.0,
 "texture": SubResource("u2")
-}, {
+},{
 "duration": 1.0,
 "texture": SubResource("u3")
-}, {
+},{
 "duration": 1.0,
 "texture": SubResource("u4")
-}, {
+},{
 "duration": 1.0,
 "texture": SubResource("u5")
-}, {
+},{
 "duration": 1.0,
 "texture": SubResource("u6")
-}, {
+},{
 "duration": 1.0,
 "texture": SubResource("u7")
-}, {
+},{
 "duration": 1.0,
 "texture": SubResource("u8")
-}, {
+},{
 "duration": 1.0,
 "texture": SubResource("u9")
-}, {
+},{
 "duration": 1.0,
 "texture": SubResource("u10")
 }],
@@ -130,42 +204,30 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": SubResource("d0")
-}, {
+"texture": SubResource("h0")
+},{
 "duration": 1.0,
-"texture": SubResource("d1")
-}, {
+"texture": SubResource("h1")
+},{
 "duration": 1.0,
-"texture": SubResource("d2")
-}, {
+"texture": SubResource("h2")
+},{
 "duration": 1.0,
-"texture": SubResource("d3")
-}, {
+"texture": SubResource("h3")
+},{
 "duration": 1.0,
-"texture": SubResource("d4")
-}, {
+"texture": SubResource("h4")
+},{
 "duration": 1.0,
-"texture": SubResource("d5")
-}, {
+"texture": SubResource("h5")
+},{
 "duration": 1.0,
-"texture": SubResource("d6")
-}, {
+"texture": SubResource("h6")
+},{
 "duration": 1.0,
-"texture": SubResource("d7")
-}, {
-"duration": 1.0,
-"texture": SubResource("d8")
-}, {
-"duration": 1.0,
-"texture": SubResource("d9")
-}, {
-"duration": 1.0,
-"texture": SubResource("d10")
-}, {
-"duration": 1.0,
-"texture": SubResource("d11")
+"texture": SubResource("h7")
 }],
 "loop": false,
-"name": &"dust",
-"speed": 18.0
+"name": &"hearts",
+"speed": 12.0
 }]

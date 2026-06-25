@@ -13,7 +13,10 @@ extends Enemy
 @export var preferred_distance: float = 360.0  # Distancia mínima al jugador
 @export var damage_buff: int = 1               # +daño que otorga a aliados en rango
 
+const EFFECT_SCENE := preload("res://Scenes/Effect.tscn")
+
 var _heal_timer: float = 0.0
+var _pink_tween: Tween = null
 
 func _ready() -> void:
 	super._ready()
@@ -83,11 +86,28 @@ func _heal_allies() -> void:
 			continue
 		if global_position.distance_to(e.global_position) <= heal_radius and e.has_method("heal"):
 			e.heal(heal_amount)
+			_spawn_hearts(e)   # efecto de corazones sobre el aliado beneficiado
 			healed = true
 	if healed:
-		# Destello propio para indicar que está curando
-		sprite.modulate = Color(0.6, 1.0, 0.7)
-		var t := get_tree().create_timer(0.15)
-		t.timeout.connect(func():
-			if is_instance_valid(self):
-				sprite.modulate = Color.WHITE)
+		_spawn_hearts(self)   # también sobre el propio Apoyo
+		_pink_flash()
+
+func _spawn_hearts(node: Node2D) -> void:
+	"""Efecto de corazones (sheet del Apoyo). Se añade como hijo del beneficiado
+	para que se renderice sobrepuesto y le siga; se autodestruye al terminar."""
+	if not is_instance_valid(node):
+		return
+	var fx = EFFECT_SCENE.instantiate()
+	node.add_child(fx)
+	fx.position = Vector2(0, -12)
+	fx.z_index = 60
+	fx.play_effect("hearts")
+
+func _pink_flash() -> void:
+	# Pintar el sprite de rosa de manera intermitente mientras usa su habilidad.
+	if _pink_tween != null and _pink_tween.is_valid():
+		_pink_tween.kill()
+	_pink_tween = create_tween()
+	_pink_tween.set_loops(3)
+	_pink_tween.tween_property(sprite, "modulate", Color(1.0, 0.5, 0.85), 0.13)
+	_pink_tween.tween_property(sprite, "modulate", _base_modulate(), 0.13)
