@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://vw3td786eaea"]
+[gd_scene format=3 uid="uid://vw3td786eaea"]
 
 [ext_resource type="Script" uid="uid://bcharger00001" path="res://Scripts/charger_minion.gd" id="1_ch"]
 [ext_resource type="PackedScene" uid="uid://ccoin00000001" path="res://Scenes/Coin.tscn" id="2_coin"]
@@ -20,7 +20,6 @@ move_speed = 250.0
 coin_scene = ExtResource("2_coin")
 coin_value = 3
 run_sheet = ExtResource("3_run")
-run_frames = 6
 frame_size = 64
 sprite_scale = 2.45
 separation_radius = 78.0
