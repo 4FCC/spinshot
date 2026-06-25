@@ -399,15 +399,15 @@ func _build_waves() -> void:
 	#   R7 +capitán · R8-R9 mezcla completa · R10 minijefe (este pool no se usa).
 	_waves = [
 		{"interval": 0.8, "pool": [[minion_scene, 1]]},
-		{"interval": 0.8, "pool": [[minion_scene, 3], [bigminion_scene, 1]]},
-		{"interval": 0.9, "pool": [[minion_scene, 3], [bigminion_scene, 1], [bulletminion_scene, 1]]},
-		{"interval": 0.9, "pool": [[minion_scene, 3], [bigminion_scene, 1], [bulletminion_scene, 1], [support_scene, 1]]},
-		{"interval": 1.0, "pool": [[minion_scene, 3], [bigminion_scene, 2], [bulletminion_scene, 1], [support_scene, 1], [charger_scene, 1]]},
-		{"interval": 1.0, "pool": [[minion_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 1], [support_scene, 1], [charger_scene, 1], [sad_scene, 1], [gotica_scene, 1]]},
-		{"interval": 1.0, "pool": [[minion_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 1], [support_scene, 1], [charger_scene, 1], [sad_scene, 1], [gotica_scene, 1], [capitan_scene, 1]]},
+		{"interval": 0.8, "pool": [[minion_scene, 5], [bigminion_scene, 1]]},
+		{"interval": 0.9, "pool": [[minion_scene, 5], [bigminion_scene, 1], [bulletminion_scene, 1]]},
+		{"interval": 0.9, "pool": [[minion_scene, 5], [bigminion_scene, 1], [bulletminion_scene, 1], [support_scene, 1]]},
+		{"interval": 1.0, "pool": [[minion_scene, 5], [bigminion_scene, 2], [bulletminion_scene, 1], [support_scene, 1], [charger_scene, 1]]},
+		{"interval": 1.0, "pool": [[minion_scene, 4], [bigminion_scene, 2], [bulletminion_scene, 1], [support_scene, 1], [charger_scene, 1], [sad_scene, 1], [gotica_scene, 1]]},
+		{"interval": 1.0, "pool": [[minion_scene, 4], [bigminion_scene, 2], [bulletminion_scene, 1], [support_scene, 1], [charger_scene, 1], [sad_scene, 1], [gotica_scene, 1], [capitan_scene, 1]]},
 		{"interval": 0.9, "pool": [[charger_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 1], [capitan_scene, 1]]},
-		{"interval": 0.9, "pool": [[minion_scene, 2], [charger_scene, 2], [bulletminion_scene, 1], [bigminion_scene, 1], [support_scene, 1], [gotica_scene, 1], [capitan_scene, 1]]},
-		{"interval": 0.8, "pool": [[minion_scene, 2], [charger_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 2], [support_scene, 1]]},
+		{"interval": 0.9, "pool": [[minion_scene, 4], [charger_scene, 2], [bulletminion_scene, 1], [bigminion_scene, 1], [support_scene, 1], [gotica_scene, 1], [capitan_scene, 1]]},
+		{"interval": 0.8, "pool": [[minion_scene, 4], [charger_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 2], [support_scene, 1]]},
 	]
 
 func _spawn_interval() -> float:

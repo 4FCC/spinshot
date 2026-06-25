@@ -37,7 +37,7 @@ moneda (`coin.gd`) o la SpinShot (`spin_bullet.gd`).
 | Ítem | Efecto | Acumulable | Dónde está la lógica |
 |------|--------|-----------|----------------------|
 | Robo de vida | 25% por nivel de curar 1–3 al recoger una moneda (máx 75%) | hasta 3 | `billy.on_coin_collected()` + `coin.gd` |
-| Rebote ofensivo | Al impactar a un enemigo genera N SpinShots nuevas (no rebotan otra vez) | hasta 3 | `spin_bullet._spawn_bounce()` |
+| Rebote ofensivo | Al impactar genera N SpinShots que **ignoran al enemigo de origen** y golpean a OTROS, en **reacción en cadena** con presupuesto decreciente (cada eslabón genera uno menos, así la cadena termina) | hasta 3 | `spin_bullet._spawn_bounce()` + `_ignore_enemy` |
 | División de proyectil | A mitad de trayectoria la SpinShot se divide en dos (afecta a ambos clics y a las generadas por rebote) | única | `spin_bullet._spawn_split()` |
 | Giro letal | 1% por nivel de matar al enemigo haciéndolo girar (reemplaza el daño) | ilimitado | `spin_bullet._on_body_entered` + `enemy.apply_lethal_spin()` |
 | Esquiva automática | 25% por nivel de activar el dodge al recibir daño (máx 75%) | hasta 3 | `billy.take_damage()` |
