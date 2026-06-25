@@ -78,18 +78,34 @@ así que el juego no falla si falta una escena.
 
 Composición actual (resumen):
 
-| Oleada | Enemigos (pesos) |
-|-------:|------------------|
-| 1 | Minion |
-| 2 | Minion ×3, Cargador ×1 |
-| 3 | Minion ×2, BigMinion ×1 |
-| 4 | Minion ×2, Cargador ×2 |
-| 5 | BigMinion ×2, BulletMinion ×1 |
-| 6 | Minion ×2, Cargador ×2, Apoyo ×1 |
-| 7 | BulletMinion ×2, BigMinion ×1, Apoyo ×1 |
-| 8 | Cargador ×2, BigMinion ×2, BulletMinion ×1 |
-| 9 | Mezcla de todos |
-| 10 | Mezcla intensa de todos → luego **Jefe** |
+Cada tipo se **introduce de forma progresiva** (una vez que aparece, se mantiene
+en las oleadas siguientes):
+
+| Oleada | Enemigos (pesos) | Novedad |
+|-------:|------------------|---------|
+| 1 | Minion ×1 | — |
+| 2 | Minion ×5, BigMinion ×1 | +BigMinion (sin Cargador) |
+| 3 | Minion ×5, BigMinion ×1, BulletMinion ×1 | +BulletMinion |
+| 4 | Minion ×5, BigMinion ×1, BulletMinion ×1, Apoyo ×1 | +Apoyo |
+| 5 | Minion ×5, BigMinion ×2, BulletMinion ×1, Apoyo ×1, Cargador ×1 | +Cargador (peso bajo: pocos a la vez) |
+| 6 | Minion ×4, BigMinion ×2, BulletMinion ×1, Apoyo ×1, Cargador ×1, Sad ×1, Gótica ×1 | +variantes de BulletMinion (Sad/Gótica) |
+| 7 | … + Bigminion_capitan ×1 (repertorio completo) | +Capitán |
+| 8 | Mismo repertorio que la 7 (Cargador ×2) | sin enemigo nuevo, más intenso |
+| 9 | Mismo repertorio (BigMinion ×3, BulletMinion ×2, Capitán ×2) | sin enemigo nuevo, más intenso |
+| 10 | **Minijefe** (Bigminion_gran_capitan) → luego **Jefe** | oleada sin temporizador |
+
+> **En todas las oleadas aparecen Minions + el resto del repertorio acumulado**
+> (la única excepción es la oleada 1, solo Minions, y la 10, que es el minijefe).
+> Las oleadas marcadas "sin enemigo nuevo" (8 y 9) **no introducen un tipo
+> nuevo**: repiten el repertorio de la oleada 7 con más cantidad/intensidad.
+>
+> El **Minion** lleva un peso alto en cada oleada para que sea el enemigo más
+> frecuente, **sin reducir** el peso de los demás tipos (solo cambia su
+> proporción relativa).
+
+> El **Cargador** se introduce tarde (oleada 5) y con **peso bajo** para que solo
+> aparezcan unos pocos a la vez: antes saturaba la oleada 2 y la hacía
+> injusta. La **oleada 10** invoca al minijefe (su `pool` no se usa).
 
 ## Cómo modificar o agregar oleadas
 
@@ -112,6 +128,12 @@ Composición actual (resumen):
 
 No ataca al jugador; potencia a los aliados dentro de `heal_radius`:
 
+- **Movimiento (independiente del jugador):** busca el **grupo de enemigos más
+  denso** (`_best_cluster()` = centroide del enemigo con más vecinos en
+  `heal_radius`) y se mantiene **dentro** de él (a `heal_radius * 0.45`) para
+  curar/potenciar, sin importar si el jugador está cerca o lejos. Navega con
+  `_avoid_bounds()` para no quedarse pegado a las paredes. Si no hay otros
+  enemigos, frena en el sitio.
 - **Curación** periódica (`heal_amount` cada `heal_interval`).
 - **Aura de daño**: otorga `+damage_buff` al daño por contacto de los aliados en
   rango. Se **refresca cada frame** mientras estén dentro del radio y **caduca**

@@ -11,7 +11,7 @@ extends CharacterBody2D
 # de sprites asignadas, para no depender de un SpriteFrames por enemigo.
 
 @export_group("Estadísticas")
-@export var max_health: int = 6
+@export var max_health: int = 4
 @export var contact_damage: int = 2
 @export var move_speed: float = 120.0
 @export var attack_cooldown: float = 0.8
@@ -171,6 +171,29 @@ func _separation() -> Vector2:
 		if d > 0.01 and d < r:
 			push += (off / d) * (1.0 - d / r)
 	return push * separation_force
+
+func _evasive_velocity(spd: float) -> Vector2:
+	"""Dirección de huida ROBUSTA para enemigos a distancia: se aleja del jugador
+	pero elige una dirección que NO se salga del mapa, probando varios ángulos.
+	En esquinas, escoge una tangente válida (bordea el mapa aunque cruce cerca
+	del jugador), evitando quedarse atascado contra las paredes."""
+	if player == null:
+		return Vector2.ZERO
+	var away := global_position - player.global_position
+	away = away.normalized() if away.length() > 1.0 else Vector2.RIGHT
+	var best_dir := away
+	var best_score := -INF
+	for a in [0, 30, -30, 60, -60, 90, -90, 120, -120, 150, -150, 180]:
+		var dir := away.rotated(deg_to_rad(a))
+		var probe := global_position + dir * 90.0
+		if probe.x < ARENA_MIN.x or probe.x > ARENA_MAX.x or probe.y < ARENA_MIN.y or probe.y > ARENA_MAX.y:
+			continue   # esa dirección se saldría del mapa
+		# Preferir alejarse del jugador y girar poco respecto a "away".
+		var score := probe.distance_to(player.global_position) - absf(a) * 0.8
+		if score > best_score:
+			best_score = score
+			best_dir = dir
+	return best_dir * spd
 
 func _avoid_bounds(vel: Vector2) -> Vector2:
 	"""Evita que los enemigos evasivos se peguen a las paredes o salgan del mapa:

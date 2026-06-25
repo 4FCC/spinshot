@@ -204,24 +204,28 @@ func _summon_capitanes() -> void:
 		return
 	var host := _host()
 	for i in summon_count:
-		var c = capitan_scene.instantiate()
-		# Estos capitanes invocados sí pueden invocar Bigminión una vez.
-		if "can_summon_bigminions" in c:
-			c.can_summon_bigminions = true
-		host.add_child(c)
-		c.global_position = global_position + Vector2.RIGHT.rotated(TAU * i / summon_count) * 120.0
+		var pos: Vector2 = global_position + Vector2.RIGHT.rotated(TAU * i / summon_count) * 120.0
+		# Indicador rojo antes de instanciar la invocación.
+		Game.telegraph_spawn(host, pos, Game.INDICATOR_ENEMY, 2.4, 0.8, func():
+			var c = capitan_scene.instantiate()
+			if "can_summon_bigminions" in c:
+				c.can_summon_bigminions = true   # estos sí invocan Bigminión una vez
+			host.add_child(c)
+			c.global_position = pos)
 
 func _summon_guards() -> void:
 	if sad_scene == null:
 		return
 	var host := _host()
 	for i in summon_count:
-		var s = sad_scene.instantiate()
-		if "is_summon" in s:
-			s.is_summon = true
-		host.add_child(s)
-		s.add_to_group("miniboss_guard")
-		s.global_position = global_position + Vector2.RIGHT.rotated(TAU * i / summon_count) * 130.0
+		var pos: Vector2 = global_position + Vector2.RIGHT.rotated(TAU * i / summon_count) * 130.0
+		Game.telegraph_spawn(host, pos, Game.INDICATOR_ENEMY, 2.0, 0.8, func():
+			var s = sad_scene.instantiate()
+			if "is_summon" in s:
+				s.is_summon = true
+			host.add_child(s)
+			s.add_to_group("miniboss_guard")
+			s.global_position = pos)
 
 func _guards_alive() -> bool:
 	for g in get_tree().get_nodes_in_group("miniboss_guard"):
@@ -262,6 +266,7 @@ func _die() -> void:
 	_dead = true
 	velocity = Vector2.ZERO
 	bar.visible = false
+	Game.unlock("grancapitan_helmet")   # desbloqueo persistente del casco
 	_drop_coins()
 	died.emit()
 	queue_free()

@@ -23,6 +23,11 @@
 [ext_resource type="PackedScene" uid="uid://cbmsadscn0001" path="res://Scenes/BulletMinionSad.tscn" id="21_sad"]
 [ext_resource type="PackedScene" uid="uid://cbmgoticascn1" path="res://Scenes/BulletMinionGotica.tscn" id="22_got"]
 [ext_resource type="PackedScene" uid="uid://cminiboss0scn" path="res://Scenes/Miniboss.tscn" id="23_mb"]
+[ext_resource type="Texture2D" uid="uid://b4t1fdaqlr4fp" path="res://Items assets/basic_helmet.png" id="24_h1"]
+[ext_resource type="Texture2D" uid="uid://b3bbyjch8krov" path="res://Items assets/Biggsoldier_helmet.png" id="25_h2"]
+[ext_resource type="Texture2D" uid="uid://dccadhhqupjq1" path="res://Items assets/Viking_helmet.png" id="26_h3"]
+[ext_resource type="Texture2D" uid="uid://bs3r0i8ynrls4" path="res://Items assets/CapitanNORMAL_Helmet.png" id="27_h4"]
+[ext_resource type="Texture2D" uid="uid://56njdtuiit8c" path="res://Items assets/Capitan_Helmet.png" id="28_h5"]
 
 [node name="GameMode" type="Node" unique_id=551392244]
 script = ExtResource("1_gm")
@@ -110,3 +115,8 @@ icon_bounce = ExtResource("16_i8")
 icon_split = ExtResource("17_i9")
 icon_lethal = ExtResource("18_i10")
 icon_autododge = ExtResource("19_i11")
+icon_basic_helmet = ExtResource("24_h1")
+icon_soldier_helmet = ExtResource("25_h2")
+icon_viking_helmet = ExtResource("26_h3")
+icon_capitan_helmet = ExtResource("27_h4")
+icon_grancapitan_helmet = ExtResource("28_h5")

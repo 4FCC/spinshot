@@ -62,6 +62,9 @@ const _CAMERA_TARGET_HEIGHT := 768.0
 @export var bullet_damage: int = 3           # Daño de cada Spin-Bullet (mejorable)
 @export var shoot_cooldown_time: float = 0.5  # Cadencia de disparo (mejorable)
 
+@export_group("Cascos")
+@export var ally_capitan_scene: PackedScene  # Capitán aliado (casco de gran capitán)
+
 # =============================================================================
 # VARIABLES INTERNAS
 # =============================================================================
@@ -90,6 +93,17 @@ var bounce_level: int = 0      # Rebote ofensivo: SpinShots extra al impactar (m
 var has_split: bool = false    # División de proyectil (única)
 var lethal_level: int = 0      # Giro letal: +1% por nivel (ilimitado)
 var autododge_level: int = 0   # Esquiva automática al recibir daño (máx 3 -> 75%)
+
+# --- Cascos (efectos que se ACUMULAN sin sobrescribirse, ver QA) ---
+var viking_push_chance: float = 0.0   # Casco vikingo: prob. de empujar enemigos (máx 0.5)
+var has_capitan_frenzy: bool = false  # Casco de capitán: frenesí <50% vida
+var _frenzy_active: bool = false
+var _frenzy_speed_mult: float = 1.0   # multiplicador de velocidad por frenesí
+var _frenzy_damage_bonus: int = 0     # +daño por frenesí
+const FRENZY_SPEED_MULT := 1.5
+const FRENZY_DAMAGE_BONUS := 3
+const VIKING_PUSH_CAP := 0.5
+const VIKING_PUSH_FORCE := 520.0
 
 # Inventario de ítems comprados: id -> {name, desc, icon, count}
 var inventory: Dictionary = {}
@@ -128,6 +142,9 @@ func _ready():
 	# Contador de monedas (sprite + cantidad) bajo la barra de esquive
 	Game.coins_changed.connect(_update_coins_ui)
 	_update_coins_ui(Game.coins)
+	# Área de empuje del casco vikingo (repele enemigos que la tocan)
+	if has_node("PushArea"):
+		$PushArea.body_entered.connect(_on_push_area_body_entered)
 
 func _style_hud() -> void:
 	# Las barras usan los sprites (04.png) definidos en la escena.
@@ -243,6 +260,9 @@ func _physics_process(delta):
 	# mientras es invulnerable (tras recibir daño o durante el esquive).
 	set_collision_mask_value(2, not is_invulnerable)
 
+	# Frenesí del casco de capitán (se recalcula; no sobrescribe otros efectos).
+	_update_frenzy()
+
 	if is_frozen:
 		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
 		move_and_slide()
@@ -276,7 +296,7 @@ func move_state(delta):
 
 func _read_movement_input(delta: float) -> void:
 	input_direction = Input.get_vector("Izquierda", "Derecha", "Arriba", "Abajo")
-	var target := input_direction.normalized() * speed
+	var target := input_direction.normalized() * (speed * _frenzy_speed_mult)
 	if input_direction != Vector2.ZERO:
 		velocity = velocity.move_toward(target, acceleration * delta)
 		last_direction = input_direction.normalized()
@@ -419,7 +439,7 @@ func _shoot_spin_bullet(pattern: int = 0):
 		dir = last_direction
 
 	var bullet = spin_bullet_scene.instantiate()
-	bullet.damage = bullet_damage
+	bullet.damage = bullet_damage + _frenzy_damage_bonus
 	# Habilidades de ítems que lleva cada SpinShot
 	bullet.bounce_count = bounce_level
 	bullet.has_split = has_split
@@ -564,3 +584,110 @@ func register_item(item: Dictionary) -> void:
 
 func get_item_count(id: String) -> int:
 	return inventory[id]["count"] if inventory.has(id) else 0
+
+# =============================================================================
+# AJUSTES DE ESQUIVE Y VIDA (helpers reutilizables; todo se ACUMULA)
+# =============================================================================
+func modify_max_health(amount: int) -> void:
+	vida_max = maxi(1, vida_max + amount)
+	if amount > 0:
+		vida = clamp(vida + amount, 0, vida_max)   # subir vida también cura
+	else:
+		vida = clamp(vida, 0, vida_max)            # bajar vida no cura
+	health_bar.max_value = vida_max
+	_update_health_ui()
+
+func reduce_dodge_cooldown(sec: float) -> void:
+	dodge_cooldown_time = maxf(0.2, dodge_cooldown_time - sec)
+	if dodge_cooldown != null:
+		dodge_cooldown.wait_time = dodge_cooldown_time
+
+func increase_dodge_cooldown(sec: float) -> void:
+	dodge_cooldown_time += sec
+	if dodge_cooldown != null:
+		dodge_cooldown.wait_time = dodge_cooldown_time
+
+func increase_dodge_distance(amount: float) -> void:
+	# Más "distancia" de esquive = más velocidad durante el dash.
+	dodge_speed += amount
+
+func _update_frenzy() -> void:
+	if not has_capitan_frenzy:
+		return
+	var should := vida > 0 and float(vida) < float(vida_max) * 0.5
+	if should and not _frenzy_active:
+		_frenzy_active = true
+		_frenzy_speed_mult = FRENZY_SPEED_MULT
+		_frenzy_damage_bonus = FRENZY_DAMAGE_BONUS
+	elif not should and _frenzy_active:
+		_frenzy_active = false
+		_frenzy_speed_mult = 1.0
+		_frenzy_damage_bonus = 0
+
+# =============================================================================
+# CASCOS (ítems de la tienda)
+# =============================================================================
+func add_basic_helmet() -> void:
+	# Casco de minion: -1 vida, +2 daño; +distancia y -cooldown de esquive.
+	modify_max_health(-1)
+	bullet_damage += 2
+	increase_dodge_distance(140.0)
+	reduce_dodge_cooldown(0.2)
+
+func add_soldier_helmet() -> void:
+	# Casco de caballero: +5 vida, +3 daño; -20 velocidad, +cooldown de esquive.
+	modify_max_health(5)
+	bullet_damage += 3
+	speed = maxf(60.0, speed - 20.0)
+	increase_dodge_cooldown(0.25)
+
+func add_viking_helmet() -> void:
+	# Casco vikingo: acumula prob. de empuje hasta el 50%; pasado el tope, da
+	# +1 vida y +3 daño por compra en su lugar.
+	if viking_push_chance < VIKING_PUSH_CAP:
+		modify_max_health(-3)
+		bullet_damage += 5
+		viking_push_chance = minf(VIKING_PUSH_CAP, viking_push_chance + 0.10)
+	else:
+		modify_max_health(1)
+		bullet_damage += 3
+
+func add_capitan_helmet() -> void:
+	# Casco de capitán (desbloqueable): +10 vida, +5 daño; frenesí <50% vida.
+	modify_max_health(10)
+	bullet_damage += 5
+	has_capitan_frenzy = true
+
+func add_grancapitan_helmet() -> void:
+	# Casco de gran capitán (desbloqueable): +15 vida, +10 daño; invoca 4
+	# Bigminion_capitan ALIADOS (con indicador azul, sin invocar otros minions).
+	modify_max_health(15)
+	bullet_damage += 10
+	_summon_ally_capitanes()
+
+func _summon_ally_capitanes() -> void:
+	if ally_capitan_scene == null:
+		return
+	var host := get_tree().current_scene
+	if host == null:
+		host = get_parent()
+	for i in 4:
+		var pos: Vector2 = global_position + Vector2.RIGHT.rotated(TAU * i / 4.0) * 150.0
+		Game.telegraph_spawn(host, pos, Game.INDICATOR_ALLY, 2.2, 0.7, func():
+			var c = ally_capitan_scene.instantiate()
+			c.is_ally = true
+			host.add_child(c)
+			c.global_position = pos)
+
+# =============================================================================
+# EMPUJE DEL CASCO VIKINGO
+# =============================================================================
+func _on_push_area_body_entered(body: Node2D) -> void:
+	if viking_push_chance <= 0.0:
+		return
+	if body == self or not body.is_in_group("enemy") or not body.has_method("push"):
+		return
+	if randf() < viking_push_chance:
+		var dir := (body.global_position - global_position)
+		dir = dir.normalized() if dir.length() > 0.0 else Vector2.RIGHT
+		body.push(dir * VIKING_PUSH_FORCE)
