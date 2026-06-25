@@ -17,6 +17,12 @@ extends Node
 @export var charger_scene: PackedScene
 @export var support_scene: PackedScene
 
+@export_group("Variantes y minijefe")
+@export var capitan_scene: PackedScene     # Bigminion_capitan
+@export var sad_scene: PackedScene         # Bullet_minion_sad
+@export var gotica_scene: PackedScene      # Bullet_minion_gotica
+@export var miniboss_scene: PackedScene    # Bigminion_gran_capitan (oleada 10)
+
 @export_group("Jefe")
 @export var boss_scene: PackedScene        # Aparece al terminar la última oleada
 
@@ -55,6 +61,8 @@ var _waves: Array = []          # Tabla de oleadas (ver _build_waves)
 var _boss: Node = null          # Instancia del jefe (si está vivo)
 var _boss_pending: bool = false # Tras la oleada final: tienda y luego jefe
 var _ground: TileMapLayer = null  # Suelo de césped para validar puntos de spawn
+var _miniboss: Node = null        # Minijefe de la oleada 10
+var _miniboss_active: bool = false  # Oleada 10 en curso (sin temporizador)
 
 # Pantallas
 var _start_screen: Control = null
@@ -136,6 +144,11 @@ func _process(delta: float) -> void:
 	if _screen_active or get_tree().paused or not wave_active:
 		return
 
+	# Oleada del minijefe (10): sin temporizador ni grupos; solo se gana al
+	# derrotar al minijefe (ver _on_miniboss_defeated).
+	if _miniboss_active:
+		return
+
 	# Cuenta atrás de la oleada
 	time_left -= delta
 	_update_timer_label()
@@ -193,6 +206,14 @@ func _handle_debug_input(event: InputEvent) -> void:
 				_debug_spawn(charger_scene)
 			KEY_5:
 				_debug_spawn(support_scene)
+			KEY_6:
+				_debug_spawn_active(capitan_scene)
+			KEY_7:
+				_debug_spawn_active(sad_scene)
+			KEY_8:
+				_debug_spawn_active(gotica_scene)
+			KEY_9:
+				_debug_spawn_active(miniboss_scene)
 			KEY_O:
 				_enter_shop()
 			KEY_C:
@@ -217,6 +238,18 @@ func _debug_spawn(scene: PackedScene) -> void:
 	host.add_child(e)
 	e.global_position = player.global_position + Vector2.RIGHT.rotated(randf() * TAU) * 320.0
 
+func _debug_spawn_active(scene: PackedScene) -> void:
+	"""Invoca un enemigo FUNCIONAL (no maniquí) cerca del jugador, para probar
+	sus mecánicas. Usado por las variantes nuevas y el minijefe (teclas 6-9)."""
+	if scene == null:
+		return
+	if player == null or not is_instance_valid(player):
+		player = _find_player()
+	var e = scene.instantiate()
+	_spawn_host().add_child(e)
+	var origin: Vector2 = player.global_position if player != null else Vector2(960, 576)
+	e.global_position = origin + Vector2.RIGHT.rotated(randf() * TAU) * 360.0
+
 func _toggle_fullscreen() -> void:
 	var mode := DisplayServer.window_get_mode()
 	if mode == DisplayServer.WINDOW_MODE_FULLSCREEN or mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
@@ -238,14 +271,47 @@ func _toggle_god_mode() -> void:
 func _start_wave() -> void:
 	wave_number += 1
 	wave_active = true
-	time_left = wave_duration
 	_spawn_accum = 0.0
 	_update_wave_label()
+
+	# Oleada final (10): minijefe sin temporizador.
+	if wave_number >= total_waves and miniboss_scene != null:
+		_start_miniboss_wave()
+		return
+
+	time_left = wave_duration
 	_update_timer_label()
 	if debug_mode:
 		_set_info("Wave %d in progress  —  N: end", [wave_number])
 	else:
 		_set_info("Wave %d in progress", [wave_number])
+
+func _start_miniboss_wave() -> void:
+	_miniboss_active = true
+	time_left = 0.0
+	timer_label.text = ""          # sin temporizador en la oleada 10
+	_set_info("Defeat the Gran Capitán!")
+	_spawn_miniboss()
+
+func _spawn_miniboss() -> void:
+	if miniboss_scene == null:
+		return
+	if player == null or not is_instance_valid(player):
+		player = _find_player()
+	if _ground == null or not is_instance_valid(_ground):
+		_ground = _find_ground()
+	var mb = miniboss_scene.instantiate()
+	_spawn_host().add_child(mb)
+	mb.global_position = _pick_grass_point_near_player() if player != null else Vector2(960, 400)
+	if mb.has_signal("died"):
+		mb.died.connect(_on_miniboss_defeated)
+	_miniboss = mb
+
+func _on_miniboss_defeated() -> void:
+	_miniboss = null
+	_miniboss_active = false
+	# Tratar como fin de la oleada final: limpia, tienda y luego el jefe final.
+	_end_wave()
 
 func _end_wave() -> void:
 	wave_active = false
@@ -334,9 +400,9 @@ func _build_waves() -> void:
 		{"interval": 0.9, "pool": [[minion_scene, 2], [charger_scene, 2]]},
 		{"interval": 1.0, "pool": [[bigminion_scene, 2], [bulletminion_scene, 1]]},
 		{"interval": 0.9, "pool": [[minion_scene, 2], [charger_scene, 2], [support_scene, 1]]},
-		{"interval": 1.0, "pool": [[bulletminion_scene, 2], [bigminion_scene, 1], [support_scene, 1]]},
-		{"interval": 0.9, "pool": [[charger_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 1]]},
-		{"interval": 0.9, "pool": [[minion_scene, 2], [charger_scene, 2], [bulletminion_scene, 1], [bigminion_scene, 1], [support_scene, 1]]},
+		{"interval": 1.0, "pool": [[bulletminion_scene, 2], [bigminion_scene, 1], [support_scene, 1], [gotica_scene, 1]]},
+		{"interval": 0.9, "pool": [[charger_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 1], [capitan_scene, 1]]},
+		{"interval": 0.9, "pool": [[minion_scene, 2], [charger_scene, 2], [bulletminion_scene, 1], [bigminion_scene, 1], [support_scene, 1], [gotica_scene, 1], [capitan_scene, 1]]},
 		{"interval": 0.8, "pool": [[minion_scene, 2], [charger_scene, 2], [bigminion_scene, 2], [bulletminion_scene, 2], [support_scene, 1]]},
 	]
 
@@ -729,7 +795,7 @@ func _hide_screens() -> void:
 func _on_start_pressed() -> void:
 	_hide_screens()
 	if debug_mode:
-		_set_info("DEV-ROOM:  M = wave · N = end · B = boss · 1-5 = enemies · O = shop · C = +100 · G = god")
+		_set_info("DEV-ROOM:  M=wave N=end B=boss · 1-5 dummies · 6-9 variants/miniboss · O=shop C=+100 G=god")
 	elif auto_start_waves:
 		_start_wave()   # Main: las oleadas empiezan automáticamente
 	else:

@@ -45,7 +45,13 @@ var passive: bool = false      # enemigo de prueba (DEV-ROOM): no ataca
 # Aura de daño del enemigo de Apoyo: bonificación temporal que se refresca
 # mientras el enemigo está dentro del radio y caduca al salir.
 var _buff_amount: int = 0
+var _buff_speed_mult: float = 1.0
 var _buff_timer: float = 0.0
+
+# Empuje externo (p. ej. el Cargador aparta a otros enemigos en su embestida).
+var _push_vel: Vector2 = Vector2.ZERO
+
+var _flash_tween: Tween = null
 
 const LETHAL_SPIN_SPEED := 18.0   # rad/s mientras gira hasta morir
 
@@ -53,9 +59,9 @@ func _ready() -> void:
 	add_to_group("enemy")
 	health = max_health
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
-	# Usar el SpriteFrames asignado en la escena; si no hay, construirlo desde
-	# las hojas exportadas (fallback).
-	if sprite.sprite_frames == null:
+	# Construir las animaciones desde la hoja de "correr" (los nuevos sprites solo
+	# tienen animación de correr). Si hay run_sheet, se reconstruye siempre.
+	if run_sheet != null or sprite.sprite_frames == null:
 		_build_frames()
 	sprite.play("idle")
 	player = _find_player()
@@ -65,11 +71,14 @@ func _find_player() -> Node2D:
 	return players[0] if players.size() > 0 else null
 
 func _build_frames() -> void:
-	"""Crea un SpriteFrames con las animaciones idle/run cortando las hojas."""
+	"""Crea un SpriteFrames con idle/run. Si no hay idle_sheet propio, idle usa la
+	misma hoja de correr (los sprites nuevos solo traen 'correr')."""
 	var frames := SpriteFrames.new()
 	if frames.has_animation("default"):
 		frames.remove_animation("default")
-	_add_animation(frames, "idle", idle_sheet, idle_frames)
+	var idle_src: Texture2D = idle_sheet if idle_sheet != null else run_sheet
+	var idle_n: int = idle_frames if idle_sheet != null else run_frames
+	_add_animation(frames, "idle", idle_src, idle_n)
 	_add_animation(frames, "run", run_sheet, run_frames)
 	sprite.sprite_frames = frames
 
@@ -85,6 +94,10 @@ func _add_animation(frames: SpriteFrames, anim_name: String, sheet: Texture2D, c
 		atlas.region = Rect2(i * frame_size, 0, frame_size, frame_size)
 		frames.add_frame(anim_name, atlas)
 
+func get_speed() -> float:
+	"""Velocidad efectiva (incluye buffs de velocidad del capitán/frenesí)."""
+	return move_speed * _buff_speed_mult
+
 # =============================================================================
 # CICLO PRINCIPAL
 # =============================================================================
@@ -92,11 +105,12 @@ func _physics_process(delta: float) -> void:
 	if _dead:
 		return
 
-	# Caducidad del aura de daño (si el Apoyo deja de refrescarla, desaparece).
+	# Caducidad de los buffs (si nadie los refresca, desaparecen).
 	if _buff_timer > 0.0:
 		_buff_timer -= delta
 		if _buff_timer <= 0.0:
 			_buff_amount = 0
+			_buff_speed_mult = 1.0
 			sprite.modulate = _base_modulate()
 
 	# Giro letal: el enemigo gira en el sitio hasta morir; no hace nada más.
@@ -111,6 +125,10 @@ func _physics_process(delta: float) -> void:
 		player = _find_player()
 
 	_update_ai(delta)
+	# Aplicar empuje externo (decae con el tiempo) sobre la velocidad calculada.
+	if _push_vel.length() > 1.0:
+		velocity += _push_vel
+		_push_vel = _push_vel.move_toward(Vector2.ZERO, 1600.0 * delta)
 	move_and_slide()
 	_update_animation()
 
@@ -125,7 +143,11 @@ func _update_ai(_delta: float) -> void:
 	if to_player.length() < stop_distance:
 		velocity = Vector2.ZERO
 	else:
-		velocity = to_player.normalized() * move_speed
+		velocity = to_player.normalized() * get_speed()
+
+func push(v: Vector2) -> void:
+	"""Empuje externo puntual (el Cargador aparta a otros enemigos)."""
+	_push_vel += v
 
 func make_passive() -> void:
 	"""Convierte al enemigo en maniquí de pruebas: no hace daño."""
@@ -188,27 +210,38 @@ func heal(amount: int) -> void:
 # =============================================================================
 # AURA DE DAÑO (la aplica el enemigo de Apoyo)
 # =============================================================================
-func apply_damage_buff(amount: int, duration: float) -> void:
-	"""Otorga +daño mientras esté en rango. El Apoyo la refresca cada frame; al
-	salir del radio deja de refrescarse y caduca (ver _physics_process)."""
+func apply_buff(dmg: int, speed_mult: float, duration: float) -> void:
+	"""Otorga +daño y/o +velocidad mientras se refresque. Al dejar de refrescarse
+	(salir del radio) caduca (ver _physics_process)."""
 	if _dead:
 		return
-	var was_active := _buff_amount > 0
-	_buff_amount = max(_buff_amount, amount)
+	var was_active := _buff_amount > 0 or _buff_speed_mult > 1.0
+	_buff_amount = max(_buff_amount, dmg)
+	_buff_speed_mult = max(_buff_speed_mult, speed_mult)
 	_buff_timer = max(_buff_timer, duration)
 	if not was_active:
 		sprite.modulate = _base_modulate()
 
+func apply_damage_buff(amount: int, duration: float) -> void:
+	# Compatibilidad: el Apoyo otorga solo +daño.
+	apply_buff(amount, 1.0, duration)
+
 func _base_modulate() -> Color:
-	# Tinte cálido mientras el enemigo está potenciado por el aura de daño.
-	return Color(1.0, 0.72, 0.55) if _buff_amount > 0 else Color.WHITE
+	# Tinte cálido mientras el enemigo está potenciado por un buff.
+	return Color(1.0, 0.72, 0.55) if (_buff_amount > 0 or _buff_speed_mult > 1.0) else Color.WHITE
 
 func _flash() -> void:
-	sprite.modulate = Color(1, 0.4, 0.4)
-	var timer := get_tree().create_timer(0.1)
-	timer.timeout.connect(func():
-		if is_instance_valid(self):
-			sprite.modulate = _base_modulate())
+	# Efecto general de impacto: oscurecer el sprite de forma intermitente.
+	if not is_instance_valid(sprite):
+		return
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	var dark := Color(0.4, 0.4, 0.45)
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(sprite, "modulate", dark, 0.05)
+	_flash_tween.tween_property(sprite, "modulate", _base_modulate(), 0.08)
+	_flash_tween.tween_property(sprite, "modulate", dark, 0.05)
+	_flash_tween.tween_property(sprite, "modulate", _base_modulate(), 0.08)
 
 func _die() -> void:
 	_dead = true

@@ -34,7 +34,7 @@ func _update_ai(delta: float) -> void:
 		ChargePhase.CHASE:
 			# Persecución normal
 			if to_player.length() > stop_distance:
-				velocity = to_player.normalized() * move_speed
+				velocity = to_player.normalized() * get_speed()
 			else:
 				velocity = Vector2.ZERO
 			_cooldown -= delta
@@ -58,7 +58,18 @@ func _update_ai(delta: float) -> void:
 		ChargePhase.CHARGE:
 			# Embestida recta a gran velocidad
 			velocity = _charge_dir * charge_speed
+			_shove_others()   # aparta a los enemigos que se cruzan
 			_phase_timer -= delta
 			if _phase_timer <= 0.0:
 				_phase = ChargePhase.CHASE
 				_cooldown = charge_interval
+
+func _shove_others() -> void:
+	"""Durante la embestida, empuja ligeramente a otros enemigos en su trayectoria."""
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if e == self or not is_instance_valid(e) or not e.has_method("push"):
+			continue
+		var off: Vector2 = e.global_position - global_position
+		if off.length() <= 70.0:
+			var dir := off.normalized() if off.length() > 0.0 else _charge_dir.rotated(PI / 2.0)
+			e.push(dir * 260.0)

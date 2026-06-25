@@ -25,6 +25,14 @@ func setup(new_target: Node2D, new_damage: int) -> void:
 		_dir = (target.global_position - global_position).normalized()
 	rotation = _dir.angle()
 
+func setup_straight(direction: Vector2, new_damage: int) -> void:
+	"""Proyectil en línea recta (NO teledirigido): usado por los patrones en
+	círculo/triángulo/X que NO siguen al jugador."""
+	target = null
+	damage = new_damage
+	_dir = direction.normalized() if direction.length() > 0.0 else Vector2.RIGHT
+	rotation = _dir.angle()
+
 func _physics_process(delta: float) -> void:
 	_life += delta
 	if _life >= lifetime:

@@ -1,29 +1,30 @@
-[gd_scene load_steps=5 format=3 uid="uid://csupportsc0001"]
+[gd_scene load_steps=6 format=3 uid="uid://cbigcapitanscn"]
 
-[ext_resource type="Script" uid="uid://bsupport00001" path="res://Scripts/support_minion.gd" id="1_su"]
+[ext_resource type="Script" uid="uid://bbigcapitan01" path="res://Scripts/bigminion_capitan.gd" id="1_cap"]
 [ext_resource type="PackedScene" uid="uid://ccoin00000001" path="res://Scenes/Coin.tscn" id="2_coin"]
-[ext_resource type="Texture2D" uid="uid://xk8mmh2hyj1t" path="res://Sprites_Minions/SupportMinion.png" id="3_run"]
+[ext_resource type="Texture2D" uid="uid://tbdqev5gk6ti" path="res://Sprites_Minions/Bigminion_var1.png" id="3_run"]
+[ext_resource type="PackedScene" uid="uid://cbigminion001" path="res://Scenes/BigMinion.tscn" id="4_big"]
 
 [sub_resource type="CircleShape2D" id="body_shape"]
-radius = 20.0
+radius = 33.0
 
 [sub_resource type="CircleShape2D" id="hit_shape"]
-radius = 36.0
+radius = 40.0
 
-[node name="SupportMinion" type="CharacterBody2D"]
+[node name="BigminionCapitan" type="CharacterBody2D"]
 collision_layer = 2
 collision_mask = 4
-script = ExtResource("1_su")
-max_health = 14
-contact_damage = 0
-move_speed = 268.0
-melee_enabled = false
+script = ExtResource("1_cap")
+max_health = 26
+contact_damage = 6
+move_speed = 250.0
 coin_scene = ExtResource("2_coin")
-coin_value = 3
+coin_value = 6
 run_sheet = ExtResource("3_run")
 run_frames = 6
 frame_size = 64
-sprite_scale = 1.1
+sprite_scale = 1.45
+bigminion_scene = ExtResource("4_big")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 texture_filter = 1

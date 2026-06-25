@@ -1,0 +1,65 @@
+[gd_scene load_steps=7 format=3 uid="uid://cminiboss0scn"]
+
+[ext_resource type="Script" uid="uid://bminiboss0001" path="res://Scripts/miniboss.gd" id="1_mb"]
+[ext_resource type="Texture2D" uid="uid://cngq5f7eppe70" path="res://Sprites_Minions/Bigminion_var2_capitan.png" id="2_run"]
+[ext_resource type="PackedScene" uid="uid://choming000001" path="res://Scenes/HomingBullet.tscn" id="3_proj"]
+[ext_resource type="PackedScene" uid="uid://cbigcapitanscn" path="res://Scenes/BigminionCapitan.tscn" id="4_cap"]
+[ext_resource type="PackedScene" uid="uid://cbmsadscn0001" path="res://Scenes/BulletMinionSad.tscn" id="5_sad"]
+[ext_resource type="PackedScene" uid="uid://ccoin00000001" path="res://Scenes/Coin.tscn" id="6_coin"]
+
+[sub_resource type="CircleShape2D" id="body_shape"]
+radius = 44.0
+
+[sub_resource type="CircleShape2D" id="hit_shape"]
+radius = 56.0
+
+[node name="Miniboss" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 4
+script = ExtResource("1_mb")
+bullet_scene = ExtResource("3_proj")
+capitan_scene = ExtResource("4_cap")
+sad_scene = ExtResource("5_sad")
+coin_scene = ExtResource("6_coin")
+run_sheet = ExtResource("2_run")
+run_frames = 6
+frame_size = 64
+sprite_scale = 1.9
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("body_shape")
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("hit_shape")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="BossName" type="Label" parent="UI"]
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -92.0
+offset_right = 300.0
+offset_bottom = -64.0
+horizontal_alignment = 1
+text = "GRAN CAPITÁN"
+
+[node name="BossBar" type="ProgressBar" parent="UI"]
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -60.0
+offset_right = 300.0
+offset_bottom = -36.0
+show_percentage = false
