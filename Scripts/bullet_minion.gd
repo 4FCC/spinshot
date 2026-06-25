@@ -48,6 +48,7 @@ func _update_ai(delta: float) -> void:
 		velocity = dir * get_speed()
 	else:
 		velocity = dir.rotated(PI / 2.0) * get_speed() * 0.5
+	velocity = _avoid_bounds(velocity)   # no quedarse pegado a las paredes
 
 	if passive:
 		return   # maniquí de pruebas: no dispara

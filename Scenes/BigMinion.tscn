@@ -23,6 +23,7 @@ run_sheet = ExtResource("3_run")
 run_frames = 6
 frame_size = 64
 sprite_scale = 1.35
+separation_radius = 58.0
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1875959485]
 texture_filter = 1
