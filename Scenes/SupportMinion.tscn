@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://csupportsc0001"]
+[gd_scene format=3 uid="uid://btqkpjl8wkrc7"]
 
 [ext_resource type="Script" uid="uid://bsupport00001" path="res://Scripts/support_minion.gd" id="1_su"]
 [ext_resource type="PackedScene" uid="uid://ccoin00000001" path="res://Scenes/Coin.tscn" id="2_coin"]
@@ -10,7 +10,7 @@ radius = 20.0
 [sub_resource type="CircleShape2D" id="hit_shape"]
 radius = 36.0
 
-[node name="SupportMinion" type="CharacterBody2D"]
+[node name="SupportMinion" type="CharacterBody2D" unique_id=1575931509]
 collision_layer = 2
 collision_mask = 4
 script = ExtResource("1_su")
@@ -21,18 +21,17 @@ melee_enabled = false
 coin_scene = ExtResource("2_coin")
 coin_value = 3
 run_sheet = ExtResource("3_run")
-run_frames = 6
 frame_size = 64
 sprite_scale = 1.1
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1235870839]
 texture_filter = 1
 
-[node name="Daño" type="CollisionShape2D" parent="."]
+[node name="Daño" type="CollisionShape2D" parent="." unique_id=1470478739]
 shape = SubResource("body_shape")
 
-[node name="Hitbox" type="Area2D" parent="."]
+[node name="Hitbox" type="Area2D" parent="." unique_id=471864049]
 collision_layer = 0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox" unique_id=1318519472]
 shape = SubResource("hit_shape")
