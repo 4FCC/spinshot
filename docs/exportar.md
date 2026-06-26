@@ -141,6 +141,33 @@ godot --headless --export-release "Windows Desktop" build/spinshot.exe
 
 ---
 
+## Solución de problemas
+
+### El `.exe` se cierra al arrancar / "page fault on read access to 0" (Wine o Windows)
+Casi siempre es el **renderizador/driver gráfico**, no el juego (corre bien en
+headless). El proyecto estaba en **Forward+** y forzaba el driver **D3D12** en
+Windows (`rendering_device/driver.windows="d3d12"`), que bajo **Wine** (vkd3d)
+suele provocar un *segfault* al iniciar, y en Windows real exige GPU/driver más
+nuevos.
+
+**Solución aplicada:** se cambió el renderizador a **Compatibility (OpenGL3)**
+(`renderer/rendering_method="gl_compatibility"`) y se quitó el driver D3D12. Es
+lo ideal para un juego 2D: mínimos requisitos y máxima compatibilidad (Wine, GPUs
+viejas, etc.). **Vuelve a exportar** tras este cambio.
+
+> Si por algún motivo quisieras volver a Forward+/Vulkan, hazlo solo si tus
+> testers tienen GPU/drivers recientes; para un beta amplio, Compatibility es más
+> seguro.
+
+### Otras comprobaciones
+- **Plantillas = versión del editor:** el editor y las Export Templates deben ser
+  la MISMA versión (la build reporta `v4.6.3.stable`; usa plantillas 4.6.3).
+- **Probar en Windows real:** Wine es buena referencia pero no idéntica; si algo
+  falla solo en Wine, prueba en una máquina Windows antes de descartar.
+- **Ejecutar desde terminal** para ver el log:
+  `wine build/spinshot.exe` (o `spinshot.console.exe` si activaste el wrapper de
+  consola en el preset).
+
 ## Resumen rápido
 
 | Objetivo | Qué hacer |
