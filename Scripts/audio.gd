@@ -22,7 +22,8 @@ const SFX := {
 	"denied": preload("res://sound effect/Efecto de sonido de interfazbloqueada/UIMisc_INTERFACE-Denied_HY_PC-001.wav"),
 	"reroll": preload("res://sound effect/Sonido de boton roll/ElevenLabs_Lanzar_dados_en_un_juego_de_mesa,_ambiente_inmersivo.mp3"),
 	# Jugador / disparos / ítems
-	"shoot": preload("res://sound effect/Disparo del jugador/mixkit-thin-icicles-spell-882.wav"),
+	# (El SFX de disparo se retiró por problemas con el archivo de origen; para
+	#  reactivarlo, añade aquí "shoot": preload("res://.../tu_disparo.wav").)
 	"hit": preload("res://sound effect/Sonido de golpe a enemigo/FGHTImpt_MELEE-Swish Hit_HY_PC-004.wav"),
 	"coin": preload("res://sound effect/Sonidos de monedas/DSGNTonl_USABLE-Coin Toss_HY_PC-006.wav"),
 	"dodge": preload("res://sound effect/Efecto de sonido de esquive/DSGNMisc_MELEE-Sword Reflect_HY_PC-001.wav"),

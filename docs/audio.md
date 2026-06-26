@@ -41,7 +41,6 @@ minijefe (verificado: al llegar a la ronda 10 suena `MusicBoss1` y se detiene
 | `buy` | Compra exitosa | `shop._on_buy` |
 | `denied` | Acción inválida (sin monedas, carta no disponible) | `shop._on_buy`, `_on_reroll` |
 | `reroll` | Botón ROLL | `shop._on_reroll` |
-| `shoot` | Disparo de SpinShot (ambos clics) | `billy._shoot_spin_bullet` |
 | `hit` | SpinShot golpea a un enemigo (incluye las de rebote) | `spin_bullet._on_body_entered` |
 | `coin` | Recoger moneda (pitch+debounce anti-saturación) | `coin.gd` |
 | `dodge` | Esquive manual y automático | `billy.start_dodge` |
@@ -74,6 +73,8 @@ que aplican mute/volumen al bus correspondiente y **persisten** en
 - Los SFX usan `AudioStreamPlayer` (no posicional): la cámara sigue al jugador,
   así que la acción ocurre centrada; evita el coste de espacialización 2D y de
   crear/destruir nodos.
-- Los `.wav` del pack venían en 24 bits/96 kHz (y el de disparo en
-  `WAVE_FORMAT_EXTENSIBLE`), que el importador de Godot rechaza; se
-  reconvirtieron a **PCM 16 bits** para que importen correctamente.
+- Los `.wav` del pack venían en 24 bits/96 kHz, que el importador de Godot
+  rechaza; se reconvirtieron a **PCM 16 bits** para que importen correctamente.
+- El SFX de **disparo** (`mixkit-thin-icicles-spell-882.wav`) se **retiró** del
+  repositorio por problemas con el archivo de origen. La llamada `Audio.play("shoot")`
+  queda inerte hasta que se añada un archivo nuevo y la clave `"shoot"` en `audio.gd`.
