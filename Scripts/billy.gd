@@ -73,9 +73,6 @@ var last_direction: Vector2 = Vector2.DOWN
 var is_invulnerable: bool = false
 var is_frozen: bool = false   # Congelado mientras la tienda está abierta
 
-# Empuje externo (fuego amigo del propio SpinShot). Se suma a la velocidad y decae.
-var _knockback: Vector2 = Vector2.ZERO
-const KNOCKBACK_FRICTION := 1500.0
 var _hurt_blink: Tween = null   # parpadeo de invulnerabilidad tras recibir daño
 
 # Dirección y giro acumulado del esquive (para la animación de girar)
@@ -310,15 +307,7 @@ func _read_movement_input(delta: float) -> void:
 		last_direction = input_direction.normalized()
 	else:
 		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
-	# Empuje de fuego amigo: se añade a la velocidad y se desvanece poco a poco.
-	if _knockback.length() > 1.0:
-		velocity += _knockback
-		_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_FRICTION * delta)
 	move_and_slide()
-
-func apply_knockback(v: Vector2) -> void:
-	"""Empuje externo puntual (lo usa la SpinShot del propio jugador al golpearlo)."""
-	_knockback += v
 
 # =============================================================================
 # ESTADO: ESQUIVE (GIRAR)
