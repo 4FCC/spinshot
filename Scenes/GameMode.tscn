@@ -19,7 +19,7 @@
 [ext_resource type="Texture2D" uid="uid://di51uec0hiwfq" path="res://Items assets/Item_split.png" id="17_i9"]
 [ext_resource type="Texture2D" uid="uid://dd7eqyyxn0ns1" path="res://Items assets/Item_lethal.png" id="18_i10"]
 [ext_resource type="Texture2D" uid="uid://xpw82nasck4g" path="res://Items assets/Item_autododge1.png" id="19_i11"]
-[ext_resource type="PackedScene" uid="uid://cbigcapitanscn" path="res://Scenes/BigminionCapitan.tscn" id="20_cap"]
+[ext_resource type="PackedScene" uid="uid://dsii8qvjn7wgn" path="res://Scenes/BigminionCapitan.tscn" id="20_cap"]
 [ext_resource type="PackedScene" uid="uid://cbmsadscn0001" path="res://Scenes/BulletMinionSad.tscn" id="21_sad"]
 [ext_resource type="PackedScene" uid="uid://cbmgoticascn1" path="res://Scenes/BulletMinionGotica.tscn" id="22_got"]
 [ext_resource type="PackedScene" uid="uid://cminiboss0scn" path="res://Scenes/Miniboss.tscn" id="23_mb"]
@@ -124,17 +124,17 @@ icon_viking_helmet = ExtResource("26_h3")
 icon_capitan_helmet = ExtResource("27_h4")
 icon_grancapitan_helmet = ExtResource("28_h5")
 
-[node name="MusicBase" type="AudioStreamPlayer" parent="."]
+[node name="MusicBase" type="AudioStreamPlayer" parent="." unique_id=986653699]
 stream = ExtResource("30_maksy")
 volume_db = -6.0
 bus = &"Music"
 
-[node name="MusicBoss1" type="AudioStreamPlayer" parent="."]
+[node name="MusicBoss1" type="AudioStreamPlayer" parent="." unique_id=1799159311]
 stream = ExtResource("31_oblix")
 volume_db = -6.0
 bus = &"Music"
 
-[node name="MusicBoss2" type="AudioStreamPlayer" parent="."]
+[node name="MusicBoss2" type="AudioStreamPlayer" parent="." unique_id=1403909651]
 stream = ExtResource("32_juni")
 volume_db = -6.0
 bus = &"Music"
