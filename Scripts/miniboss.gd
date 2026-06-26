@@ -277,8 +277,9 @@ func _drop_coins() -> void:
 	var host := _host()
 	for i in coins_dropped:
 		var c = coin_scene.instantiate()
-		host.add_child(c)
-		c.global_position = global_position + Vector2.RIGHT.rotated(randf() * TAU) * randf_range(30.0, 110.0)
+		# Diferir: la muerte puede originarse en un body_entered (flush de física).
+		c.position = global_position + Vector2.RIGHT.rotated(randf() * TAU) * randf_range(30.0, 110.0)
+		host.add_child.call_deferred(c)
 
 # --- Utilidades ---
 func _contact_check() -> void:

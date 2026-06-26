@@ -41,16 +41,26 @@ minijefe (verificado: al llegar a la ronda 10 suena `MusicBoss1` y se detiene
 | `buy` | Compra exitosa | `shop._on_buy` |
 | `denied` | Acción inválida (sin monedas, carta no disponible) | `shop._on_buy`, `_on_reroll` |
 | `reroll` | Botón ROLL | `shop._on_reroll` |
+| `shoot` | Disparo de SpinShot (ambos clics) | `billy._shoot_spin_bullet` |
 | `hit` | SpinShot golpea a un enemigo (incluye las de rebote) | `spin_bullet._on_body_entered` |
 | `coin` | Recoger moneda (pitch+debounce anti-saturación) | `coin.gd` |
 | `dodge` | Esquive manual y automático | `billy.start_dodge` |
 | `lethal` | Muerte instantánea del ítem letal | `spin_bullet._on_body_entered` |
-| `teleport_enemy` | Teletransporte de la gótica | `bullet_minion_gotica` |
-| `teleport_boss` | Teletransporte del jefe | `boss.gd` |
+| `teleport_enemy` | Teletransporte de la gótica · **espacial** | `bullet_minion_gotica` |
+| `teleport_boss` | Teletransporte del jefe · **espacial** | `boss.gd` |
 | `sad_eat` | El sad elimina una SpinShot | `bullet_minion_sad` |
-| `charge_push` | El Cargador embiste/empuja (1 por contacto) | `charger_minion` |
-| `support` | Habilidad del Apoyo | `support_minion` |
-| `buff` | Enemigo recibe buff del **Capitán** (1 por grupo, debounce) | `bigminion_capitan` |
+| `charge_push` | El Cargador embiste/empuja (1 por contacto) · **espacial** | `charger_minion` |
+| `support` | Habilidad del Apoyo · **espacial** (debounce 600 ms, −5 dB) | `support_minion` |
+| `buff` | Enemigo recibe buff del **Capitán** (1 por grupo) · **espacial** | `bigminion_capitan` |
+
+### Sonido espacial (enemigos/jefes)
+
+`Audio.play_at(key, world_pos, pitch_var, min_interval_ms, volume_db, max_distance)`
+usa un pool de `AudioStreamPlayer2D` (bus `SFX`). El volumen y el paneo dependen
+de la distancia de `world_pos` a la **cámara del jugador** (que actúa de oyente),
+con `max_distance` ≈ 1300 px. Los sonidos de enemigos (empuje, teletransporte,
+apoyo, buff) lo usan: los lejanos se oyen más bajos, evitando saturar. Los
+sonidos de UI, jugador y monedas siguen siendo no posicionales (`play`).
 
 > Anti-saturación destacada: **monedas** (pitch ±18% + debounce), **buff** del
 > capitán (debounce 700 ms → un solo sonido aunque se potencien 20 a la vez) y
@@ -74,7 +84,10 @@ que aplican mute/volumen al bus correspondiente y **persisten** en
   así que la acción ocurre centrada; evita el coste de espacialización 2D y de
   crear/destruir nodos.
 - Los `.wav` del pack venían en 24 bits/96 kHz, que el importador de Godot
-  rechaza; se reconvirtieron a **PCM 16 bits** para que importen correctamente.
-- El SFX de **disparo** (`mixkit-thin-icicles-spell-882.wav`) se **retiró** del
-  repositorio por problemas con el archivo de origen. La llamada `Audio.play("shoot")`
-  queda inerte hasta que se añada un archivo nuevo y la clave `"shoot"` en `audio.gd`.
+  rechaza; se reconvirtieron a **PCM 16 bits** para que importen correctamente
+  (incluido el nuevo SFX de disparo `DSGNTonl_SKILL IMPACT-Swoosh Grain…`).
+- **Spawns durante colisiones:** las monedas (al morir un enemigo) y las
+  SpinShots de rebote se instancian dentro de un `body_entered` (flush de
+  física). Añadir ahí un `Area2D` lanza "Can't change this state while flushing
+  queries", así que su `add_child` se hace con `call_deferred` (ver
+  `enemy._drop_coin`, `spin_bullet._spawn_bounce`, `boss`/`miniboss._drop_coins`).
