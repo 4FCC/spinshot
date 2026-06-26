@@ -70,7 +70,7 @@ anchors_preset = 0
 offset_left = 24.0
 offset_top = 24.0
 offset_right = 324.0
-offset_bottom = 140.0
+offset_bottom = 160.0
 
 [node name="HealthBar" type="TextureProgressBar" parent="HUD/Root" unique_id=1860341355]
 texture_filter = 1
@@ -116,13 +116,13 @@ texture_progress = SubResource("bar_blue")
 [node name="Coins" type="HBoxContainer" parent="HUD/Root" unique_id=1785184110]
 layout_mode = 0
 offset_top = 92.0
-offset_right = 200.0
-offset_bottom = 128.0
-theme_override_constants/separation = 8
+offset_right = 220.0
+offset_bottom = 150.0
+theme_override_constants/separation = 12
 
 [node name="CoinIcon" type="TextureRect" parent="HUD/Root/Coins" unique_id=1785184111]
 texture_filter = 1
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
 texture = ExtResource("5_coin")
 expand_mode = 1
