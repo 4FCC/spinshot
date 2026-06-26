@@ -57,13 +57,14 @@ func _apply_contrast() -> void:
 		clouds.modulate = Color(dim_clouds, dim_clouds, dim_clouds, 1.0)
 
 func _build_floor() -> void:
-	# Anillo de piedra alrededor del césped
-	for y in range(-stone_border, height + stone_border):
-		for x in range(-stone_border, width + stone_border):
-			if x >= 0 and x < width and y >= 0 and y < height:
-				ground.set_cell(Vector2i(x, y), SOURCE_ID, _tile_for(x, y))
-			else:
-				ground.set_cell(Vector2i(x, y), SOURCE_ID, TILE_STONE)
+	# Solo césped (sin anillo de piedra: quedaba feo en los bordes). Los muros de
+	# colisión los pone la escena (nodo Walls) y los límites de navegación de los
+	# enemigos son las constantes ARENA_MIN/MAX, así que esto no rompe nada.
+	# Si en el futuro se quisiera un borde, basta con poner stone_border > 0 y
+	# restaurar el anillo aquí.
+	for y in range(height):
+		for x in range(width):
+			ground.set_cell(Vector2i(x, y), SOURCE_ID, _tile_for(x, y))
 
 func _tile_for(x: int, y: int) -> Vector2i:
 	var left := x == 0

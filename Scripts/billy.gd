@@ -151,6 +151,9 @@ func _style_hud() -> void:
 	# Aquí solo damos color/legibilidad al texto que va encima.
 	UiTheme.apply_label(health_label)
 	UiTheme.apply_label(coins_label)
+	# Contador de monedas más grande y dorado para que se lea bien (antes era pequeño).
+	coins_label.add_theme_font_size_override("font_size", 30)
+	coins_label.add_theme_color_override("font_color", UiTheme.GOLD)
 
 func _update_coins_ui(total: int) -> void:
 	coins_label.text = str(total)
