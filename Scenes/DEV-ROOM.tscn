@@ -59,14 +59,5 @@ shape = SubResource("rs_wall_v")
 position = Vector2(960, 576)
 
 [node name="GameMode" parent="." unique_id=1319442466 instance=ExtResource("9_gm")]
-spawn_radius = null
-wave_duration = null
-total_waves = null
-spawn_warning_time = null
-large_group_chance = null
-small_group_min = null
-small_group_max = null
-large_group_min = null
-large_group_max = null
 debug_mode = true
 auto_start_waves = false
