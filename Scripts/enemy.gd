@@ -68,25 +68,10 @@ func _ready() -> void:
 	add_to_group("enemy")
 	health = max_health
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
-	_add_shadow()
 	if run_sheet != null or sprite.sprite_frames == null:
 		_build_frames()
 	sprite.play("idle")
 	player = _find_player()
-
-func _add_shadow() -> void:
-	var rx := frame_size * sprite_scale * 0.30
-	var ry := rx * 0.44
-	var pts := PackedVector2Array()
-	for i in 16:
-		var a := i * TAU / 16.0
-		pts.append(Vector2(cos(a) * rx, sin(a) * ry))
-	var shadow := Polygon2D.new()
-	shadow.polygon = pts
-	shadow.color = Color(0, 0, 0, 0.3)
-	shadow.position = Vector2(0, frame_size * sprite_scale * 0.47)
-	add_child(shadow)
-	move_child(shadow, 0)
 
 func _find_player() -> Node2D:
 	var players = get_tree().get_nodes_in_group("player")

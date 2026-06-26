@@ -56,6 +56,7 @@ const ES := {
 	"Credits": "Créditos",
 	"CREDITS": "CRÉDITOS",
 	"Exit": "Salida",
+	"Resume": "Reanudar",
 	"Back": "Volver",
 	# --- Nombres de jefes (etiquetas en escena) ---
 	"FINAL BOSS": "JEFE FINAL",

@@ -59,9 +59,6 @@ const ARENA_MAX := Vector2(1850, 1082)
 @export var anim_fps_run: float = 9.0
 @export var anim_fps_attack: float = 12.0
 @export var sprite_scale: float = 1.6
-@export var shadow_rx: float = 68.0
-@export var shadow_ry: float = 28.0
-@export var shadow_offset_y: float = 90.0
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var hitbox: Area2D = $Hitbox
@@ -85,7 +82,6 @@ func _ready() -> void:
 	health = max_health
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
 	_base_sprite_scale = sprite.scale
-	_add_shadow()
 	_build_frames()
 	sprite.play("idle")
 	player = _find_player()
@@ -93,18 +89,6 @@ func _ready() -> void:
 	bar.value = health
 	_decide_cd = decide_interval
 	state = S.FOLLOW
-
-func _add_shadow() -> void:
-	var pts := PackedVector2Array()
-	for i in 20:
-		var a := i * TAU / 20.0
-		pts.append(Vector2(cos(a) * shadow_rx, sin(a) * shadow_ry))
-	var shadow := Polygon2D.new()
-	shadow.polygon = pts
-	shadow.color = Color(0, 0, 0, 0.35)
-	shadow.position = Vector2(0, shadow_offset_y)
-	add_child(shadow)
-	move_child(shadow, 0)
 
 # =============================================================================
 # CICLO PRINCIPAL

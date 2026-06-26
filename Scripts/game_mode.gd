@@ -924,9 +924,16 @@ func _build_options() -> void:
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_options_panel.add_child(center)
 
+	# VBox para que el cuadro ESC y el nuevo botón Exit queden centrados y alineados.
+	var vb := VBoxContainer.new()
+	vb.alignment = BoxContainer.ALIGNMENT_CENTER
+	vb.add_theme_constant_override("separation", 14)
+	center.add_child(vb)
+
 	var panel := Control.new()
 	panel.custom_minimum_size = Vector2(400, 400)
-	center.add_child(panel)
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	vb.add_child(panel)
 
 	var esc_bg := TextureRect.new()
 	esc_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -948,7 +955,15 @@ func _build_options() -> void:
 	_make_esc_button(panel, Vector2(col_l, 202), Vector2(w, h), "Resolution", _on_opt_resolution)
 	_make_esc_button(panel, Vector2(col_r, 202), Vector2(w, h), "Sound", _on_opt_sound)
 	_make_esc_button(panel, Vector2(col_l, 256), Vector2(w, h), "Credits", _on_opt_credits)
-	_make_esc_button(panel, Vector2(col_r, 256), Vector2(w, h), "Exit", _on_opt_exit)
+	# El último hueco del sprite ahora es REANUDAR (cierra el menú y quita la pausa),
+	# no salir del juego, para que no se confunda con cerrar la app.
+	_make_esc_button(panel, Vector2(col_r, 256), Vector2(w, h), "Resume", _on_opt_resume)
+
+	# Botón EXIT real: sprite Rectangulo_UI_Para_texto, centrado y alineado con el
+	# cuadro ESC (gracias al VBox). Este SÍ cierra el juego.
+	var exit_btn := _make_rect_button("Exit", Vector2(220, 64), 22, _on_opt_exit)
+	exit_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	vb.add_child(exit_btn)
 
 	# El panel ESC se añade ANTES que las cajas para que estas (hijas de 'ui')
 	# se dibujen POR ENCIMA de él al abrirlas.
@@ -1326,6 +1341,10 @@ func _on_opt_language() -> void:
 
 func _on_opt_exit() -> void:
 	get_tree().quit()
+
+func _on_opt_resume() -> void:
+	# Cierra el menú de pausa y reanuda el juego (no cierra la aplicación).
+	_set_options(false)
 
 func _on_opt_placeholder(_name: String) -> void:
 	# Botón interactivo, pendiente de implementación futura.
