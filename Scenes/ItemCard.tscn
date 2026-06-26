@@ -35,10 +35,10 @@ stretch_mode = 5
 
 [node name="NameLabel" type="Label" parent="." unique_id=176413957]
 layout_mode = 0
-offset_left = 44.0
-offset_top = 192.0
-offset_right = 356.0
-offset_bottom = 222.0
+offset_left = 65.0
+offset_top = 209.0
+offset_right = 337.0
+offset_bottom = 239.0
 theme_override_colors/font_color = Color(0.98, 0.86, 0.55, 1)
 theme_override_font_sizes/font_size = 22
 horizontal_alignment = 1
@@ -48,33 +48,32 @@ clip_text = true
 
 [node name="DescLabel" type="Label" parent="." unique_id=734997012]
 layout_mode = 0
-offset_left = 40.0
-offset_top = 226.0
-offset_right = 360.0
-offset_bottom = 306.0
+offset_left = 74.0
+offset_top = 230.0
+offset_right = 324.0
+offset_bottom = 310.0
 theme_override_colors/font_color = Color(0.98, 0.94, 0.86, 1)
 theme_override_font_sizes/font_size = 15
 horizontal_alignment = 1
-vertical_alignment = 0
 autowrap_mode = 2
 clip_text = true
 
 [node name="CostLabel" type="Label" parent="." unique_id=112753551]
 layout_mode = 0
-offset_left = 138.0
-offset_top = 314.0
-offset_right = 198.0
-offset_bottom = 356.0
+offset_left = 141.0
+offset_top = 320.0
+offset_right = 201.0
+offset_bottom = 355.0
 theme_override_colors/font_color = Color(1, 0.95, 0.7, 1)
 theme_override_font_sizes/font_size = 24
 vertical_alignment = 1
 
 [node name="DmgLabel" type="Label" parent="." unique_id=1888547285]
 layout_mode = 0
-offset_left = 234.0
-offset_top = 318.0
-offset_right = 276.0
-offset_bottom = 352.0
+offset_left = 239.0
+offset_top = 320.0
+offset_right = 279.0
+offset_bottom = 354.0
 theme_override_colors/font_color = Color(1, 0.85, 0.8, 1)
 theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
@@ -82,10 +81,10 @@ vertical_alignment = 1
 
 [node name="LifeLabel" type="Label" parent="." unique_id=579464517]
 layout_mode = 0
-offset_left = 292.0
-offset_top = 318.0
-offset_right = 334.0
-offset_bottom = 352.0
+offset_left = 295.0
+offset_top = 320.0
+offset_right = 337.0
+offset_bottom = 354.0
 theme_override_colors/font_color = Color(1, 0.8, 0.85, 1)
 theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
