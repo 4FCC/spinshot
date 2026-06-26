@@ -12,6 +12,15 @@ extends Node2D
 @export var height: int = 18    # Alto del césped en tiles
 @export var stone_border: int = 2   # Grosor del anillo de piedra (en tiles)
 
+@export_group("Contraste del fondo")
+# Atenúan el suelo/fondo para que jugador, enemigos y UI resalten. Tunables.
+@export var ground_darken: float = 0.74         # 1 = sin cambio, <1 más oscuro
+@export var ground_desaturation: float = 0.40   # 0 = color original, 1 = gris
+@export var ground_tint: Color = Color(1, 1, 1) # tinte multiplicativo (leve)
+@export var dim_clouds: float = 0.7             # oscurecer las nubes/cielo (modulate)
+
+const GROUND_SHADER := preload("res://Shaders/ground_tint.gdshader")
+
 @onready var ground: TileMapLayer = $Ground
 
 const SOURCE_ID := 0
@@ -30,6 +39,22 @@ const TILE_STONE := Vector2i(6, 4)
 
 func _ready() -> void:
 	_build_floor()
+	_apply_contrast()
+
+func _apply_contrast() -> void:
+	# Aplica el shader de atenuación/desaturación al suelo (césped + piedra) por
+	# código, sin redibujar assets. Y oscurece un poco las nubes/cielo del borde.
+	var mat := ShaderMaterial.new()
+	mat.shader = GROUND_SHADER
+	mat.set_shader_parameter("darken", ground_darken)
+	mat.set_shader_parameter("desaturation", ground_desaturation)
+	mat.set_shader_parameter("tint", ground_tint)
+	ground.material = mat
+
+	var clouds := get_node_or_null("CloudBorder")
+	if clouds != null:
+		# Node2D (CanvasItem): el modulate se hereda a sus nubes y cielo.
+		clouds.modulate = Color(dim_clouds, dim_clouds, dim_clouds, 1.0)
 
 func _build_floor() -> void:
 	# Anillo de piedra alrededor del césped
