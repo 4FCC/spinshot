@@ -20,7 +20,7 @@ var coins: int = 0
 
 # Inflación de la tienda: cada compra encarece los precios de los FUTUROS ítems.
 # Se reinicia en cada partida (no es persistente).
-const INFLATION_FACTOR := 1.12   # +12% al precio base por cada compra
+const INFLATION_FACTOR := 1.08   # +8% al precio base por cada compra
 var price_scale: float = 1.0
 
 # Desbloqueos persistentes (id -> true). Se guardan en disco.
