@@ -8,7 +8,7 @@ extends Enemy
 
 @export_group("Carga")
 @export var charge_interval: float = 2.2   # Tiempo entre cargas
-@export var windup_time: float = 0.45      # Aviso antes de cargar (telegrafía)
+@export var windup_time: float = 0.85      # Aviso antes de cargar (telegrafía); más alto = más margen para reaccionar
 @export var charge_time: float = 0.45      # Duración de la carga
 @export var charge_speed: float = 820.0    # Velocidad durante la carga
 @export var charge_range: float = 600.0    # Distancia a la que decide cargar

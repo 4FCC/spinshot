@@ -1255,7 +1255,7 @@ func _on_opt_credits() -> void:
 func _credits_text() -> String:
 	# Texto bilingüe de créditos (nombres propios y títulos de assets sin traducir).
 	if I18n.current() == "es":
-		return "[center][b]Creadores[/b]\nSlimeForge y 4FCC[/center]\n\n" \
+		return "[center][b]Creadores[/b]\nSlimeForge y wym[/center]\n\n" \
 			+ "[b]Assets y Créditos[/b]\n\n" \
 			+ "[b]Arte y Gráficos[/b]\n" \
 			+ "- Mapa \"Tiny Swords\" por Pixel Frog\n" \
@@ -1270,9 +1270,11 @@ func _credits_text() -> String:
 			+ "- Sistema de Shop - Tutorial por 16BitDev\n" \
 			+ "- Máquina de Estados - Tutorial por Godot!\n\n" \
 			+ "[b]Música[/b]\n" \
-			+ "[Próximamente - Créditos de música en proceso]\n\n" \
+			+ "- Música de fondo y ambiente por Pixabay (https://pixabay.com/es/music/)\n" \
+			+ "- Khutulun (Fantasy & Battle) por Pixabay (https://pixabay.com/es/music/titulo-principal-khutulun-fantasy-amp-battle-background-music-115812/)\n" \
+			+ "- To The Death por Pixabay (https://pixabay.com/es/music/video-juegos-to-the-death-159171/)\n\n" \
 			+ "[b]Motor[/b]\nHecho con Godot Engine (godotengine.org)"
-	return "[center][b]Creators[/b]\nSlimeForge and 4FCC[/center]\n\n" \
+	return "[center][b]Creators[/b]\nSlimeForge and wym[/center]\n\n" \
 		+ "[b]Assets and Credits[/b]\n\n" \
 		+ "[b]Art and Graphics[/b]\n" \
 		+ "- Map \"Tiny Swords\" by Pixel Frog\n" \
@@ -1287,7 +1289,9 @@ func _credits_text() -> String:
 		+ "- Shop System - Tutorial by 16BitDev\n" \
 		+ "- State Machine - Tutorial by Godot!\n\n" \
 		+ "[b]Music[/b]\n" \
-		+ "[Coming soon - Music credits in progress]\n\n" \
+		+ "- Background and ambience music by Pixabay (https://pixabay.com/es/music/)\n" \
+		+ "- Khutulun (Fantasy & Battle) by Pixabay (https://pixabay.com/es/music/titulo-principal-khutulun-fantasy-amp-battle-background-music-115812/)\n" \
+		+ "- To The Death by Pixabay (https://pixabay.com/es/music/video-juegos-to-the-death-159171/)\n\n" \
 		+ "[b]Engine[/b]\nMade with Godot Engine (godotengine.org)"
 
 func _set_language(locale: String) -> void:

@@ -109,7 +109,7 @@ func _build_pool() -> void:
 			"desc": "+5 max health, +2 damage; -20 speed and longer dodge cooldown.", "life": 5, "dmg": 2,
 			"apply": func(p): p.add_soldier_helmet()},
 		{"id": "viking_helmet", "name": "Viking Helmet", "cost": 13, "max": 0, "icon": icon_viking_helmet,
-			"desc": "-3 health, +4 damage; +10% chance to knock back touching enemies (max 50%). Past the cap: +1 health, +3 damage.", "dmg": 4,
+			"desc": "-3 HP, +4 dmg. +10% knockback on touch (max 50%); after cap: +1 HP, +3 dmg.", "dmg": 4,
 			"apply": func(p): p.add_viking_helmet()},
 		{"id": "capitan_helmet", "name": "Captain Helmet", "cost": 22, "max": 1, "unlock": "capitan_helmet", "icon": icon_capitan_helmet,
 			"desc": "+10 max health, +5 damage; frenzy (speed + damage) when below 50% health.", "life": 10, "dmg": 5,

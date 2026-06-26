@@ -73,6 +73,11 @@ var last_direction: Vector2 = Vector2.DOWN
 var is_invulnerable: bool = false
 var is_frozen: bool = false   # Congelado mientras la tienda está abierta
 
+# Empuje externo (fuego amigo del propio SpinShot). Se suma a la velocidad y decae.
+var _knockback: Vector2 = Vector2.ZERO
+const KNOCKBACK_FRICTION := 1500.0
+var _hurt_blink: Tween = null   # parpadeo de invulnerabilidad tras recibir daño
+
 # Dirección y giro acumulado del esquive (para la animación de girar)
 var dodge_direction: Vector2 = Vector2.ZERO
 var dodge_elapsed: float = 0.0
@@ -305,7 +310,15 @@ func _read_movement_input(delta: float) -> void:
 		last_direction = input_direction.normalized()
 	else:
 		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
+	# Empuje de fuego amigo: se añade a la velocidad y se desvanece poco a poco.
+	if _knockback.length() > 1.0:
+		velocity += _knockback
+		_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_FRICTION * delta)
 	move_and_slide()
+
+func apply_knockback(v: Vector2) -> void:
+	"""Empuje externo puntual (lo usa la SpinShot del propio jugador al golpearlo)."""
+	_knockback += v
 
 # =============================================================================
 # ESTADO: ESQUIVE (GIRAR)
@@ -313,6 +326,7 @@ func _read_movement_input(delta: float) -> void:
 func start_dodge():
 	current_state = State.DODGE
 	dodge_elapsed = 0.0
+	_stop_hurt_blink()   # el esquive tiene su propia animación (giro)
 
 	# La dirección del esquive es la del input o, si está quieto, la última
 	dodge_direction = input_direction.normalized()
@@ -381,6 +395,23 @@ func take_damage(amount: int):
 
 	is_invulnerable = true
 	damage_timer.start()
+	_start_hurt_blink()   # parpadeo mientras dura la invulnerabilidad
+
+func _start_hurt_blink() -> void:
+	# Parpadeo rojo/transparente durante el periodo de invulnerabilidad, para
+	# avisar de que el jugador NO recibe daño en ese lapso.
+	if _hurt_blink != null and _hurt_blink.is_valid():
+		_hurt_blink.kill()
+	_hurt_blink = create_tween()
+	_hurt_blink.set_loops()
+	_hurt_blink.tween_property(sprite, "modulate", Color(1.0, 0.45, 0.45, 1.0), 0.11)
+	_hurt_blink.tween_property(sprite, "modulate", Color(1.0, 1.0, 1.0, 0.4), 0.11)
+
+func _stop_hurt_blink() -> void:
+	if _hurt_blink != null and _hurt_blink.is_valid():
+		_hurt_blink.kill()
+	_hurt_blink = null
+	sprite.modulate = Color.WHITE
 
 func _spawn_dust(dust_scale: float = 1.6) -> void:
 	var host := get_tree().current_scene
@@ -408,7 +439,7 @@ func _on_damage_timer_timeout():
 	if current_state == State.DODGE:
 		return
 	is_invulnerable = false
-	sprite.modulate = Color.WHITE
+	_stop_hurt_blink()
 	if current_state == State.TAKING_DAMAGE:
 		current_state = State.MOVE
 
@@ -418,6 +449,7 @@ func _on_damage_timer_timeout():
 func _die():
 	current_state = State.DEAD
 	velocity = Vector2.ZERO
+	_stop_hurt_blink()
 	sprite.modulate = Color(0.5, 0.5, 0.5)
 	sprite.rotation = 0.0
 	sprite.scale = _base_sprite_scale
