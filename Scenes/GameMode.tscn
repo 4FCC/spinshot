@@ -127,11 +127,14 @@ icon_grancapitan_helmet = ExtResource("28_h5")
 [node name="MusicBase" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("30_maksy")
 volume_db = -6.0
+bus = &"Music"
 
 [node name="MusicBoss1" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("31_oblix")
 volume_db = -6.0
+bus = &"Music"
 
 [node name="MusicBoss2" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("32_juni")
 volume_db = -6.0
+bus = &"Music"

@@ -251,6 +251,7 @@ func _on_buy(index: int) -> void:
 		return
 	var item = _current[index]
 	if item == null or not _is_available(item):
+		Audio.play("denied")   # carta no disponible
 		return
 	if Game.spend(int(item["cost"])):
 		if player != null and is_instance_valid(player):
@@ -260,13 +261,20 @@ func _on_buy(index: int) -> void:
 		# La carta comprada desaparece de la tienda; deja un hueco vacío.
 		# Para conseguir nuevas cartas hay que usar ROLL.
 		_current[index] = null
+		Audio.play("buy")      # compra exitosa
+	else:
+		Audio.play("denied")   # sin monedas suficientes
 	_refresh()
 
 func _on_reroll() -> void:
 	if Game.spend(reroll_cost):
+		Audio.play("reroll")
 		_roll()
+	else:
+		Audio.play("denied")   # sin monedas para tirar
 	_refresh()
 
 func _on_continue() -> void:
+	Audio.play("ui_click")
 	visible = false
 	continue_pressed.emit()

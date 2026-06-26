@@ -207,6 +207,7 @@ func _state_teleport(delta: float) -> void:
 			if player != null and is_instance_valid(player):
 				var off := Vector2.RIGHT.rotated(randf() * TAU) * teleport_distance
 				global_position = player.global_position + off
+			Audio.play("teleport_boss", 0.04, 60)
 			_acted = true
 			_t = 0.25
 	else:

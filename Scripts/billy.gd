@@ -319,6 +319,8 @@ func start_dodge():
 	velocity = dodge_direction * dodge_speed
 	is_invulnerable = true
 
+	Audio.play("dodge", 0.05)   # esquive manual y automático pasan por aquí
+
 	dodge_timer.start()
 	dodge_cooldown.start()
 	sprite.play("run")
@@ -433,6 +435,8 @@ func _shoot_spin_bullet(pattern: int = 0):
 	dirección del mouse. 'pattern' elige la trayectoria de giro (0/1)."""
 	if spin_bullet_scene == null or not shoot_cooldown.is_stopped():
 		return
+
+	Audio.play("shoot", 0.06)   # sin efecto por ahora (SFX de disparo retirado); se reactiva al añadir la clave "shoot" en Audio
 
 	var dir = get_global_mouse_position() - global_position
 	if dir.length() < 1.0:

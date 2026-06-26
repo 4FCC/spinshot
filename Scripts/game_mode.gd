@@ -85,6 +85,7 @@ var _options_open: bool = false
 var _controls_box: Control = null
 var _resolution_box: Control = null
 var _language_box: Control = null
+var _sound_box: Control = null
 
 # Estado del texto contextual (info_label), para re-traducir al cambiar idioma
 var _info_key: String = ""
@@ -698,6 +699,7 @@ func _make_rect_button(text: String, size: Vector2, font_size: int, cb: Callable
 		btn.add_theme_stylebox_override(s, StyleBoxEmpty.new())
 	btn.mouse_entered.connect(func(): holder.modulate = Color(1.12, 1.12, 1.12))
 	btn.mouse_exited.connect(func(): holder.modulate = Color.WHITE)
+	btn.pressed.connect(func(): Audio.play("ui_click"))   # clic genérico de UI
 	btn.pressed.connect(cb)
 	holder.add_child(btn)
 	return holder
@@ -926,13 +928,14 @@ func _build_options() -> void:
 	_make_esc_button(panel, Vector2(col_l, 148), Vector2(w, h), "Controls", _on_opt_controls)
 	_make_esc_button(panel, Vector2(col_r, 148), Vector2(w, h), "Language", _on_opt_language)
 	_make_esc_button(panel, Vector2(col_l, 202), Vector2(w, h), "Resolution", _on_opt_resolution)
-	_make_esc_button(panel, Vector2(col_r, 202), Vector2(w, h), "Sound", func(): _on_opt_placeholder("Sound"))
+	_make_esc_button(panel, Vector2(col_r, 202), Vector2(w, h), "Sound", _on_opt_sound)
 	_make_esc_button(panel, Vector2(col_l, 256), Vector2(w, h), "Credits", func(): _on_opt_placeholder("Credits"))
 	_make_esc_button(panel, Vector2(col_r, 256), Vector2(w, h), "Exit", _on_opt_exit)
 
 	_build_controls_box()
 	_build_resolution_box()
 	_build_language_box()
+	_build_sound_box()
 	ui.add_child(_options_panel)
 
 func _make_esc_button(parent: Control, pos: Vector2, size: Vector2, text: String, cb: Callable) -> void:
@@ -947,6 +950,7 @@ func _make_esc_button(parent: Control, pos: Vector2, size: Vector2, text: String
 	b.add_theme_font_size_override("font_size", 13)
 	b.add_theme_color_override("font_color", Color(0.22, 0.14, 0.07))
 	b.add_theme_color_override("font_hover_color", Color(0.05, 0.03, 0.02))
+	b.pressed.connect(func(): Audio.play("ui_click"))   # clic genérico de UI
 	b.pressed.connect(cb)
 	parent.add_child(b)
 
@@ -1091,6 +1095,52 @@ func _build_language_box() -> void:
 	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	vbox.add_child(back)
 
+func _build_sound_box() -> void:
+	var parts := _make_overlay_box("SOUND")
+	_sound_box = parts[0]
+	var vbox: VBoxContainer = parts[2]
+	vbox.add_theme_constant_override("separation", 10)
+
+	# Un canal de música y otro de efectos: silenciar (interruptor) + volumen.
+	_add_sound_channel(vbox, "Music", Audio.music_enabled, Audio.music_volume,
+		func(on): Audio.set_music_enabled(on),
+		func(v): Audio.set_music_volume(v))
+	_add_sound_channel(vbox, "Sound effects", Audio.sfx_enabled, Audio.sfx_volume,
+		func(on): Audio.set_sfx_enabled(on),
+		func(v): Audio.set_sfx_volume(v))
+
+	var back := _make_rect_button("Back", Vector2(196, 32), 14, func(): _sound_box.visible = false)
+	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	vbox.add_child(back)
+
+func _add_sound_channel(vbox: VBoxContainer, label_text: String, enabled: bool, volume: float, on_toggle: Callable, on_volume: Callable) -> void:
+	# Interruptor de encendido/silencio (CheckButton, se auto-traduce).
+	var check := CheckButton.new()
+	check.text = label_text
+	check.button_pressed = enabled
+	check.focus_mode = Control.FOCUS_NONE
+	check.add_theme_font_size_override("font_size", 14)
+	check.add_theme_color_override("font_color", Color(0.22, 0.13, 0.06))
+	check.add_theme_color_override("font_pressed_color", Color(0.22, 0.13, 0.06))
+	check.add_theme_color_override("font_hover_color", Color(0.05, 0.03, 0.02))
+	check.toggled.connect(func(p):
+		Audio.play("ui_click")
+		on_toggle.call(p))
+	vbox.add_child(check)
+
+	# Deslizador de volumen (0..1).
+	var slider := HSlider.new()
+	slider.min_value = 0.0
+	slider.max_value = 1.0
+	slider.step = 0.05
+	slider.value = volume
+	slider.custom_minimum_size = Vector2(196, 18)
+	slider.value_changed.connect(func(v): on_volume.call(v))
+	vbox.add_child(slider)
+
+func _on_opt_sound() -> void:
+	_sound_box.visible = true
+
 func _set_language(locale: String) -> void:
 	I18n.set_language(locale)
 	if _language_box != null:
@@ -1154,6 +1204,8 @@ func _set_options(open: bool) -> void:
 			_resolution_box.visible = false
 		if _language_box != null:
 			_language_box.visible = false
+		if _sound_box != null:
+			_sound_box.visible = false
 	_options_open = open
 	_options_panel.visible = open
 	_apply_overlay_state()

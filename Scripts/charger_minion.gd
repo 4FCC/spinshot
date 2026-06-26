@@ -68,6 +68,7 @@ func _update_ai(delta: float) -> void:
 
 func _shove_others() -> void:
 	"""Durante la embestida, empuja ligeramente a otros enemigos en su trayectoria."""
+	var pushed := false
 	for e in get_tree().get_nodes_in_group("enemy"):
 		if e == self or not is_instance_valid(e) or not e.has_method("push"):
 			continue
@@ -75,3 +76,7 @@ func _shove_others() -> void:
 		if off.length() <= 70.0:
 			var dir := off.normalized() if off.length() > 0.0 else _charge_dir.rotated(PI / 2.0)
 			e.push(dir * 260.0)
+			pushed = true
+	# Un solo golpe de empuje por contacto (debounce global anti-saturación).
+	if pushed:
+		Audio.play("charge_push", 0.08, 180)
