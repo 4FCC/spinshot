@@ -47,7 +47,6 @@ var _did_split: bool = false
 var _ignore_enemy: Node = null
 
 const EFFECT_SCENE := preload("res://Scenes/Effect.tscn")
-const FRIENDLY_KNOCKBACK := 360.0   # empuje al jugador por fuego amigo
 const BOUNCE_DAMAGE_FACTOR := 0.75  # las balas de rebote pegan un 25% menos
 
 
@@ -159,13 +158,7 @@ func _on_body_entered(body: Node2D) -> void:
 		# Gracia inicial solo para el jugador (la bala nace sobre él al disparar).
 		if not _can_damage:
 			return
-		# Fuego amigo: empuje al jugador en dirección OPUESTA al impacto + sonido de
-		# golpe (el mismo que los enemigos). El empuje se aplica antes del daño para
-		# que se note aunque el golpe lo mate.
-		var kb := (body.global_position - global_position)
-		kb = kb.normalized() if kb.length() > 0.0 else Vector2.DOWN
-		if body.has_method("apply_knockback"):
-			body.apply_knockback(kb * FRIENDLY_KNOCKBACK)
+		# Fuego amigo: solo sonido de golpe (el mismo que los enemigos) + daño.
 		Audio.play("hit", 0.1, 35)
 		body.take_damage(damage)
 		queue_free()
