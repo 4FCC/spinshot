@@ -40,7 +40,7 @@ minijefe (verificado: al llegar a la ronda 10 suena `MusicBoss1` y se detiene
 | `ui_click` | Clic en botones de UI | `game_mode` (`_make_rect_button`, `_make_esc_button`), `shop._on_continue` |
 | `buy` | Compra exitosa | `shop._on_buy` |
 | `denied` | Acción inválida (sin monedas, carta no disponible) | `shop._on_buy`, `_on_reroll` |
-| `reroll` | Botón ROLL | `shop._on_reroll` |
+| `reroll` | Botón ROLL (se reproduce en `pressed`; salta su lead-in con `START_OFFSET`) | `shop._on_reroll` |
 | `shoot` | Disparo de SpinShot (ambos clics) | `billy._shoot_spin_bullet` |
 | `hit` | SpinShot golpea a un enemigo (incluye las de rebote) | `spin_bullet._on_body_entered` |
 | `coin` | Recoger moneda (pitch+debounce anti-saturación) | `coin.gd` |
@@ -52,6 +52,17 @@ minijefe (verificado: al llegar a la ronda 10 suena `MusicBoss1` y se detiene
 | `charge_push` | El Cargador embiste/empuja (1 por contacto) · **espacial** | `charger_minion` |
 | `support` | Habilidad del Apoyo · **espacial** (debounce 600 ms, −5 dB) | `support_minion` |
 | `buff` | Enemigo recibe buff del **Capitán** (1 por grupo) · **espacial** | `bigminion_capitan` |
+
+### Ajustes de mezcla recientes
+
+- **Reroll inmediato:** el sonido se dispara en el evento `pressed`. Como el clip
+  de dados tiene un pequeño silencio inicial, `Audio.START_OFFSET["reroll"]`
+  (0.2 s) hace que `play()` empiece pasado ese lead-in. Si aún se nota tarde,
+  sube ese valor o recorta el inicio del `.mp3` (Audacity: seleccionar el
+  silencio inicial → Suprimir; o `ffmpeg -ss 0.2 -i in.mp3 out.mp3`).
+- **Teletransporte vs golpe:** el SFX de teletransporte (enemigo y jefe) se
+  reproduce con **+5 dB** (`volume_db`) para destacar sobre el golpe a enemigos,
+  que se dejó intacto.
 
 ### Sonido espacial (enemigos/jefes)
 

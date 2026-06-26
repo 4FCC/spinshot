@@ -20,6 +20,20 @@ El juego usa el sistema de traducción de Godot a través del autoload
   (ver `game_mode._on_language_changed`, `shop._refresh`). El HUD del jugador
   (`billy.gd`) usa `tr(...)` cada frame, así que se actualiza solo.
 
+> **Importante:** los textos estáticos solo se traducen si su `text` es la
+> **clave en inglés**. Si una etiqueta de escena tenía texto en español fijo
+> (p. ej. los nombres `FINAL BOSS`/`GRAND CAPTAIN` en `Boss.tscn`/`Miniboss.tscn`),
+> no se traduce: hay que poner la clave inglesa y registrar su traducción.
+
+### Menú de configuración y créditos
+
+Los botones de **Resolución, Idioma, Controles, Sonido y Créditos** están
+disponibles tanto en el **menú inicial** (start screen) como en el **menú ESC**;
+sus ventanas son hijas de `ui` para poder mostrarse sobre cualquier pantalla.
+La ventana de **Créditos** (`game_mode._build_credits_box`) usa un
+`RichTextLabel` bilingüe (`_credits_text()` devuelve ES o EN según `I18n.current()`
+y se refresca en `language_changed`).
+
 ### Cómo añadir una cadena nueva
 
 1. Escribe el texto **en inglés** en el código (en `text` o con `tr(...)`).

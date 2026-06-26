@@ -242,9 +242,11 @@ func _refresh() -> void:
 			# Hueco vacío: la carta se compró (se repone solo con ROLL).
 			_cards[i].visible = false
 			continue
-		var affordable: bool = Game.coins >= int(item["cost"]) and _is_available(item)
+		# Precio con inflación acumulada (sube con cada compra de la partida).
+		var cost := Game.scaled_cost(int(item["cost"]))
+		var affordable: bool = Game.coins >= cost and _is_available(item)
 		_cards[i].visible = true
-		_cards[i].setup(item, i, affordable)
+		_cards[i].setup(item, i, affordable, cost)
 
 func _on_buy(index: int) -> void:
 	if index >= _current.size():
@@ -253,7 +255,8 @@ func _on_buy(index: int) -> void:
 	if item == null or not _is_available(item):
 		Audio.play("denied")   # carta no disponible
 		return
-	if Game.spend(int(item["cost"])):
+	var cost := Game.scaled_cost(int(item["cost"]))
+	if Game.spend(cost):
 		if player != null and is_instance_valid(player):
 			item["apply"].call(player)
 			if player.has_method("register_item"):
@@ -261,7 +264,9 @@ func _on_buy(index: int) -> void:
 		# La carta comprada desaparece de la tienda; deja un hueco vacío.
 		# Para conseguir nuevas cartas hay que usar ROLL.
 		_current[index] = null
+		Game.register_purchase()   # inflación: encarece los futuros ítems
 		Audio.play("buy")      # compra exitosa
+		_refresh()             # actualiza los precios ya visibles con la nueva inflación
 	else:
 		Audio.play("denied")   # sin monedas suficientes
 	_refresh()

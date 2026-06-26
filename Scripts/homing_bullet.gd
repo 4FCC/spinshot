@@ -16,6 +16,7 @@ var _dir: Vector2 = Vector2.RIGHT
 var _life: float = 0.0
 
 func _ready() -> void:
+	add_to_group("enemy_projectile")   # para que el jefe pueda absorberlos al teletransportarse
 	body_entered.connect(_on_body_entered)
 
 func setup(new_target: Node2D, new_damage: int) -> void:

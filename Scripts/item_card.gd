@@ -28,11 +28,12 @@ func _ready() -> void:
 func _on_pressed() -> void:
 	buy_pressed.emit(index)
 
-func setup(item: Dictionary, idx: int, affordable: bool) -> void:
+func setup(item: Dictionary, idx: int, affordable: bool, display_cost: int = -1) -> void:
 	index = idx
 	name_label.text = String(item.get("name", ""))
 	desc_label.text = String(item.get("desc", ""))
-	cost_label.text = str(int(item.get("cost", 0)))
+	# display_cost incluye la inflación; si no se pasa, usa el coste base del ítem.
+	cost_label.text = str(display_cost if display_cost >= 0 else int(item.get("cost", 0)))
 	item_sprite.texture = item.get("icon", null)
 
 	var dmg := int(item.get("dmg", 0))

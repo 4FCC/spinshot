@@ -19,6 +19,10 @@ signal died
 
 enum S { FOLLOW, ATTACK, TELEPORT, SPAWN, RANGED, DEAD }
 
+# Límites del área jugable (mismos que enemy.gd) para acotar el teletransporte.
+const ARENA_MIN := Vector2(70, 70)
+const ARENA_MAX := Vector2(1850, 1082)
+
 @export_group("Estadísticas")
 @export var max_health: int = 90
 @export var move_speed: float = 300.0
@@ -29,11 +33,12 @@ enum S { FOLLOW, ATTACK, TELEPORT, SPAWN, RANGED, DEAD }
 @export var attack_range: float = 170.0
 @export var slam_damage: int = 10
 @export var slam_radius: float = 150.0
-@export var decide_interval: float = 2.0
+@export var decide_interval: float = 1.3   # más bajo = ataca con más frecuencia
 @export var teleport_distance: float = 220.0
-@export var spawn_count: int = 3
+@export var spawn_count: int = 6           # invocación masiva
 @export var ranged_count: int = 14
 @export var bullet_damage: int = 3
+@export var absorb_cap: int = 48           # máx. de proyectiles que devuelve tras absorber
 
 @export_group("Recompensa")
 @export var coin_scene: PackedScene
@@ -42,6 +47,9 @@ enum S { FOLLOW, ATTACK, TELEPORT, SPAWN, RANGED, DEAD }
 @export_group("Invocaciones / Proyectiles")
 @export var minion_scene: PackedScene
 @export var bullet_scene: PackedScene
+@export var summon_scenes: Array[PackedScene] = []   # tipos variados que puede invocar
+@export var support_scene: PackedScene               # fase crítica: curan al jefe
+@export var critical_support_count: int = 2
 
 @export_group("Visual")
 @export var frames_idle: Array[Texture2D] = []
@@ -68,6 +76,8 @@ var _decide_cd: float = 0.0
 var _contact_cd: float = 0.0
 var _idle_time: float = 0.0
 var _base_sprite_scale: Vector2 = Vector2.ONE
+var _absorbed: int = 0                 # proyectiles absorbidos en el teletransporte
+var _crit_supports_summoned: bool = false   # supports curanderos de la fase crítica
 
 func _ready() -> void:
 	add_to_group("enemy")
@@ -123,6 +133,15 @@ func _physics_process(delta: float) -> void:
 	_update_facing()
 	_contact_check()
 	_animate_alive(delta)
+	_check_critical()
+
+func _check_critical() -> void:
+	# Fase crítica (<25% vida): invoca SupportMinion que CURAN al jefe (una vez).
+	if _crit_supports_summoned or support_scene == null:
+		return
+	if float(health) / float(max_health) < 0.25:
+		_crit_supports_summoned = true
+		_summon_crit_supports()
 
 func _phase() -> int:
 	var f := float(health) / float(max_health)
@@ -157,12 +176,15 @@ func _state_follow(delta: float) -> void:
 func _choose_special() -> void:
 	var options := ["teleport"]
 	var phase := _phase()
-	if phase >= 1 and minion_scene != null:
+	if phase >= 1 and (not summon_scenes.is_empty() or minion_scene != null):
 		options.append("spawn")
-	if phase >= 2 and bullet_scene != null:
+	if bullet_scene != null:
+		# Voleas más frecuentes desde el principio (ataques de proyectil seguidos).
+		options.append("ranged")
 		options.append("ranged")
 		options.append("teleport")
 	if phase >= 3:
+		options.append("ranged")
 		options.append("ranged")
 	match options[randi() % options.size()]:
 		"spawn":
@@ -201,24 +223,54 @@ func _state_teleport(delta: float) -> void:
 	velocity = Vector2.ZERO
 	_t -= delta
 	if not _acted:
-		# Desvanecer
+		# Al desvanecerse, ABSORBE todos los proyectiles activos (del jugador y de
+		# los enemigos). Los devolverá en una volea masiva al reaparecer.
 		sprite.modulate.a = clampf(_t / 0.3, 0.0, 1.0)
 		if _t <= 0.0:
+			_absorbed += _absorb_projectiles()
+			# Reaparece a 'teleport_distance' del jugador, SIEMPRE dentro del mapa.
 			if player != null and is_instance_valid(player):
 				var off := Vector2.RIGHT.rotated(randf() * TAU) * teleport_distance
-				global_position = player.global_position + off
-			Audio.play_at("teleport_boss", global_position, 0.04, 60)
+				global_position = _clamp_to_arena(player.global_position + off)
+			Audio.play_at("teleport_boss", global_position, 0.04, 60, 5.0)   # +5 dB: destaca sobre el golpe
 			_acted = true
 			_t = 0.25
 	else:
 		sprite.modulate.a = clampf(1.0 - _t / 0.25, 0.0, 1.0)
 		if _t <= 0.0:
 			sprite.modulate = Color.WHITE
-			# Tras reaparecer, suele golpear o lanzar volea
-			if _phase() >= 2 and randf() < 0.5:
+			# Al reaparecer: si absorbió proyectiles, los devuelve TODOS de golpe.
+			if _absorbed > 0:
+				_unleash_absorbed()
+				_enter(S.FOLLOW)
+			elif _phase() >= 2 and randf() < 0.5:
 				_enter(S.RANGED)
 			else:
 				_enter(S.ATTACK)
+
+func _clamp_to_arena(p: Vector2) -> Vector2:
+	return Vector2(clampf(p.x, ARENA_MIN.x, ARENA_MAX.x), clampf(p.y, ARENA_MIN.y, ARENA_MAX.y))
+
+func _absorb_projectiles() -> int:
+	"""Elimina todos los proyectiles activos (jugador + enemigos) y devuelve cuántos."""
+	var n := 0
+	for grp in ["spin_bullet", "enemy_projectile"]:
+		for b in get_tree().get_nodes_in_group(grp):
+			if is_instance_valid(b):
+				b.queue_free()
+				n += 1
+	return n
+
+func _unleash_absorbed() -> void:
+	"""Devuelve en abanico/anillo todos los proyectiles absorbidos (con tope)."""
+	var total: int = mini(_absorbed, absorb_cap)
+	_absorbed = 0
+	if total <= 0:
+		return
+	Audio.play_at("teleport_boss", global_position, 0.03, 0, 4.0)
+	# Dos anillos desfasados para una "tormenta" densa.
+	_fire_ring(int(ceil(total / 2.0)))
+	_fire_ring(total / 2, deg_to_rad(180.0 / maxf(1.0, total / 2.0)))
 
 func _state_spawn(delta: float) -> void:
 	velocity = Vector2.ZERO
@@ -235,18 +287,44 @@ func _state_spawn(delta: float) -> void:
 			_enter(S.FOLLOW)
 
 func _spawn_minions() -> void:
-	if minion_scene == null:
+	# Invocación MASIVA y VARIADA: elige al azar entre 'summon_scenes' (si están
+	# asignadas) o cae al minion básico.
+	var pool: Array = []
+	for s in summon_scenes:
+		if s != null:
+			pool.append(s)
+	if pool.is_empty() and minion_scene != null:
+		pool.append(minion_scene)
+	if pool.is_empty():
 		return
-	var host := get_tree().current_scene
-	if host == null:
-		host = get_parent()
+	var host := _host()
 	for i in spawn_count:
-		var pos: Vector2 = global_position + Vector2.RIGHT.rotated(randf() * TAU) * 80.0
-		# Indicador rojo antes de instanciar a los minions invocados.
+		var scene: PackedScene = pool[randi() % pool.size()]
+		var pos: Vector2 = _clamp_to_arena(global_position + Vector2.RIGHT.rotated(randf() * TAU) * randf_range(70.0, 150.0))
+		# Indicador rojo antes de instanciar a los invocados.
 		Game.telegraph_spawn(host, pos, Game.INDICATOR_ENEMY, 1.9, 0.6, func():
-			var m = minion_scene.instantiate()
+			var m = scene.instantiate()
 			host.add_child(m)
 			m.global_position = pos)
+
+func _summon_crit_supports() -> void:
+	"""Fase crítica: invoca SupportMinion que CURAN al jefe mientras vivan."""
+	if support_scene == null:
+		return
+	var host := _host()
+	for i in critical_support_count:
+		var pos: Vector2 = _clamp_to_arena(global_position + Vector2.RIGHT.rotated(TAU * i / critical_support_count) * 130.0)
+		Game.telegraph_spawn(host, pos, Game.INDICATOR_ENEMY, 1.9, 0.7, func():
+			if not is_instance_valid(self):
+				return
+			var s = support_scene.instantiate()
+			s.heal_target = self   # modo "curar al jefe" (ver support_minion.gd)
+			host.add_child(s)
+			s.global_position = pos)
+
+func _host() -> Node:
+	var h := get_tree().current_scene
+	return h if h != null else get_parent()
 
 func _state_ranged(delta: float) -> void:
 	velocity = Vector2.ZERO
@@ -350,6 +428,13 @@ func take_damage(amount: int) -> void:
 	_hit_flash()
 	if health <= 0:
 		_die()
+
+func heal(amount: int) -> void:
+	"""Curación recibida (la usan los SupportMinion de la fase crítica)."""
+	if state == S.DEAD:
+		return
+	health = mini(max_health, health + amount)
+	bar.value = health
 
 func _hit_flash() -> void:
 	# Solo si no está en medio de un telegrafiado coloreado

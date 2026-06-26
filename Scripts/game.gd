@@ -18,6 +18,11 @@ const INDICATOR_ALLY := Color(0.3, 0.55, 1.0, 0.95)
 
 var coins: int = 0
 
+# Inflación de la tienda: cada compra encarece los precios de los FUTUROS ítems.
+# Se reinicia en cada partida (no es persistente).
+const INFLATION_FACTOR := 1.12   # +12% al precio base por cada compra
+var price_scale: float = 1.0
+
 # Desbloqueos persistentes (id -> true). Se guardan en disco.
 var unlocks: Dictionary = {}
 
@@ -39,9 +44,21 @@ func spend(amount: int) -> bool:
 	return false
 
 func reset() -> void:
-	# Reinicia SOLO el estado de partida (las monedas). Los desbloqueos persisten.
+	# Reinicia SOLO el estado de partida (monedas e inflación). Los desbloqueos persisten.
 	coins = 0
+	price_scale = 1.0
 	coins_changed.emit(coins)
+
+# =============================================================================
+# INFLACIÓN DE LA TIENDA
+# =============================================================================
+func scaled_cost(base_cost: int) -> int:
+	"""Precio actual de un ítem dado su coste base, según la inflación acumulada."""
+	return int(ceil(base_cost * price_scale))
+
+func register_purchase() -> void:
+	"""Cada compra encarece los precios de los futuros ítems de la tienda."""
+	price_scale *= INFLATION_FACTOR
 
 # =============================================================================
 # DESBLOQUEOS PERSISTENTES

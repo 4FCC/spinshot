@@ -52,7 +52,7 @@ func _update_ai(delta: float) -> void:
 func _teleport_and_attack() -> void:
 	# Humo en el punto de partida (cubre el cuerpo del enemigo).
 	_spawn_smoke(global_position)
-	Audio.play_at("teleport_enemy", global_position, 0.05, 80)
+	Audio.play_at("teleport_enemy", global_position, 0.05, 80, 5.0)   # +5 dB: destaca sobre el golpe
 
 	# Reaparecer a distancia segura del jugador, en un punto dentro del mapa.
 	var ang := randf() * TAU

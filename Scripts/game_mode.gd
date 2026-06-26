@@ -86,6 +86,8 @@ var _controls_box: Control = null
 var _resolution_box: Control = null
 var _language_box: Control = null
 var _sound_box: Control = null
+var _credits_box: Control = null
+var _credits_label: RichTextLabel = null
 
 # Estado del texto contextual (info_label), para re-traducir al cambiar idioma
 var _info_key: String = ""
@@ -725,6 +727,22 @@ func _build_start_screen() -> Control:
 	play.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	vbox.add_child(play)
 
+	# Configuración accesible ANTES de empezar la partida (mismas ventanas que ESC).
+	var cfg := HBoxContainer.new()
+	cfg.alignment = BoxContainer.ALIGNMENT_CENTER
+	cfg.add_theme_constant_override("separation", 10)
+	vbox.add_child(cfg)
+	var opts := [
+		["Resolution", _on_opt_resolution],
+		["Language", _on_opt_language],
+		["Controls", _on_opt_controls],
+		["Sound", _on_opt_sound],
+		["Credits", _on_opt_credits],
+	]
+	for o in opts:
+		var b := _make_rect_button(o[0], Vector2(150, 48), 15, o[1])
+		cfg.add_child(b)
+
 	screen.visible = false
 	ui.add_child(screen)
 	return screen
@@ -929,14 +947,17 @@ func _build_options() -> void:
 	_make_esc_button(panel, Vector2(col_r, 148), Vector2(w, h), "Language", _on_opt_language)
 	_make_esc_button(panel, Vector2(col_l, 202), Vector2(w, h), "Resolution", _on_opt_resolution)
 	_make_esc_button(panel, Vector2(col_r, 202), Vector2(w, h), "Sound", _on_opt_sound)
-	_make_esc_button(panel, Vector2(col_l, 256), Vector2(w, h), "Credits", func(): _on_opt_placeholder("Credits"))
+	_make_esc_button(panel, Vector2(col_l, 256), Vector2(w, h), "Credits", _on_opt_credits)
 	_make_esc_button(panel, Vector2(col_r, 256), Vector2(w, h), "Exit", _on_opt_exit)
 
+	# El panel ESC se añade ANTES que las cajas para que estas (hijas de 'ui')
+	# se dibujen POR ENCIMA de él al abrirlas.
+	ui.add_child(_options_panel)
 	_build_controls_box()
 	_build_resolution_box()
 	_build_language_box()
 	_build_sound_box()
-	ui.add_child(_options_panel)
+	_build_credits_box()
 
 func _make_esc_button(parent: Control, pos: Vector2, size: Vector2, text: String, cb: Callable) -> void:
 	var b := Button.new()
@@ -958,7 +979,8 @@ func _build_controls_box() -> void:
 	_controls_box = Control.new()
 	_controls_box.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_controls_box.visible = false
-	_options_panel.add_child(_controls_box)
+	# Bajo 'ui' (no bajo el panel ESC) para poder abrirlo también desde el menú inicial.
+	ui.add_child(_controls_box)
 
 	var dim := ColorRect.new()
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1014,7 +1036,8 @@ func _make_overlay_box(title_text: String) -> Array:
 	var overlay := Control.new()
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	overlay.visible = false
-	_options_panel.add_child(overlay)
+	# Bajo 'ui' para poder mostrarlo tanto desde el menú ESC como desde el inicio.
+	ui.add_child(overlay)
 
 	var dim := ColorRect.new()
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1141,6 +1164,108 @@ func _add_sound_channel(vbox: VBoxContainer, label_text: String, enabled: bool, 
 func _on_opt_sound() -> void:
 	_sound_box.visible = true
 
+# =============================================================================
+# CRÉDITOS (ventana emergente con sprite de UI)
+# =============================================================================
+func _build_credits_box() -> void:
+	var overlay := Control.new()
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.visible = false
+	ui.add_child(overlay)
+	_credits_box = overlay
+
+	var dim := ColorRect.new()
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.color = Color(0, 0, 0, 0.6)
+	overlay.add_child(dim)
+
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+
+	var box := Control.new()
+	box.custom_minimum_size = Vector2(470, 540)
+	center.add_child(box)
+
+	var bg := TextureRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.texture = UI_STAT_TEX
+	bg.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(bg)
+
+	var title := Label.new()
+	title.position = Vector2(135, 46)
+	title.size = Vector2(200, 44)
+	title.text = "CREDITS"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 20)
+	title.add_theme_color_override("font_color", Color(0.22, 0.13, 0.06))
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(title)
+
+	_credits_label = RichTextLabel.new()
+	_credits_label.bbcode_enabled = true
+	_credits_label.scroll_active = true
+	_credits_label.fit_content = false
+	_credits_label.position = Vector2(64, 104)
+	_credits_label.size = Vector2(342, 360)
+	_credits_label.add_theme_color_override("default_color", Color(0.22, 0.14, 0.07))
+	_credits_label.add_theme_font_size_override("normal_font_size", 13)
+	_credits_label.add_theme_font_size_override("bold_font_size", 15)
+	_credits_label.text = _credits_text()
+	box.add_child(_credits_label)
+
+	var back := _make_rect_button("Back", Vector2(190, 52), 15, func(): _credits_box.visible = false)
+	back.position = Vector2(140, 472)
+	box.add_child(back)
+
+func _on_opt_credits() -> void:
+	if _credits_label != null:
+		_credits_label.text = _credits_text()   # respeta el idioma actual
+	_credits_box.visible = true
+
+func _credits_text() -> String:
+	# Texto bilingüe de créditos (nombres propios y títulos de assets sin traducir).
+	if I18n.current() == "es":
+		return "[center][b]Creadores[/b]\nSlimeForge y 4FCC[/center]\n\n" \
+			+ "[b]Assets y Créditos[/b]\n\n" \
+			+ "[b]Arte y Gráficos[/b]\n" \
+			+ "- Mapa \"Tiny Swords\" por Pixel Frog\n" \
+			+ "- UI: Basic Pixel Health Bar and Scroll Bar por bdragon1727\n" \
+			+ "- 500 Pixel Bullet 24x24 por bdragon1727\n" \
+			+ "- 750 Effect and FX Pixel All por bdragon1727\n\n" \
+			+ "[b]Efectos de Sonido[/b]\n" \
+			+ "- Pixel Combat por Helton Yan\n" \
+			+ "- Efectos de cartas por Beto Bezerra\n\n" \
+			+ "[b]Código y Tutoriales[/b]\n" \
+			+ "- Sistema de Boss - Tutorial por 16BitDev\n" \
+			+ "- Sistema de Shop - Tutorial por 16BitDev\n" \
+			+ "- Máquina de Estados - Tutorial por Godot!\n\n" \
+			+ "[b]Música[/b]\n" \
+			+ "[Próximamente - Créditos de música en proceso]\n\n" \
+			+ "[b]Motor[/b]\nHecho con Godot Engine (godotengine.org)"
+	return "[center][b]Creators[/b]\nSlimeForge and 4FCC[/center]\n\n" \
+		+ "[b]Assets and Credits[/b]\n\n" \
+		+ "[b]Art and Graphics[/b]\n" \
+		+ "- Map \"Tiny Swords\" by Pixel Frog\n" \
+		+ "- UI: Basic Pixel Health Bar and Scroll Bar by bdragon1727\n" \
+		+ "- 500 Pixel Bullet 24x24 by bdragon1727\n" \
+		+ "- 750 Effect and FX Pixel All by bdragon1727\n\n" \
+		+ "[b]Sound Effects[/b]\n" \
+		+ "- Pixel Combat by Helton Yan\n" \
+		+ "- Card effects by Beto Bezerra\n\n" \
+		+ "[b]Code and Tutorials[/b]\n" \
+		+ "- Boss System - Tutorial by 16BitDev\n" \
+		+ "- Shop System - Tutorial by 16BitDev\n" \
+		+ "- State Machine - Tutorial by Godot!\n\n" \
+		+ "[b]Music[/b]\n" \
+		+ "[Coming soon - Music credits in progress]\n\n" \
+		+ "[b]Engine[/b]\nMade with Godot Engine (godotengine.org)"
+
 func _set_language(locale: String) -> void:
 	I18n.set_language(locale)
 	if _language_box != null:
@@ -1206,6 +1331,8 @@ func _set_options(open: bool) -> void:
 			_language_box.visible = false
 		if _sound_box != null:
 			_sound_box.visible = false
+		if _credits_box != null:
+			_credits_box.visible = false
 	_options_open = open
 	_options_panel.visible = open
 	_apply_overlay_state()
@@ -1335,6 +1462,8 @@ func _on_language_changed(_locale: String) -> void:
 	_refresh_info()
 	if _inventory_open:
 		_refresh_inventory()
+	if _credits_label != null:
+		_credits_label.text = _credits_text()   # créditos en el nuevo idioma
 
 # =============================================================================
 # MÚSICA

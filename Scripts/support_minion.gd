@@ -12,11 +12,15 @@ extends Enemy
 @export var heal_radius: float = 240.0
 @export var preferred_distance: float = 360.0  # Distancia mínima al jugador
 @export var damage_buff: int = 1               # +daño que otorga a aliados en rango
+@export var boss_heal_amount: int = 3          # cura por tick cuando sigue a un jefe
 
 const EFFECT_SCENE := preload("res://Scenes/Effect.tscn")
 
 var _heal_timer: float = 0.0
 var _pink_tween: Tween = null
+# Si se asigna (lo hace el jefe en su fase crítica), este Apoyo CURA a ese
+# objetivo (el jefe) en vez de potenciar/curar al resto de enemigos.
+var heal_target: Node = null
 
 func _ready() -> void:
 	super._ready()
@@ -24,6 +28,12 @@ func _ready() -> void:
 	_heal_timer = heal_interval
 
 func _update_ai(delta: float) -> void:
+	# Modo "curar al jefe" (fase crítica del Boss): sigue al jefe y le cura la
+	# barra de vida; no potencia ni cura a otros enemigos.
+	if heal_target != null:
+		_heal_boss_mode(delta)
+		return
+
 	# El Apoyo ya NO depende del jugador: busca el GRUPO de enemigos (grande o
 	# pequeño) y se queda dentro de él para curar/potenciar. Navega evitando los
 	# bordes para no quedarse pegado a las paredes.
@@ -50,6 +60,30 @@ func _update_ai(delta: float) -> void:
 	if _heal_timer <= 0.0:
 		_heal_timer = heal_interval
 		_heal_allies()
+
+func _heal_boss_mode(delta: float) -> void:
+	# Sigue al jefe y se queda cerca; si el jefe muere, este Apoyo desaparece.
+	if not is_instance_valid(heal_target):
+		queue_free()
+		return
+	var to: Vector2 = heal_target.global_position - global_position
+	if to.length() > heal_radius * 0.5:
+		velocity = _avoid_bounds(to.normalized() * get_speed())
+	else:
+		velocity = _avoid_bounds(velocity.move_toward(Vector2.ZERO, get_speed()))
+	_heal_timer -= delta
+	if _heal_timer <= 0.0:
+		_heal_timer = heal_interval
+		_heal_boss()
+
+func _heal_boss() -> void:
+	if not is_instance_valid(heal_target) or not heal_target.has_method("heal"):
+		return
+	heal_target.heal(boss_heal_amount)   # cura LENTA de la barra del jefe
+	_spawn_hearts(heal_target)
+	_spawn_hearts(self)
+	_pink_flash()
+	Audio.play_at("support", global_position, 0.06, 600, -5.0)
 
 const _NO_CLUSTER := Vector2(INF, INF)
 
