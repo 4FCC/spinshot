@@ -122,15 +122,15 @@ const ES := {
 	"Per level, 25% chance to dodge when hit. Max 3.": "25% por nivel de esquivar al recibir daño. Máx 3.",
 	# --- Cascos ---
 	"Minion Helmet": "Casco de minion",
-	"-1 max health, +2 damage; longer dodge and shorter dodge cooldown.": "-1 vida máx., +2 daño; esquive más largo y menor enfriamiento de esquive.",
+	"-1 max health, +1 damage; longer dodge and shorter dodge cooldown.": "-1 vida máx., +1 daño; esquive más largo y menor enfriamiento.",
 	"Knight Helmet": "Casco de caballero",
-	"+5 max health, +3 damage; -20 speed and longer dodge cooldown.": "+5 vida máx., +3 daño; -20 velocidad y mayor enfriamiento de esquive.",
+	"+5 max health, +2 damage; -20 speed and longer dodge cooldown.": "+5 vida máx., +2 daño; -20 velocidad y mayor enfriamiento de esquive.",
 	"Viking Helmet": "Casco vikingo",
-	"-3 health, +5 damage; +10% chance to knock back touching enemies (max 50%). Past the cap: +1 health, +3 damage.": "-3 vida, +5 daño; +10% de empujar a los enemigos que te tocan (máx 50%). Pasado el tope: +1 vida, +3 daño.",
+	"-3 HP, +4 dmg. +10% knockback on touch (max 50%); after cap: +1 HP, +3 dmg.": "-3 vida, +4 daño. +10% de empuje al tocarte (máx 50%); tras el tope: +1 vida, +3 daño.",
 	"Captain Helmet": "Casco de capitán",
-	"+10 max health, +5 damage; frenzy (speed + damage) when below 50% health. Unlocked by defeating a Bigminion Capitán.": "+10 vida máx., +5 daño; frenesí (velocidad + daño) por debajo del 50% de vida. Se desbloquea al derrotar a un Bigminion Capitán.",
+	"+10 max health, +5 damage; frenzy (speed + damage) when below 50% health.": "+10 vida máx., +5 daño; frenesí (velocidad + daño) por debajo del 50% de vida.",
 	"Grand Captain Helmet": "Casco de gran capitán",
-	"+15 max health, +10 damage; summons 4 allied Capitanes. Unlocked by defeating the Gran Capitán.": "+15 vida máx., +10 daño; invoca 4 Capitanes aliados. Se desbloquea al derrotar al Gran Capitán.",
+	"+15 max health, +10 damage; summons 4 allied Capitanes.": "+15 vida máx., +10 daño; invoca 4 Capitanes aliados.",
 }
 
 func _ready() -> void:
