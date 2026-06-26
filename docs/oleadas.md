@@ -19,6 +19,15 @@ Ambas escenas usan la misma base de mapa, construida por `Scripts/floor_builder.
 > Los enemigos **solo aparecen sobre césped** (no sobre la piedra ni fuera del
 > mapa): `_is_grass_cell()` comprueba que la celda es del bloque de césped.
 
+### Contraste del fondo (por código, sin editar assets)
+
+Para que el jugador, los enemigos y la UI **resalten** sobre el suelo, el
+`floor_builder` aplica por código un `ShaderMaterial`
+(`Shaders/ground_tint.gdshader`) al `Ground` que **oscurece y desatura** el
+césped/piedra, y atenúa el `CloudBorder` con `modulate`. Es barato (un material
+en GPU), respeta el pixel art y se ajusta con los `@export` del nodo raíz:
+`ground_darken`, `ground_desaturation`, `ground_tint` y `dim_clouds`.
+
 ## Cómo funciona
 
 1. El jugador pulsa **N** (`start_wave`) para iniciar una oleada.
