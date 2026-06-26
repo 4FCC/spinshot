@@ -39,6 +39,14 @@ const SFX := {
 const SETTINGS_PATH := "user://spinshot_audio.cfg"
 const POOL_SIZE := 16
 
+# Desfase de inicio por clave (segundos): salta el silencio/intro de algunos
+# clips para que el sonido se oiga DE INMEDIATO al dispararlo. El SFX de "reroll"
+# es un clip de dados con un pequeño lead-in; si aún se nota tarde, sube este
+# valor (o recorta el archivo en Audacity/ffmpeg).
+const START_OFFSET := {
+	"reroll": 0.2,
+}
+
 # --- Ajustes (persistentes) ---
 var music_enabled: bool = true
 var sfx_enabled: bool = true
@@ -98,7 +106,7 @@ func play(key: String, pitch_var: float = 0.0, min_interval_ms: int = 0, volume_
 	p.stream = stream
 	p.pitch_scale = 1.0 + (randf() * 2.0 - 1.0) * pitch_var if pitch_var > 0.0 else 1.0
 	p.volume_db = volume_db
-	p.play()
+	p.play(START_OFFSET.get(key, 0.0))
 
 func play_at(key: String, world_pos: Vector2, pitch_var: float = 0.0, min_interval_ms: int = 0, volume_db: float = 0.0, max_distance: float = DEFAULT_MAX_DISTANCE) -> void:
 	"""Como play(), pero ESPACIAL: el sonido se atenúa/panea según la distancia de
@@ -121,7 +129,7 @@ func play_at(key: String, world_pos: Vector2, pitch_var: float = 0.0, min_interv
 	p.volume_db = volume_db
 	p.max_distance = max_distance
 	p.global_position = world_pos
-	p.play()
+	p.play(START_OFFSET.get(key, 0.0))
 
 # =============================================================================
 # AJUSTES DE VOLUMEN / SILENCIO (menú Sonido)

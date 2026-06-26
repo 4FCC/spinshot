@@ -93,6 +93,19 @@ Los efectos de cascos e ítems **se suman** y no se pisan entre sí:
   uso (movimiento y disparo), por lo que convive con los ítems de velocidad y
   cadencia sin sobrescribir sus valores base.
 
+## Inflación de precios
+
+Cada **compra** encarece el precio de los **futuros ítems** de la tienda. La
+lógica vive en el autoload `Game`:
+
+- `Game.price_scale` (empieza en 1.0) se multiplica por `INFLATION_FACTOR`
+  (+12%) en `Game.register_purchase()`, que `shop._on_buy()` llama tras una
+  compra exitosa.
+- El precio mostrado y cobrado es `Game.scaled_cost(coste_base)` =
+  `ceil(coste_base * price_scale)` (ver `shop._refresh` y `shop._on_buy`).
+- Se **reinicia** cada partida en `Game.reset()` (no es persistente). El coste de
+  ROLL no se ve afectado.
+
 ## Límites de compra (campo `max`) e inventario
 
 Cada ítem del pool tiene un campo `"max"` (número máximo de compras; **0 = ilimitado**):

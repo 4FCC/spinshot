@@ -54,8 +54,12 @@ const ES := {
 	"Resolution": "Resolución",
 	"Sound": "Sonido",
 	"Credits": "Créditos",
+	"CREDITS": "CRÉDITOS",
 	"Exit": "Salida",
 	"Back": "Volver",
+	# --- Nombres de jefes (etiquetas en escena) ---
+	"FINAL BOSS": "JEFE FINAL",
+	"GRAND CAPTAIN": "GRAN CAPITÁN",
 	# --- Controles ---
 	"CONTROLS": "CONTROLES",
 	"WASD / Arrows: move\nSpace: dodge\nRight click: blue SpinShot\nLeft click: orange SpinShot\nE: inventory\nESC: options\nF11: fullscreen": "WASD / Flechas: mover\nEspacio: esquivar\nClic der.: SpinShot azul\nClic izq.: SpinShot naranja\nE: inventario\nESC: opciones\nF11: pantalla completa",
