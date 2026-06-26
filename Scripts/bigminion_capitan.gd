@@ -72,7 +72,7 @@ func _update_ai(delta: float) -> void:
 	# Sonido de buff: UNA vez por instancia/grupo (debounce global), aunque se
 	# potencien muchos a la vez, para no saturar. (El Apoyo tiene su propio sonido.)
 	if buffed_any:
-		Audio.play("buff", 0.05, 700)
+		Audio.play_at("buff", global_position, 0.05, 700)
 
 	# Frenesí propio al bajar del umbral de vida.
 	if not _frenzied and float(health) / float(max_health) < frenzy_threshold:

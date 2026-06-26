@@ -335,7 +335,11 @@ func _drop_coin() -> void:
 	if coin_scene == null:
 		return
 	var coin = coin_scene.instantiate()
-	get_parent().add_child(coin)
-	coin.global_position = global_position
+	# La moneda es un Area2D; añadirla DURANTE el flush de colisiones (la muerte
+	# se origina en body_entered) provoca el error "Can't change this state while
+	# flushing queries". Posicionamos antes (raíz en el origen → local == global)
+	# y diferimos el add_child para hacerlo fuera del flush.
+	coin.position = global_position
 	if coin.has_method("set_value"):
 		coin.set_value(coin_value)
+	get_parent().add_child.call_deferred(coin)

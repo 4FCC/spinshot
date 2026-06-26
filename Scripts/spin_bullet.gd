@@ -201,9 +201,11 @@ func _spawn_bounce(pos: Vector2, source: Node = null) -> void:
 		var b = _make_child()
 		b.bounce_count = bounce_count - 1   # presupuesto decreciente: cadena finita
 		b._ignore_enemy = source            # no vuelve a golpear al de origen
-		host.add_child(b)
 		var ang := TAU * float(i) / float(bounce_count) + randf() * 0.6
 		b.setup_world(pos, Vector2.RIGHT.rotated(ang), pattern_mode)
+		# La SpinShot lleva un Area2D: diferir el add_child para no tocar la física
+		# durante el flush de colisiones (este método se llama desde body_entered).
+		host.add_child.call_deferred(b)
 
 func _spawn_split() -> void:
 	"""División: crea la segunda mitad, que gira en sentido contrario y ya no

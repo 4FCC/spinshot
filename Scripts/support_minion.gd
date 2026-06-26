@@ -99,7 +99,9 @@ func _heal_allies() -> void:
 	if healed:
 		_spawn_hearts(self)   # también sobre el propio Apoyo
 		_pink_flash()
-		Audio.play("support", 0.06, 120)   # sonido de su habilidad
+		# Espacial + debounce largo + algo más bajo: con varios Apoyos curando a la
+		# vez no se satura (antes sonaba demasiadas veces).
+		Audio.play_at("support", global_position, 0.06, 600, -5.0)
 
 func _spawn_hearts(node: Node2D) -> void:
 	"""Efecto de corazones (sheet del Apoyo). Se añade como hijo del beneficiado

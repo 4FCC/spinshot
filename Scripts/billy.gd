@@ -436,7 +436,7 @@ func _shoot_spin_bullet(pattern: int = 0):
 	if spin_bullet_scene == null or not shoot_cooldown.is_stopped():
 		return
 
-	Audio.play("shoot", 0.06)   # sin efecto por ahora (SFX de disparo retirado); se reactiva al añadir la clave "shoot" en Audio
+	Audio.play("shoot", 0.06)   # leve variación de tono para que no suene mecánico
 
 	var dir = get_global_mouse_position() - global_position
 	if dir.length() < 1.0:

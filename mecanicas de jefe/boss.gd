@@ -207,7 +207,7 @@ func _state_teleport(delta: float) -> void:
 			if player != null and is_instance_valid(player):
 				var off := Vector2.RIGHT.rotated(randf() * TAU) * teleport_distance
 				global_position = player.global_position + off
-			Audio.play("teleport_boss", 0.04, 60)
+			Audio.play_at("teleport_boss", global_position, 0.04, 60)
 			_acted = true
 			_t = 0.25
 	else:
@@ -378,8 +378,9 @@ func _drop_coins() -> void:
 		host = get_parent()
 	for i in coins_dropped:
 		var c = coin_scene.instantiate()
-		host.add_child(c)
-		c.global_position = global_position + Vector2.RIGHT.rotated(randf() * TAU) * randf_range(20.0, 90.0)
+		# Diferir: la muerte puede originarse en un body_entered (flush de física).
+		c.position = global_position + Vector2.RIGHT.rotated(randf() * TAU) * randf_range(20.0, 90.0)
+		host.add_child.call_deferred(c)
 
 # =============================================================================
 # ANIMACIONES (construidas en runtime desde las hojas)

@@ -22,8 +22,7 @@ const SFX := {
 	"denied": preload("res://sound effect/Efecto de sonido de interfazbloqueada/UIMisc_INTERFACE-Denied_HY_PC-001.wav"),
 	"reroll": preload("res://sound effect/Sonido de boton roll/ElevenLabs_Lanzar_dados_en_un_juego_de_mesa,_ambiente_inmersivo.mp3"),
 	# Jugador / disparos / ítems
-	# (El SFX de disparo se retiró por problemas con el archivo de origen; para
-	#  reactivarlo, añade aquí "shoot": preload("res://.../tu_disparo.wav").)
+	"shoot": preload("res://sound effect/Disparo del jugador/DSGNTonl_SKILL IMPACT-Swoosh Grain_HY_PC-002.wav"),
 	"hit": preload("res://sound effect/Sonido de golpe a enemigo/FGHTImpt_MELEE-Swish Hit_HY_PC-004.wav"),
 	"coin": preload("res://sound effect/Sonidos de monedas/DSGNTonl_USABLE-Coin Toss_HY_PC-006.wav"),
 	"dodge": preload("res://sound effect/Efecto de sonido de esquive/DSGNMisc_MELEE-Sword Reflect_HY_PC-001.wav"),
@@ -46,8 +45,13 @@ var sfx_enabled: bool = true
 var music_volume: float = 0.8   # lineal 0..1
 var sfx_volume: float = 0.9     # lineal 0..1
 
-var _pool: Array[AudioStreamPlayer] = []
+const POOL2D_SIZE := 12
+const DEFAULT_MAX_DISTANCE := 1300.0   # px: más allá, el sonido se desvanece
+
+var _pool: Array[AudioStreamPlayer] = []          # SFX no posicionales (UI, jugador…)
+var _pool2d: Array[AudioStreamPlayer2D] = []      # SFX posicionales (enemigos)
 var _next: int = 0
+var _next2d: int = 0
 var _last_ms: Dictionary = {}   # clave -> último Time.get_ticks_msec() (debounce)
 
 func _ready() -> void:
@@ -57,6 +61,15 @@ func _ready() -> void:
 		p.bus = "SFX"
 		add_child(p)
 		_pool.append(p)
+	# Pool POSICIONAL: el volumen/paneo depende de la distancia a la cámara del
+	# jugador (que actúa como oyente). Para sonidos de enemigos/jefes.
+	for i in POOL2D_SIZE:
+		var p2 := AudioStreamPlayer2D.new()
+		p2.bus = "SFX"
+		p2.max_distance = DEFAULT_MAX_DISTANCE
+		p2.attenuation = 1.5
+		add_child(p2)
+		_pool2d.append(p2)
 	_load_settings()
 	_apply_bus(_music_bus(), music_enabled, music_volume)
 	_apply_bus(_sfx_bus(), sfx_enabled, sfx_volume)
@@ -85,6 +98,29 @@ func play(key: String, pitch_var: float = 0.0, min_interval_ms: int = 0, volume_
 	p.stream = stream
 	p.pitch_scale = 1.0 + (randf() * 2.0 - 1.0) * pitch_var if pitch_var > 0.0 else 1.0
 	p.volume_db = volume_db
+	p.play()
+
+func play_at(key: String, world_pos: Vector2, pitch_var: float = 0.0, min_interval_ms: int = 0, volume_db: float = 0.0, max_distance: float = DEFAULT_MAX_DISTANCE) -> void:
+	"""Como play(), pero ESPACIAL: el sonido se atenúa/panea según la distancia de
+	'world_pos' a la cámara del jugador (oyente). Para enemigos/jefes."""
+	if not sfx_enabled:
+		return
+	var stream: AudioStream = SFX.get(key, null)
+	if stream == null:
+		return
+	if min_interval_ms > 0:
+		var now := Time.get_ticks_msec()
+		var last: int = _last_ms.get(key, -1000000)
+		if now - last < min_interval_ms:
+			return
+		_last_ms[key] = now
+	var p := _pool2d[_next2d]
+	_next2d = (_next2d + 1) % POOL2D_SIZE
+	p.stream = stream
+	p.pitch_scale = 1.0 + (randf() * 2.0 - 1.0) * pitch_var if pitch_var > 0.0 else 1.0
+	p.volume_db = volume_db
+	p.max_distance = max_distance
+	p.global_position = world_pos
 	p.play()
 
 # =============================================================================

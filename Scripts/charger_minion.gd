@@ -78,5 +78,6 @@ func _shove_others() -> void:
 			e.push(dir * 260.0)
 			pushed = true
 	# Un solo golpe de empuje por contacto (debounce global anti-saturación).
+	# Espacial: se oye según la posición del cargador respecto al jugador.
 	if pushed:
-		Audio.play("charge_push", 0.08, 180)
+		Audio.play_at("charge_push", global_position, 0.08, 180)
