@@ -21,10 +21,6 @@ Game="*res://Scripts/game.gd"
 I18n="*res://Scripts/i18n.gd"
 Audio="*res://Scripts/audio.gd"
 
-[audio]
-
-buses/default_bus_layout="res://default_bus_layout.tres"
-
 [display]
 
 window/size/viewport_width=1280
