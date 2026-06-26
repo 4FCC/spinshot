@@ -1183,45 +1183,69 @@ func _build_credits_box() -> void:
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	overlay.add_child(center)
 
+	# Columna: panel de créditos + botón Volver (centrados).
+	var col := VBoxContainer.new()
+	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_theme_constant_override("separation", 14)
+	center.add_child(col)
+
+	# El marco usa un NinePatchRect (9-patch): nítido a CUALQUIER tamaño, así que
+	# sirve para bloques de texto grandes sin deformar bordes (la UI de sprites
+	# fija no estaba pensada para tanto texto).
 	var box := Control.new()
-	box.custom_minimum_size = Vector2(470, 540)
-	center.add_child(box)
+	box.custom_minimum_size = Vector2(560, 520)
+	col.add_child(box)
 
-	var bg := TextureRect.new()
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.texture = UI_STAT_TEX
-	bg.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	bg.stretch_mode = TextureRect.STRETCH_SCALE
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.add_child(bg)
+	var frame := NinePatchRect.new()
+	frame.set_anchors_preset(Control.PRESET_FULL_RECT)
+	frame.texture = RECT_TEX
+	frame.region_rect = RECT_REGION
+	frame.patch_margin_left = 8
+	frame.patch_margin_right = 8
+	frame.patch_margin_top = 7
+	frame.patch_margin_bottom = 7
+	frame.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(frame)
 
+	# Título centrado arriba.
 	var title := Label.new()
-	title.position = Vector2(135, 46)
-	title.size = Vector2(200, 44)
+	title.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	title.offset_top = 22.0
+	title.offset_bottom = 70.0
 	title.text = "CREDITS"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 20)
-	title.add_theme_color_override("font_color", Color(0.22, 0.13, 0.06))
+	title.add_theme_font_size_override("font_size", 28)
+	title.add_theme_color_override("font_color", Color(0.98, 0.9, 0.72))
+	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+	title.add_theme_constant_override("shadow_offset_x", 1)
+	title.add_theme_constant_override("shadow_offset_y", 1)
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(title)
 
+	# Texto desplazable, con MÁRGENES dentro del marco (se redimensiona con él).
 	_credits_label = RichTextLabel.new()
+	_credits_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_credits_label.offset_left = 44.0
+	_credits_label.offset_top = 84.0
+	_credits_label.offset_right = -44.0
+	_credits_label.offset_bottom = -36.0
 	_credits_label.bbcode_enabled = true
 	_credits_label.scroll_active = true
 	_credits_label.fit_content = false
-	_credits_label.position = Vector2(64, 104)
-	_credits_label.size = Vector2(342, 360)
-	_credits_label.add_theme_color_override("default_color", Color(0.22, 0.14, 0.07))
-	_credits_label.add_theme_font_size_override("normal_font_size", 13)
-	_credits_label.add_theme_font_size_override("bold_font_size", 15)
+	_credits_label.add_theme_color_override("default_color", Color(0.98, 0.92, 0.78))
+	_credits_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
+	_credits_label.add_theme_constant_override("shadow_offset_x", 1)
+	_credits_label.add_theme_constant_override("shadow_offset_y", 1)
+	_credits_label.add_theme_font_size_override("normal_font_size", 15)
+	_credits_label.add_theme_font_size_override("bold_font_size", 17)
 	_credits_label.text = _credits_text()
 	box.add_child(_credits_label)
 
-	var back := _make_rect_button("Back", Vector2(190, 52), 15, func(): _credits_box.visible = false)
-	back.position = Vector2(140, 472)
-	box.add_child(back)
+	var back := _make_rect_button("Back", Vector2(200, 56), 16, func(): _credits_box.visible = false)
+	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	col.add_child(back)
 
 func _on_opt_credits() -> void:
 	if _credits_label != null:
