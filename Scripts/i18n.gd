@@ -64,6 +64,10 @@ const ES := {
 	"Fullscreen": "Pantalla completa",
 	# --- Idioma ---
 	"LANGUAGE": "IDIOMA",
+	# --- Sonido ---
+	"SOUND": "SONIDO",
+	"Music": "Música",
+	"Sound effects": "Efectos de sonido",
 	# --- Inventario ---
 	"Inventory": "Inventario",
 	"(You haven't bought any item yet)": "(Aún no has comprado ningún ítem)",

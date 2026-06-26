@@ -19,11 +19,15 @@ func collect() -> void:
 	"""Recolección automática (p. ej. al terminar la ronda): suma su valor y
 	desaparece, sin requerir contacto con el jugador."""
 	Game.add_coins(value)
+	# Al recoger MUCHAS monedas de golpe, el debounce evita el muro de sonido.
+	Audio.play("coin", 0.18, 70)
 	queue_free()
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player"):
 		Game.add_coins(value)
+		# Variación de tono + debounce para que no sature al recoger en cadena.
+		Audio.play("coin", 0.18, 60)
 		# Permite efectos al recoger moneda (p. ej. robo de vida)
 		if body.has_method("on_coin_collected"):
 			body.on_coin_collected()

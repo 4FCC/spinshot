@@ -145,8 +145,12 @@ func _on_body_entered(body: Node2D) -> void:
 		# Giro letal: probabilidad de matar al girar (reemplaza el daño normal)
 		if lethal_chance > 0.0 and randf() < lethal_chance and body.has_method("apply_lethal_spin"):
 			body.apply_lethal_spin()
+			Audio.play("lethal", 0.0, 80)   # exclusivo de la muerte instantánea
 		else:
 			body.take_damage(damage)
+			# Sonido de impacto (también lo emiten las balas de rebote, que pasan
+			# por aquí). Anti-saturación: pequeño debounce + variación de tono.
+			Audio.play("hit", 0.1, 35)
 		_spawn_bounce(global_position, body)
 		queue_free()
 	elif body.is_in_group("player") and body.has_method("take_damage"):

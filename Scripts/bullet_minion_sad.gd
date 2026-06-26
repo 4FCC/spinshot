@@ -64,6 +64,7 @@ func _update_shield() -> void:
 		if randf() < eat_chance:
 			b.queue_free()
 			_spawn_smoke()   # feedback visual al eliminar la SpinShot
+			Audio.play("sad_eat", 0.06, 60)   # sonido al desaparecer la spinbullet
 			_eaten += 1
 			if _eaten >= rage_threshold:
 				_release_ring(_eaten)

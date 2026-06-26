@@ -62,11 +62,17 @@ func _update_ai(delta: float) -> void:
 	super._update_ai(delta)   # persigue al jugador
 
 	# Aura: potenciar a los Bigminión normales en rango (se refresca cada frame).
+	var buffed_any := false
 	for e in get_tree().get_nodes_in_group("bigminion"):
 		if e == self or not is_instance_valid(e):
 			continue
 		if global_position.distance_to(e.global_position) <= aura_radius and e.has_method("apply_buff"):
 			e.apply_buff(aura_buff_damage, aura_buff_speed, 0.3)
+			buffed_any = true
+	# Sonido de buff: UNA vez por instancia/grupo (debounce global), aunque se
+	# potencien muchos a la vez, para no saturar. (El Apoyo tiene su propio sonido.)
+	if buffed_any:
+		Audio.play("buff", 0.05, 700)
 
 	# Frenesí propio al bajar del umbral de vida.
 	if not _frenzied and float(health) / float(max_health) < frenzy_threshold:
